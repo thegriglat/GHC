@@ -3,8 +3,9 @@
 class data:
   channels = []  
   # channel = {
-  #   active: True|False
-  #   data: {
+  #   "name"   : name
+  #   "active" : True|False
+  #   "data"   : {
   #     "pedestal" : {
   #       "G1"  : [value, rms],
   #       "G6"  : [value, rms],
@@ -49,3 +50,14 @@ class data:
    
   def getInactiveChannels(self):
     return [ a for a in self.channels if a.active ]
+
+  def getNewChannel(self, name, active, data):
+    return {"name" : name, "active" : active, "data" : data}
+
+  def readEBPedestalFile(self, filename):
+    fd = open(filename, 'r')
+    for line in fd.readlines():
+      line = strip(line)
+      n, channel, gain1, rms1, gain6, rms6, gain12, rms12, unk1, unk2 = line.split()
+      self.channel.append(self.getNewChannel(channel, False, {"G1": [gain1, rms1], "G6" : [gain6, rms6], "G12" : [gain12, rms12]})
+    return
