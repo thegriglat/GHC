@@ -91,11 +91,19 @@ class Data:
       n = n + 1
     print "  Done. Processed {0} records.".format(n)
     return n
-    
+  
   def doROOTAnalysis(self, gain, useRMS = False):
     d = 1 if useRMS else 0
     d1 = "(RMS)" if useRMS else ""
-    hist = ROOT.TH1F("{0} pedestal {1}".format(gain, d1), "{0} pedestal {1}".format(gain, d1), 100, -4, 4) 
+    name = "{0} pedestal {1}".format(gain, d1)
+    hist = ROOT.TH1F(name, name, 1000, -4, 4) 
     for ch in self.getActiveChannels():
       hist.Fill(self.channels[ch]["data"][gain][d])
-    return hist
+    saveHistImage(hist, "{0}.png".format(name))
+    return
+
+def saveHistImage(histogram, filename):
+  c = ROOT.TCanvas()
+  histogram.Draw()
+  c.Update()
+  c.SaveAs(filename)
