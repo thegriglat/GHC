@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 
-class data:
-  channels = []  
+class Data:
+  channels = {}
   # channel = {
-  #   "name"   : name
   #   "active" : True|False
   #   "data"   : {
   #     "pedestal" : {
@@ -34,30 +33,56 @@ class data:
     return int(str(channel)[-6:-4])
 
   def findInactiveChannels(self):
-    for ch in self.channels:
-      if sum([len (ch["data"]["pedestal"][a]) for a in ch["data"]["pedestal"].keys()]) == 0:
-        ch.active = False
-    return
+    return [ch for ch in self.channels.keys() if self.isInactive(ch)]
   
   def setInactive(self, channel):
     try:
-      self.channel[channel].active = False
+      self.channels[channel].active = False
     except:
       for ch in channel:
-        self.channel[ch].active = False
+        self.channels[ch].active = False
     finally:
       return
    
+  def isInactive(self, channel):
+    if len(self.channels[channel]["data"].keys()) == 0:
+      return True
+    else:
+      return False
+
   def getInactiveChannels(self):
-    return [ a for a in self.channels if a.active ]
+    return [ a for a in self.channels.keys() if self.channels[a].active ]
 
-  def getNewChannel(self, name, active, data):
-    return {"name" : name, "active" : active, "data" : data}
+  def getNewChannel(self, active = False, data = {}):
+    return {"active" : active, "data" : data}
 
-  def readEBPedestalFile(self, filename):
+  def readAllChannels(self, filename):
     fd = open(filename, 'r')
+    print "Getting list of all channels ..."
+    n = 0
     for line in fd.readlines():
-      line = strip(line)
-      n, channel, gain1, rms1, gain6, rms6, gain12, rms12, unk1, unk2 = line.split()
-      self.channel.append(self.getNewChannel(channel, False, {"G1": [gain1, rms1], "G6" : [gain6, rms6], "G12" : [gain12, rms12]})
-    return
+      line = line.strip()
+      self.channels[line] = self.getNewChannel()
+      n = n + 1
+    print "  Done. Processed {0} records.".format(n)
+    return n
+
+  def setChannelData(self, channel, data):
+    self.channels[channel]["data"] = data
+
+  def readEBPedestalData(self, filename):
+    fd = open(filename, 'r')
+    print "Reading Pedestal data ..."
+    n = 0
+    for line in fd.readlines():
+      line = line.strip()
+      try:
+        idx, channelid, gain1, rms1, gain6, rms6, gain12, rms12, unk1 = line.split()
+      except:
+        print "  Cannot parse line\n  '{0}'\n  for 9 fields!"
+      if not self.channels.has_key(channelid):
+        print "  Hmm. It seems channel {0} is not present in list of all channels. Continue ...".format(channelid)
+      self.setChannelData(channelid, {"G1": [gain1, rms1], "G6" : [gain6, rms6], "G12" : [gain12, rms12]})
+      n = n + 1
+    print "  Done. Processed {0} records.".format(n)
+    return n
