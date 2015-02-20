@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import ROOT
+
 class Data:
   channels = {}
   # channel = {
@@ -43,15 +45,18 @@ class Data:
         self.channels[ch].active = False
     finally:
       return
-   
+  
+  def isActive(self, channel):
+    return not self.isInactive(channel)
+
   def isInactive(self, channel):
     if len(self.channels[channel]["data"].keys()) == 0:
       return True
     else:
       return False
 
-  def getInactiveChannels(self):
-    return [ a for a in self.channels.keys() if self.channels[a].active ]
+  def getActiveChannels(self):
+    return [ a for a in self.channels.keys() if self.channels[a]["active"] ]
 
   def getNewChannel(self, active = False, data = {}):
     return {"active" : active, "data" : data}
@@ -86,3 +91,11 @@ class Data:
       n = n + 1
     print "  Done. Processed {0} records.".format(n)
     return n
+    
+  def doROOTAnalysis(self, gain, useRMS = False):
+    d = 1 if useRMS else 0
+    d1 = "(RMS)" if useRMS else ""
+    hist = ROOT.TH1F("{0} pedestal {1}".format(gain, d1), "{0} pedestal {1}".format(gain, d1), 100, -4, 4) 
+    for ch in self.getActiveChannels():
+      hist.Fill(self.channels[ch]["data"][gain][d])
+    return hist
