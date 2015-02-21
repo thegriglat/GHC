@@ -12,4 +12,5 @@ print "Number of inactive channels : {0}".format(numall - numread)
 
 for i in ("G1", "G6", "G12"):
   for j in (True, False):
-    Data.doROOTAnalysis(i, j)
+    h = Data.doROOTAnalysis(i, j)
+    saveHistImage(h, "{0}{1}.png".format(i, ("", "_RMS")[j])) 

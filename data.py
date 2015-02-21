@@ -88,21 +88,23 @@ class Data:
     return n
   
   def doROOTAnalysis(self, gain, useRMS = False):
-    d = 1 if useRMS else 0
-    d1 = " (RMS)" if useRMS else ""
+    d1 =("", " (RMS)")[useRMS]
     name = "{0} pedestal{1}".format(gain, d1)
     activech = self.getActiveChannels()
-    minx = 0.9 * min([self.channels[a]["data"][gain][d] for a in activech])
-    maxx = 1.1 * min([self.channels[a]["data"][gain][d] for a in activech])
-    hist = ROOT.TH1F(name, name, 50, minx, maxx) 
+    dim = ((150, 250), (0, 5))[useRMS]
+    hist = ROOT.TH1F(name, name, 100, dim[0], dim[1]) 
     for ch in activech:
-      hist.Fill(self.channels[ch]["data"][gain][d])
-    saveHistImage(hist, "{0}.png".format(name))
-    return
+      hist.Fill(self.channels[ch]["data"][gain][useRMS])
+    return hist
 
 def saveHistImage(histogram, filename):
-  c = ROOT.TCanvas()
-  histogram.Draw()
-  c.Update()
-  c.SaveAs(filename)
-  del c
+  try:
+    c = ROOT.TCanvas()
+    c.SetLogy()
+    histogram.Draw()
+    c.Update()
+    c.SaveAs(filename)
+    return True
+  except:
+    print "Cannot save '{0}'into {1}".format(repr(hist),filename)
+    return False
