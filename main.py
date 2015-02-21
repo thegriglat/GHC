@@ -7,8 +7,9 @@ numall = Data.readAllChannels("data/EB_all_ch.txt")
 numread = Data.readEBPedestalData("data/MON_PEDESTALS.dat")
 
 
-print numall-numread
+print "Number of inactive channels : {0}".format(len(Data.findInactiveChannels()))
+print "Number of inactive channels : {0}".format(numall - numread)
 
-print len(Data.findInactiveChannels())
-
-
+Data.doROOTAnalysis("G1")
+Data.doROOTAnalysis("G6")
+Data.doROOTAnalysis("G12")

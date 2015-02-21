@@ -7,11 +7,9 @@ class Data:
   # channel = {
   #   "active" : True|False
   #   "data"   : {
-  #     "pedestal" : {
   #       "G1"  : [value, rms],
   #       "G6"  : [value, rms],
   #       "G12" : [value, rms] 
-  #     }
   #   }
   # }
   def __init__(self):
@@ -47,16 +45,13 @@ class Data:
       return
   
   def isActive(self, channel):
-    return not self.isInactive(channel)
+    return [True, False][len(self.channels[channel]["data"].keys()) == 0]
 
   def isInactive(self, channel):
-    if len(self.channels[channel]["data"].keys()) == 0:
-      return True
-    else:
-      return False
+    return not self.isActive(channel)
 
   def getActiveChannels(self):
-    return [ a for a in self.channels.keys() if self.channels[a]["active"] ]
+    return [ a for a in self.channels.keys() if self.isActive(a)]
 
   def getNewChannel(self, active = False, data = {}):
     return {"active" : active, "data" : data}
@@ -87,7 +82,7 @@ class Data:
         print "  Cannot parse line\n  '{0}'\n  for 9 fields!"
       if not self.channels.has_key(channelid):
         print "  Hmm. It seems channel {0} is not present in list of all channels. Continue ...".format(channelid)
-      self.setChannelData(channelid, {"G1": [gain1, rms1], "G6" : [gain6, rms6], "G12" : [gain12, rms12]})
+      self.setChannelData(channelid, {"G1": [float(gain1), float(rms1)], "G6" : [float(gain6), float(rms6)], "G12" : [float(gain12), float(rms12)]})
       n = n + 1
     print "  Done. Processed {0} records.".format(n)
     return n
@@ -96,10 +91,13 @@ class Data:
     d = 1 if useRMS else 0
     d1 = "(RMS)" if useRMS else ""
     name = "{0} pedestal {1}".format(gain, d1)
-    hist = ROOT.TH1F(name, name, 1000, -4, 4) 
-    for ch in self.getActiveChannels():
+    activech = self.getActiveChannels()
+    minx = 0.9 * min([self.channels[a]["data"][gain][d] for a in activech])
+    maxx = 1.1 * min([self.channels[a]["data"][gain][d] for a in activech])
+    hist = ROOT.TH1F(name, name, 100, minx, maxx) 
+    for ch in activech:
       hist.Fill(self.channels[ch]["data"][gain][d])
-    saveHistImage(hist, "{0}.png".format(name))
+    saveHistImage(hist, "results/{0}.png".format(name))
     return
 
 def saveHistImage(histogram, filename):
@@ -107,3 +105,4 @@ def saveHistImage(histogram, filename):
   histogram.Draw()
   c.Update()
   c.SaveAs(filename)
+  del c
