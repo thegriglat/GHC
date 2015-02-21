@@ -89,15 +89,15 @@ class Data:
   
   def doROOTAnalysis(self, gain, useRMS = False):
     d = 1 if useRMS else 0
-    d1 = "(RMS)" if useRMS else ""
-    name = "{0} pedestal {1}".format(gain, d1)
+    d1 = " (RMS)" if useRMS else ""
+    name = "{0} pedestal{1}".format(gain, d1)
     activech = self.getActiveChannels()
     minx = 0.9 * min([self.channels[a]["data"][gain][d] for a in activech])
     maxx = 1.1 * min([self.channels[a]["data"][gain][d] for a in activech])
-    hist = ROOT.TH1F(name, name, 100, minx, maxx) 
+    hist = ROOT.TH1F(name, name, 50, minx, maxx) 
     for ch in activech:
       hist.Fill(self.channels[ch]["data"][gain][d])
-    saveHistImage(hist, "results/{0}.png".format(name))
+    saveHistImage(hist, "{0}.png".format(name))
     return
 
 def saveHistImage(histogram, filename):
