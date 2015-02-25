@@ -97,7 +97,7 @@ class Data:
       hist.Fill(self.channels[ch]["data"][gain][useRMS])
     return hist
 
-def saveHistImage(histogram, filename):
+def saveHistogram(histogram, filename):
   try:
     c = ROOT.TCanvas()
     c.SetLogy()
