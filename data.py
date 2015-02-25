@@ -141,7 +141,7 @@ class Data:
           print "  Cannot parse line\n  '{0}'\n  for 7 fields!"
         if not self.channels.has_key(channelid):
           print "  Hmm. It seems channel {0} is not present in list of all channels. Continue ...".format(channelid)
-        self.setChannelData(channelid, {"LaserBlue": [float(gain1), float(rms1)]})
+        self.setChannelData(channelid, {"LaserBlue": [float(gain1), float(rms1)], "APD/DN" : [APD_OVER_PN_MEAN, APD_OVER_PN_RMS]})
         n = n + 1
       print "  Done. Processed {0} records.".format(n)
     return n
