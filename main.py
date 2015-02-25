@@ -2,7 +2,9 @@
 
 import os
 from data import *
-       
+if os.path.exists("RESULTS"):       
+  print "WARNING: Remove RESULTS directory"
+  os.remove("RESULTS")
 os.mkdir("RESULTS")
 
 print "=== PEDESTALS ==="
