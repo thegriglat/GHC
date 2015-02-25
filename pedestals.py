@@ -5,7 +5,8 @@ import sys
 import shutil 
 from data import *
 
-os.mkdir("RESULTS")
+if not os.path.exists("RESULTS"):
+  os.mkdir("RESULTS")
 
 print "=== PEDESTALS ==="
 
@@ -18,7 +19,8 @@ print "Number of inactive channels : {0}".format(len(DataP.findInactiveChannels(
 print "Number of inactive channels : {0}".format(numall - numread)
 
 print "List of available keys: ", DataP.getDataKeys()
-os.mkdir("RESULTS/pedestals")
+if not os.path.exists("RESULTS/pedestals"):
+  s.mkdir("RESULTS/pedestals")
 for i in DataP.getDataKeys():
   for j in (True, False):
     h = DataP.doROOTAnalysis(i, None,  j)

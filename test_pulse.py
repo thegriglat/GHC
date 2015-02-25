@@ -5,7 +5,8 @@ import sys
 import shutil
 from data import *
 
-os.mkdir("RESULTS")
+if not os.path.exists("RESULTS"):
+  os.mkdir("RESULTS")
 
 print "=== TEST PULSE ==="
 
@@ -18,7 +19,8 @@ print "Number of inactive channels : {0}".format(len(DataTP.findInactiveChannels
 print "Number of inactive channels : {0}".format(numall - numread)
 
 print "List of available keys: ", DataTP.getDataKeys()
-os.mkdir("RESULTS/test_pulse")
+if not os.path.exists("RESULTS/test_pulse"):
+  os.mkdir("RESULTS/test_pulse")
 for i in DataTP.getDataKeys():
   for j in (True, False):
     dimx = ((1000, 3000), (0, 20))[j]

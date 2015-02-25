@@ -5,7 +5,8 @@ import sys
 import shutil
 from data import *
 
-os.mkdir("RESULTS")
+if not os.path.exists("RESULTS"):
+  os.mkdir("RESULTS")
 
 print "=== LASER BLUE ==="
 DataLB = Data()
@@ -17,7 +18,8 @@ print "Number of inactive channels : {0}".format(len(DataLB.findInactiveChannels
 print "Number of inactive channels : {0}".format(numall - numread)
 
 print "List of available keys: ", DataLB.getDataKeys()
-os.mkdir("RESULTS/laser_blue")
+if not os.path.exists("RESULTS/laser_blue"):
+  os.mkdir("RESULTS/laser_blue")
 for i in DataLB.getDataKeys():
   for j in (True, False):
     if i == "LaserBlue":
