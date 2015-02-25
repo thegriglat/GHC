@@ -188,26 +188,37 @@ class Data:
     flags = []
     if data["G1"][0] <= 1 or data["G1"][1] <= 0.2:
       flags.append(0)
-    if data["G1"][0] < 170 or data["G1"][0] > 230:
-      flags.append(2)
-    if data["G1"][1] > 1.1:
-      flags.append(4)
+    else:
+      if (data["G1"][0] < 170 or data["G1"][0] > 230) and data["G1"][0] > 1:
+        flags.append(2)
+      if data["G1"][1] > 1.1 and data["G1"][0] > 1:
+        flags.append(4)
+      if data["G1"][1] >= 1.1 and data["G1"][1] < 3 and data["G1"][0] > 1:
+        flags.append(4)
+      if data["G1"][1] >= 3 and data["G1"][0] > 1:
+        flags.append(8)
     if data["G6"][0] <= 1 or data["G6"][1] <= 0.4:
       flags.append(8)
-    if data["G6"][0] < 170 or data["G6"][0] > 230:
-      flags.append(16)
-    if data["G6"][1] > 1.3:
-      flags.append(32)
-    if data["G6"][1] > 4:
-      flags.append(64)
+    else:
+      if (data["G6"][0] < 170 or data["G6"][0] > 230) and data["G6"][0] > 1:
+        flags.append(16)
+      if data["G6"][1] > 1.3 and data["G6"][0] > 1:
+        flags.append(32)
+      if data["G6"][1] >= 1.3 and data["G6"][1] < 4 and data["G6"][0] > 1:
+        flags.append(32)
+      if data["G6"][1] >= 4 and data["G6"][0] > 1:
+        flags.append(64)
     if data["G12"][0] < 1 or data["G12"][1] <= 0.5:
       flags.append(64)
-    if data["G12"][0] < 170 or data["G12"][0] > 230:
-      flags.append(128)
-    if data["G12"][1] > 2.1:
-      flags.append(256)
-    if data["G12"][1] > 6:
-      flags.append(512)
+    else:
+      if data["G12"][0] < 170 or data["G12"][0] > 230 and data["G12"][0] > 1:
+        flags.append(128)
+      if data["G12"][1] > 2.1 and data["G12"][0] > 1:
+        flags.append(256)
+      if data["G12"][1] >= 2.1 and data["G12"][1] < 6 and data["G12"][0] > 1:
+        flags.append(256)
+      if data["G12"][1] >= 6 and data["G12"][0] > 1:
+        flags.append(512)
     return flags
 
   def getChannel(self, channel):
