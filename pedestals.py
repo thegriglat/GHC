@@ -38,5 +38,5 @@ for x in DataP.getActiveChannels():
       stats[fl] = 0
 
 for i in sorted(stats.keys()):
-  print "  {0:5s} : {1:5d}".format(i, stats[i])
+  print "  {0:8s} : {1:5d}".format(i, stats[i])
 print "=== END PEDESTALS ==="
