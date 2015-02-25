@@ -166,6 +166,7 @@ class Data:
     return hist
 
 def saveHistogram(histogram, filename):
+  ROOT.gROOT.SetBatch(ROOT.kTRUE)
   try:
     c = ROOT.TCanvas()
     c.SetLogy()
