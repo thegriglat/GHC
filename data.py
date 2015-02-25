@@ -17,8 +17,22 @@ FLAGS = {
      512 :  "RMS Pedestal G12 > 6.0 ADC counts"
 }
 
+PEDESTAL_FLAGS = ["DPG1", "BPG1", "LRG1", "VLRG1",
+          "DPG6", "BPG6", "LRG6", "VLRG6",
+          "DPG12", "BPG12", "LRG12", "VLRG12"
+]
+TESTPULSE_FLAGS = [ "DTPG1", "STPG1", "LTPG1",
+                    "DTPG6", "STPG6", "LTPG6",
+                    "DTPG12","STPG12","LTPG12"
+]
+
+BLUELASER_FLAGS = ["DLAMPL", "SLAMPL", "LLERRO"]
+
+HVOFF_FLAGS = ["-"]
+
 class Data:
   channels = {}
+  average  = {}
   # channel = {
   #   "active" : True|False
   #   "data"   : {
@@ -89,13 +103,17 @@ class Data:
   
   def readData(self, type,  source = None):
     if type == "pedestal":
-      self.readPedestal(source)
+      self.runtype = type
+      return self.readPedestal(source)
     elif type == "pedestalhvoff":
-      self.readPedestalHVOFF(source)
+      self.runtype = "pedestal"
+      return self.readPedestalHVOFF(source)
     elif type == "testpulse":
-      self.readTestPulse(source)
+      self.runtype == type
+      return self.readTestPulse(source)
     elif type == "laserblue":
-      self.readLaserBlue(source)
+      self.runtype = type
+      return self.readLaserBlue(source)
     else:
       print "Cannot parse data type '{}'! ".format(type)
       return False
@@ -154,13 +172,13 @@ class Data:
       for line in fd.readlines():
         line = line.strip()
         try: 
-          IOV_ID, channelid, gain1, rms1, APD_OVER_PN_MEAN, APD_OVER_PN_RMS, taskstatus = line.split()
+          IOV_ID, channelid, gain12, rms12, APD_OVER_PN_MEAN, APD_OVER_PN_RMS, taskstatus = line.split()
         except:
           print "  Cannot parse line\n  '{0}'\n  for 7 fields!"
         if not self.channels.has_key(channelid):
           print "  Hmm. It seems channel {0} is not present in list of all channels. Continue ...".format(channelid)
           self.channels[channelid] = self.getNewChannel(True)
-        self.setChannelData(channelid, {"LaserBlue": [float(gain1), float(rms1)], "APD/DN" : [APD_OVER_PN_MEAN, APD_OVER_PN_RMS]})
+        self.setChannelData(channelid, {"G12": [float(gain12), float(rms12)], "APD/DN" : [APD_OVER_PN_MEAN, APD_OVER_PN_RMS]})
         n = n + 1
       print "  Done. Processed {0} records.".format(n)
     return n
@@ -186,43 +204,62 @@ class Data:
   def getChannelFlags(self, channel):
     data = self.channels[channel]["data"]
     flags = []
-    if data["G1"][0] <= 1 or data["G1"][1] <= 0.2:
-      flags.append(0)
-    else:
-      if (data["G1"][0] < 170 or data["G1"][0] > 230) and data["G1"][0] > 1:
-        flags.append(2)
-      if data["G1"][1] > 1.1 and data["G1"][0] > 1:
-        flags.append(4)
-      if data["G1"][1] >= 1.1 and data["G1"][1] < 3 and data["G1"][0] > 1:
-        flags.append(4)
-      if data["G1"][1] >= 3 and data["G1"][0] > 1:
-        flags.append(8)
-    if data["G6"][0] <= 1 or data["G6"][1] <= 0.4:
-      flags.append(8)
-    else:
-      if (data["G6"][0] < 170 or data["G6"][0] > 230) and data["G6"][0] > 1:
-        flags.append(16)
-      if data["G6"][1] > 1.3 and data["G6"][0] > 1:
-        flags.append(32)
-      if data["G6"][1] >= 1.3 and data["G6"][1] < 4 and data["G6"][0] > 1:
-        flags.append(32)
-      if data["G6"][1] >= 4 and data["G6"][0] > 1:
-        flags.append(64)
-    if data["G12"][0] < 1 or data["G12"][1] <= 0.5:
-      flags.append(64)
-    else:
-      if data["G12"][0] < 170 or data["G12"][0] > 230 and data["G12"][0] > 1:
-        flags.append(128)
-      if data["G12"][1] > 2.1 and data["G12"][0] > 1:
-        flags.append(256)
-      if data["G12"][1] >= 2.1 and data["G12"][1] < 6 and data["G12"][0] > 1:
-        flags.append(256)
-      if data["G12"][1] >= 6 and data["G12"][0] > 1:
-        flags.append(512)
+    if self.runtype == "pedestal":
+      if data["G1"][0] <= 1 or data["G1"][1] <= 0.2:
+        flags.append("DPG1")
+      if data["G6"][0] <= 1 or data["G6"][1] <= 0.4:
+        flags.append("DPG6")
+      if data["G12"][0] <= 1 or data["G12"][1] <= 0.5:
+        flags.append("DPG12")
+      for i in ('1', '6', '12'):
+        if abs(data["G" + i][0] - 200) > 30:
+          flags.append("BPG" + i)
+      if data["G1"][1] >= 1.1 and data["G1"][1] <= 3:
+        flags.append("LRG1")
+      if data["G6"][1] >= 1.3 and data["G6"][1] <= 4:
+        flags.append("LRG6")
+      if data["G12"][1] >= 2.1 and data["G12"][1] <= 6:
+        flags.append("LRG12")
+      if data["G1"][1] > 3:
+        flags.append("VLRG1")
+      if data["G6"][1] > 4:
+        flags.append("VLRG6")
+      if data["G12"][1] > 6:
+        flags.append("VLRG12")
+    elif self.runtype == "testpulse":
+      for i in ('1', '6', '12'):
+        if data["G" + i][0] <= 0:
+          flags.append("DTPG" + i)
+        if data["G" + i][0] / self.getAvgGain("G" + i) <= 0.5:
+          flags.append("STPG" + i)
+        if data["G" + i][0] / self.getAvgGain("G" + i) >= 1.5:
+          flags.append("LTPG" + i)
+    elif self.runtype == "laserblue":
+      if data["G12"][0] <= 0:
+        flags.append("DLAMPL")
+      if data["G12"][0] / self.getAvgGain("G12") < 0.1 and data["G12"][0] > 0:
+        flags.append("SLAMPL")
+      if data["G12"][0] > 0 and data["G12"][1] / float(data["G12"][0]) > 0.2:
+        flags.append("LLERRO")
     return flags
+
+  def getAvgGain(self, gain):
+    sum = 0
+    ach = self.getActiveChannels()
+    for c in ach:
+      sum += self.channels[c]["data"][gain][0]
+    if not self.average.has_key(gain):
+      self.average[gain] = sum / float(len(ach))
+      return self.average[gain]
+    else:
+      return self.average[gain]
 
   def getChannel(self, channel):
     return self.channels[channel]
+
+  def getChannelsByFlag(self, flag):
+    return [a for a in self.channels.keys() if flag in self.channels[a]["flags"]]
+    for i in self.
 
   def classifyChannels(self):
     for c in self.getActiveChannels():

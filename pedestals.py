@@ -13,7 +13,7 @@ print "=== PEDESTALS ==="
 DataP = Data()
 source = "data/MON_PEDESTALS.dat"
 numall = DataP.readAllChannels("data/EB_all_ch.txt")
-numread = DataP.readPedestal(source)
+numread = DataP.readData('pedestal', source)
 
 print "Number of inactive channels : {0}".format(len(DataP.findInactiveChannels()))
 print "Number of inactive channels : {0}".format(numall - numread)
@@ -27,14 +27,16 @@ for i in DataP.getDataKeys():
     saveHistogram(h, "RESULTS/pedestals/{0}{1}.png".format(i, ("", "_RMS")[j])) 
     del h
 
-print "Status flags are"
-for x in sorted(FLAGS.keys()):
-  print "  {0:3d} : {1}".format(x, FLAGS[x])
-print ""
 print "Get statistics by FLAGS:"
 DataP.classifyChannels()
-for x in sorted(FLAGS.keys()):
-  count = len ( [a for a in DataP.getActiveChannels() if x in DataP.getChannel(a)["flags"]])
-  print "  {0:3d} : {1:5d} channels".format(x, count)
+stats = {}
+for x in DataP.getActiveChannels():
+  for fl in DataP.getChannel(x)["flags"]:
+    if stats.has_key(fl):
+      stats[fl] += 1
+    else:
+      stats[fl] = 0
 
+for i in sorted(stats.keys()):
+  print "  {0:5s} : {1:5d}".format(i, stats[i])
 print "=== END PEDESTALS ==="
