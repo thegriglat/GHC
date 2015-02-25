@@ -154,7 +154,7 @@ class Data:
     d1 =("", " (RMS)")[RMS]
     name = "{0}{1}".format(key, d1)
     activech = self.getActiveChannels()
-    if dimx != None:
+    if dimx == None:
       dimx = ((150, 250), (0, 5))[RMS]
     hist = ROOT.TH1F(name, name, 100, dimx[0], dimx[1]) 
     for ch in activech:
