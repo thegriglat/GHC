@@ -141,6 +141,7 @@ class Data:
           print "  Cannot parse line\n  '{0}'\n  for 7 fields!"
         if not self.channels.has_key(channelid):
           print "  Hmm. It seems channel {0} is not present in list of all channels. Continue ...".format(channelid)
+          self.channels[channelid] = self.getNewChannel(True)
         self.setChannelData(channelid, {"LaserBlue": [float(gain1), float(rms1)], "APD/DN" : [APD_OVER_PN_MEAN, APD_OVER_PN_RMS]})
         n = n + 1
       print "  Done. Processed {0} records.".format(n)
@@ -158,7 +159,10 @@ class Data:
       dimx = ((150, 250), (0, 5))[RMS]
     hist = ROOT.TH1F(name, name, 100, dimx[0], dimx[1]) 
     for ch in activech:
-      hist.Fill(self.channels[ch]["data"][key][RMS])
+      try:
+        hist.Fill(self.channels[ch]["data"][key][RMS])
+      except:
+        print "  Cannot add value from channel {0} and key {1} {2}!".format(ch, key, ("", "(RMS)")[RMS])
     return hist
 
 def saveHistogram(histogram, filename):
