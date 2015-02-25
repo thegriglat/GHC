@@ -3,15 +3,15 @@
 import ROOT
 
 FLAGS = {
-     0   :  "Pedestal G1 <= 1 or RMS G1 <= 0.2  ADC counts",
+     0   :  "Pedestal G1 <= 1 or RMS G1 <= 0.2  ADC counts (dead channels)",
      2   :  "Pedestal G1 < 170 or > 230 ADC counts",
      4   :  "RMS Pedestal G1 > 1.1 ADC counts",
      8   :  "RMS Pedestal G1 > 3.0 ADC counts",
-     8   :  "Pedestal G6 <= 1 or RMS G6 <= 0.4  ADC counts",
+     8   :  "Pedestal G6 <= 1 or RMS G6 <= 0.4  ADC counts (dead channels)",
      16  :  "Pedestal G6 < 170 or > 230 ADC counts",
      32  :  "RMS Pedestal G6 > 1.3 ADC counts",
      64  :  "RMS Pedestal G6 > 4.0 ADC counts",
-     64  :  "Pedestal G12 <= 1 or RMS G12 <= 0.5 ADC counts", 
+     64  :  "Pedestal G12 <= 1 or RMS G12 <= 0.5 ADC counts (dead channels)", 
      128 :  "Pedestal G12 < 170 or > 230 ADC counts",
      256 :  "RMS Pedestal G12 > 2.1 ADC counts",
      512 :  "RMS Pedestal G12 > 6.0 ADC counts"
