@@ -2,6 +2,21 @@
 
 import ROOT
 
+FLAGS = {
+     0   :  "Pedestal G1 <= 1 or RMS G1 <= 0.2  ADC counts",
+     2   :  "Pedestal G1 < 170 or > 230 ADC counts",
+     4   :  "RMS Pedestal G1 > 1.1 ADC counts",
+     8   :  "RMS Pedestal G1 > 3.0 ADC counts",
+     8   :  "Pedestal G6 <= 1 or RMS G6 <= 0.4  ADC counts",
+     16  :  "Pedestal G6 < 170 or > 230 ADC counts",
+     32  :  "RMS Pedestal G6 > 1.3 ADC counts",
+     64  :  "RMS Pedestal G6 > 4.0 ADC counts",
+     64  :  "Pedestal G12 <= 1 or RMS G12 <= 0.5 ADC counts", 
+     128 :  "Pedestal G12 < 170 or > 230 ADC counts",
+     256 :  "RMS Pedestal G12 > 2.1 ADC counts",
+     512 :  "RMS Pedestal G12 > 6.0 ADC counts"
+}
+
 class Data:
   channels = {}
   # channel = {
@@ -12,6 +27,8 @@ class Data:
   #       "G12" : [value, rms] 
   #   }
   # }
+
+
   def __init__(self):
     pass
 
@@ -86,7 +103,7 @@ class Data:
   def getDataKeys(self):
     return self.channels[self.getActiveChannels()[0]]["data"].keys()
 
-  def readPedestal(self, source = None):
+  def readPedestal(self, source = None, HV = False):
     if source == None:
       return DBread(source)
     else:
@@ -102,6 +119,7 @@ class Data:
         if not self.channels.has_key(channelid):
           print "  Hmm. It seems channel {0} is not present in list of all channels. Continue ...".format(channelid)
         self.setChannelData(channelid, {"G1": [float(gain1), float(rms1)], "G6" : [float(gain6), float(rms6)], "G12" : [float(gain12), float(rms12)]})
+        self.channels[channelid]["HV"] = HV
         n = n + 1
       print "  Done. Processed {0} records.".format(n)
     return n
@@ -165,6 +183,8 @@ class Data:
         print "  Cannot add value from channel {0} and key {1} {2}!".format(ch, key, ("", "(RMS)")[RMS])
     return hist
 
+  def Classify(channel):
+
 def saveHistogram(histogram, filename):
   ROOT.gROOT.SetBatch(ROOT.kTRUE)
   try:
@@ -177,3 +197,4 @@ def saveHistogram(histogram, filename):
   except:
     print "Cannot save '{0}'into {1}".format(repr(hist),filename)
     return False
+
