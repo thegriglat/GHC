@@ -183,7 +183,39 @@ class Data:
         print "  Cannot add value from channel {0} and key {1} {2}!".format(ch, key, ("", "(RMS)")[RMS])
     return hist
 
-  def Classify(channel):
+  def getChannelFlags(self, channel):
+    data = self.channels[channel]["data"]
+    flags = []
+    if data["G1"][0] <= 1 or data["G1"][1] <= 0.2:
+      flags.append(0)
+    if data["G1"][0] < 170 or data["G1"][0] > 230:
+      flags.append(2)
+    if data["G1"][1] > 1.1:
+      flags.append(4)
+    if data["G6"][0] <= 1 or data["G6"][1] <= 0.4:
+      flags.append(8)
+    if data["G6"][0] < 170 or data["G6"][0] > 230:
+      flags.append(16)
+    if data["G6"][1] > 1.3:
+      flags.append(32)
+    if data["G6"][1] > 4:
+      flags.append(64)
+    if data["G12"][0] < 1 or data["G12"][1] <= 0.5:
+      flags.append(64)
+    if data["G12"][0] < 170 or data["G12"][0] > 230:
+      flags.append(128)
+    if data["G12"][1] > 2.1:
+      flags.append(256)
+    if data["G12"][1] > 6:
+      flags.append(512)
+    return flags
+
+  def getChannel(self, channel):
+    return self.channels[channel]
+
+  def classifyChannels(self):
+    for c in self.getActiveChannels():
+      self.channels[c]["flags"] = self.getChannelFlags(c)
 
 def saveHistogram(histogram, filename):
   ROOT.gROOT.SetBatch(ROOT.kTRUE)

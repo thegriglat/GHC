@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 
 import os
+import sys
+import shutil 
 from data import *
 if os.path.exists("RESULTS"):       
   print "WARNING: Remove RESULTS directory"
-  os.remove("RESULTS")
+  shutil.rmtree("RESULTS/")
 os.mkdir("RESULTS")
 
 print "=== PEDESTALS ==="
@@ -25,7 +27,19 @@ for i in DataP.getDataKeys():
     saveHistogram(h, "RESULTS/pedestals/{0}{1}.png".format(i, ("", "_RMS")[j])) 
     del h
 
+print "Status flags are"
+for x in sorted(FLAGS.keys()):
+  print "  {0:3d} : {1}".format(x, FLAGS[x])
+print ""
+print "Get statistics by FLAGS:"
+DataP.classifyChannels()
+for x in sorted(FLAGS.keys()):
+  count = len ( [a for a in DataP.getActiveChannels() if x in DataP.getChannel(a)["flags"]])
+  print "  {0:3d} : {1:5d} channels".format(x, count)
+
 print "=== END PEDESTALS ==="
+print "exiting ..."
+sys.exit(0)
 print "=== TEST PULSE ==="
 
 DataTP = Data()
