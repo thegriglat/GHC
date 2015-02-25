@@ -69,32 +69,96 @@ class Data:
 
   def setChannelData(self, channel, data):
     self.channels[channel]["data"] = data
-
-  def readEBPedestalData(self, filename):
-    fd = open(filename, 'r')
-    print "Reading Pedestal data ..."
-    n = 0
-    for line in fd.readlines():
-      line = line.strip()
-      try:
-        idx, channelid, gain1, rms1, gain6, rms6, gain12, rms12, unk1 = line.split()
-      except:
-        print "  Cannot parse line\n  '{0}'\n  for 9 fields!"
-      if not self.channels.has_key(channelid):
-        print "  Hmm. It seems channel {0} is not present in list of all channels. Continue ...".format(channelid)
-      self.setChannelData(channelid, {"G1": [float(gain1), float(rms1)], "G6" : [float(gain6), float(rms6)], "G12" : [float(gain12), float(rms12)]})
-      n = n + 1
-    print "  Done. Processed {0} records.".format(n)
-    return n
   
-  def doROOTAnalysis(self, gain, useRMS = False):
-    d1 =("", " (RMS)")[useRMS]
-    name = "{0} pedestal{1}".format(gain, d1)
+  def readData(self, type,  source = None):
+    if type == "pedestal":
+      self.readPedestal(source)
+    elif type == "pedestalhvoff":
+      self.readPedestalHVOFF(source)
+    elif type == "testpulse":
+      self.readTestPulse(source)
+    elif type == "laserblue":
+      self.readLaserBlue(source)
+    else:
+      print "Cannot parse data type '{}'! ".format(type)
+      return False
+  
+  def getDataKeys(self):
+    return self.channels[self.getActiveChannels()[0]]["data"].keys()
+
+  def readPedestal(self, source = None):
+    if source == None:
+      return DBread(source)
+    else:
+      fd = open(source, 'r')
+      print "Reading Pedestal data ..."
+      n = 0
+      for line in fd.readlines():
+        line = line.strip()
+        try:
+          IOV_ID, channelid, gain1, rms1, gain6, rms6, gain12, rms12, taskstatus = line.split()
+        except:
+          print "  Cannot parse line\n  '{0}'\n  for 9 fields!"
+        if not self.channels.has_key(channelid):
+          print "  Hmm. It seems channel {0} is not present in list of all channels. Continue ...".format(channelid)
+        self.setChannelData(channelid, {"G1": [float(gain1), float(rms1)], "G6" : [float(gain6), float(rms6)], "G12" : [float(gain12), float(rms12)]})
+        n = n + 1
+      print "  Done. Processed {0} records.".format(n)
+    return n
+
+  def readTestPulse(self, source = None):
+    if source == None:
+      return DBread(source)
+    else:
+      fd = open(source, 'r')
+      print "Reading Test Pulse data ..."
+      n = 0
+      for line in fd.readlines():
+        line = line.strip()
+        try:
+          IOV_ID, channelid, gain1, gain6, gain12, rms1, rms6, rms12, taskstatus = line.split()
+        except:
+          print "  Cannot parse line\n  '{0}'\n  for 9 fields!"
+        if not self.channels.has_key(channelid):
+          print "  Hmm. It seems channel {0} is not present in list of all channels. Continue ...".format(channelid)
+        self.setChannelData(channelid, {"G1": [float(gain1), float(rms1)], "G6" : [float(gain6), float(rms6)], "G12" : [float(gain12), float(rms12)]})
+        n = n + 1
+      print "  Done. Processed {0} records.".format(n)
+    return n
+
+  def readLaserBlue(self, source = None):
+    if source == None:
+      return DBread(source)
+    else:
+      fd = open(source, 'r')
+      print "Reading Laser blue data ..."
+      n = 0
+      for line in fd.readlines():
+        line = line.strip()
+        try: 
+          IOV_ID, channelid, gain1, rms1, APD_OVER_PN_MEAN, APD_OVER_PN_RMS, taskstatus = line.split()
+        except:
+          print "  Cannot parse line\n  '{0}'\n  for 7 fields!"
+        if not self.channels.has_key(channelid):
+          print "  Hmm. It seems channel {0} is not present in list of all channels. Continue ...".format(channelid)
+        self.setChannelData(channelid, {"LaserBlue": [float(gain1), float(rms1)]})
+        n = n + 1
+      print "  Done. Processed {0} records.".format(n)
+    return n
+
+
+  def DBread(source):
+    return 0
+
+  def doROOTAnalysis(self, key, dimx = None, RMS = False):
+    d1 =("", " (RMS)")[RMS]
+    name = "{0}{1}".format(key, d1)
     activech = self.getActiveChannels()
-    dim = ((150, 250), (0, 5))[useRMS]
-    hist = ROOT.TH1F(name, name, 100, dim[0], dim[1]) 
+    if dimx != None:
+      dimx = ((150, 250), (0, 5))[RMS]
+    hist = ROOT.TH1F(name, name, 100, dimx[0], dimx[1]) 
     for ch in activech:
-      hist.Fill(self.channels[ch]["data"][gain][useRMS])
+      hist.Fill(self.channels[ch]["data"][key][RMS])
     return hist
 
 def saveHistogram(histogram, filename):
