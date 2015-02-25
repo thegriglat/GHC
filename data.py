@@ -259,7 +259,6 @@ class Data:
 
   def getChannelsByFlag(self, flag):
     return [a for a in self.channels.keys() if flag in self.channels[a]["flags"]]
-    for i in self.
 
   def classifyChannels(self):
     for c in self.getActiveChannels():
