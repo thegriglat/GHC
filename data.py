@@ -187,7 +187,7 @@ class Data:
   def DBread(source):
     return 0
 
-  def doROOTAnalysis(self, key, dimx = None, RMS = False):
+  def get1DHistogram(self, key, dimx = None, RMS = False):
     d1 =("", " (RMS)")[RMS]
     name = "{0}{1}".format(key, d1)
     activech = self.getActiveChannels()

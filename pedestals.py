@@ -23,7 +23,7 @@ if not os.path.exists("RESULTS/pedestals"):
   os.mkdir("RESULTS/pedestals")
 for i in DataP.getDataKeys():
   for j in (True, False):
-    h = DataP.doROOTAnalysis(i, None,  j)
+    h = DataP.get1DHistogram(i, None,  j)
     saveHistogram(h, "RESULTS/pedestals/{0}{1}.png".format(i, ("", "_RMS")[j])) 
     del h
 
@@ -37,6 +37,7 @@ for x in DataP.getActiveChannels():
     else:
       stats[fl] = 0
 
-for i in sorted(stats.keys()):
+for i in sorted(stats.keys(), key = lambda x: stats[x]):
   print "  {0:8s} : {1:5d}".format(i, stats[i])
+
 print "=== END PEDESTALS ==="

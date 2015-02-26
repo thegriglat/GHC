@@ -26,7 +26,7 @@ for i in DataLB.getDataKeys():
       dimx =  ((0, 6000), (0, 200))[j]
     else:
       dimx =  ((0, 5), (0, 0.1))[j]
-    h = DataLB.doROOTAnalysis(i, dimx, j)
+    h = DataLB.get1DHistogram(i, dimx, j)
     saveHistogram(h, "RESULTS/laser_blue/{0}{1}.png".format(i, ("", "_RMS")[j]))
     del h
 

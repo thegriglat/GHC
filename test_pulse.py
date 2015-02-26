@@ -24,7 +24,7 @@ if not os.path.exists("RESULTS/test_pulse"):
 for i in DataTP.getDataKeys():
   for j in (True, False):
     dimx = ((1000, 3000), (0, 20))[j]
-    h = DataTP.doROOTAnalysis(i, dimx, j)
+    h = DataTP.get1DHistogram(i, dimx, j)
     saveHistogram(h, "RESULTS/test_pulse/{0}{1}.png".format(i, ("", "_RMS")[j]))
     del h
 
