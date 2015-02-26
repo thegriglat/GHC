@@ -20,7 +20,7 @@ print "Number of inactive channels : {0}".format(numall - numread)
 
 print "List of available keys: ", DataP.getDataKeys()
 if not os.path.exists("RESULTS/pedestals"):
-  s.mkdir("RESULTS/pedestals")
+  os.mkdir("RESULTS/pedestals")
 for i in DataP.getDataKeys():
   for j in (True, False):
     h = DataP.doROOTAnalysis(i, None,  j)
