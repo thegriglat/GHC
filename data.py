@@ -128,7 +128,7 @@ class Data:
       fd = open(source, 'r')
       print "Reading Pedestal data ..."
       n = 0
-      for line in fd.readlines():
+      for line in fd.readlines()[1:]:
         line = line.strip()
         try:
           IOV_ID, channelid, gain1, rms1, gain6, rms6, gain12, rms12, taskstatus = line.split()
@@ -136,6 +136,7 @@ class Data:
           print "  Cannot parse line\n  '{0}'\n  for 9 fields!"
         if not self.channels.has_key(channelid):
           print "  Hmm. It seems channel {0} is not present in list of all channels. Continue ...".format(channelid)
+          self.channels[channelid] = self.getNewChannel()
         self.setChannelData(channelid, {"G1": [float(gain1), float(rms1)], "G6" : [float(gain6), float(rms6)], "G12" : [float(gain12), float(rms12)]})
         self.channels[channelid]["HV"] = HV
         n = n + 1
