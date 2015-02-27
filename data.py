@@ -33,6 +33,7 @@ HVOFF_FLAGS = ["-"]
 class Data:
   channels = {}
   average  = {}
+  isClassified = False
   # channel = {
   #   "active" : True|False
   #   "data"   : {
@@ -136,10 +137,10 @@ class Data:
           print "  Cannot parse line\n  '{0}'\n  for 9 fields!"
         if not self.channels.has_key(channelid):
           print "  Hmm. It seems channel {0} is not present in list of all channels. Continue ...".format(channelid)
-          self.channels[channelid] = self.getNewChannel()
-        self.setChannelData(channelid, {"G1": [float(gain1), float(rms1)], "G6" : [float(gain6), float(rms6)], "G12" : [float(gain12), float(rms12)]})
-        self.channels[channelid]["HV"] = HV
-        n = n + 1
+        else:
+          self.setChannelData(channelid, {"G1": [float(gain1), float(rms1)], "G6" : [float(gain6), float(rms6)], "G12" : [float(gain12), float(rms12)]})
+          self.channels[channelid]["HV"] = HV
+          n = n + 1
       print "  Done. Processed {0} records.".format(n)
     return n
 
@@ -158,8 +159,9 @@ class Data:
           print "  Cannot parse line\n  '{0}'\n  for 9 fields!"
         if not self.channels.has_key(channelid):
           print "  Hmm. It seems channel {0} is not present in list of all channels. Continue ...".format(channelid)
-        self.setChannelData(channelid, {"G1": [float(gain1), float(rms1)], "G6" : [float(gain6), float(rms6)], "G12" : [float(gain12), float(rms12)]})
-        n = n + 1
+        else:
+          self.setChannelData(channelid, {"G1": [float(gain1), float(rms1)], "G6" : [float(gain6), float(rms6)], "G12" : [float(gain12), float(rms12)]})
+          n = n + 1
       print "  Done. Processed {0} records.".format(n)
     return n
 
@@ -178,9 +180,9 @@ class Data:
           print "  Cannot parse line\n  '{0}'\n  for 7 fields!"
         if not self.channels.has_key(channelid):
           print "  Hmm. It seems channel {0} is not present in list of all channels. Continue ...".format(channelid)
-          self.channels[channelid] = self.getNewChannel(True)
-        self.setChannelData(channelid, {"G12": [float(gain12), float(rms12)], "APD/DN" : [APD_OVER_PN_MEAN, APD_OVER_PN_RMS]})
-        n = n + 1
+        else:
+          self.setChannelData(channelid, {"G12": [float(gain12), float(rms12)], "APD/DN" : [APD_OVER_PN_MEAN, APD_OVER_PN_RMS]})
+          n = n + 1
       print "  Done. Processed {0} records.".format(n)
     return n
 
@@ -264,6 +266,20 @@ class Data:
   def classifyChannels(self):
     for c in self.getActiveChannels():
       self.channels[c]["flags"] = self.getChannelFlags(c)
+    self.isClassified = True
+
+  def getChannelsByFlag(self, flags):
+    if isinstance(flags, list):
+      tmp = []
+      for f in flags:
+        tmp = tmp + self.getChannelsByFlag(f)
+      return list(set(tmp))
+    else:
+      if self.isClassified:
+        return [ch for ch in self.getActiveChannels() if flags in self.getChannel(ch)["flags"]]
+      else:
+        self.classifyChannels()
+        return self.getChannelsByFlag(flags) 
 
 def saveHistogram(histogram, filename):
   ROOT.gROOT.SetBatch(ROOT.kTRUE)
