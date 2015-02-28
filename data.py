@@ -269,17 +269,19 @@ class Data:
     self.isClassified = True
 
   def getChannelsByFlag(self, flags):
-    if isinstance(flags, list):
-      tmp = []
+    def isChannelHasFlags(channel, flags):
+      if not isinstance(flags, list):
+        flags = [flags]
       for f in flags:
-        tmp = tmp + self.getChannelsByFlag(f)
-      return list(set(tmp))
-    else:
-      if self.isClassified:
-        return [ch for ch in self.getActiveChannels() if flags in self.getChannel(ch)["flags"]]
-      else:
-        self.classifyChannels()
-        return self.getChannelsByFlag(flags) 
+        if not f in self.channels[channel]["flags"]:
+          return False
+      return True
+    if not isinstance(flags, list):
+      flags = [flags]
+    if not self.isClassified:
+      self.classifyChannels()
+    t = [ c for c in self.getActiveChannels() if isChannelHasFlags(c, flags)]
+    return list(set(t)) 
 
 def saveHistogram(histogram, filename):
   ROOT.gROOT.SetBatch(ROOT.kTRUE)
