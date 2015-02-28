@@ -208,27 +208,35 @@ class Data:
     data = self.channels[channel]["data"]
     flags = []
     if self.runtype == "pedestal":
+      # G1
       if data["G1"][0] <= 1 or data["G1"][1] <= 0.2:
         flags.append("DPG1")
+      else:
+       if (data["G1"][1] >= 1.1 or (data["G1"][1] >= 1.1 and data["G1"][1] < 3)) and data["G12"][0] > 1:
+        flags.append("LRG1")
+       if data["G1"][1] > 3 and data["G1"] > 1:
+        flags.append("VLRG1")
+       if abs(data["G1"][0] - 200) >= 30 and data["G1"][0] > 1:
+          flags.append("BPG1")
+      # G6
       if data["G6"][0] <= 1 or data["G6"][1] <= 0.4:
         flags.append("DPG6")
+      else:
+        if (data["G6"][1] >= 1.3 or (data["G6"][1] >= 1.3 and data["G6"][1] < 4)) and data["G12"][0] > 1:
+          flags.append("LRG6")
+        if data["G6"][1] > 4 and data["G6"] > 1:
+          flags.append("VLRG6")
+        if abs(data["G6"][0] - 200) >= 30 and data["G6"][0] > 1:
+          flags.append("BPG6")
       if data["G12"][0] <= 1 or data["G12"][1] <= 0.5:
         flags.append("DPG12")
-      for i in ('1', '6', '12'):
-        if abs(data["G" + i][0] - 200) > 30 and data["G" + i][0] > 1:
-          flags.append("BPG" + i)
-      if (data["G1"][1] >= 1.1 or (data["G1"][1] >= 1.1 and data["G1"][1] < 3)) and data["G12"][0] > 1:
-        flags.append("LRG1")
-      if (data["G6"][1] >= 1.3 or (data["G6"][1] >= 1.3 and data["G6"][1] < 4)) and data["G12"][0] > 1:
-        flags.append("LRG6")
-      if (data["G12"][1] >= 2.1 or (data["G12"][1] >=2.1 and data["G12"][1] < 6)) and data["G12"][0] > 1:
-        flags.append("LRG12")
-      if data["G1"][1] > 3 and data["G1"] > 1:
-        flags.append("VLRG1")
-      if data["G6"][1] > 4 and data["G6"] > 1:
-        flags.append("VLRG6")
-      if data["G12"][1] > 6 and data["G12"] > 1:
-        flags.append("VLRG12")
+      else:
+        if abs(data["G12"][0] - 200) >= 30 and data["G12"][0] > 1:
+          flags.append("BPG12")
+        if (data["G12"][1] >= 2.1 or (data["G12"][1] >=2.1 and data["G12"][1] < 6)) and data["G12"][0] > 1:
+          flags.append("LRG12")
+        if data["G12"][1] > 6 and data["G12"] > 1:
+          flags.append("VLRG12")
     elif self.runtype == "testpulse":
       for i in ('1', '6', '12'):
         if data["G" + i][0] <= 0:
@@ -244,7 +252,7 @@ class Data:
         flags.append("SLAMPL")
       if data["G12"][0] > 0 and data["G12"][1] / float(data["G12"][0]) > 0.2:
         flags.append("LLERRO")
-    return flags
+    return list(set(flags))
 
   def getAvgGain(self, gain):
     sum = 0
