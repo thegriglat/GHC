@@ -208,36 +208,21 @@ class Data:
     data = self.channels[channel]["data"]
     flags = []
     if self.runtype == "pedestal":
-      # G1
-      if data["G1"][0] <= 1 or data["G1"][1] <= 0.2:
-        flags.append("DPG1")
-      else:
-       if data["G1"][1] >= 1.1 and data["G1"][1] < 3 and data["G1"][0] > 1:
-        flags.append("LRG1")
-       if data["G1"][1] > 3 and data["G1"][0] > 1:
-        flags.append("VLRG1")
-       if abs(data["G1"][0] - 200) >= 30 and data["G1"][0] > 1:
-          flags.append("BPG1")
-      # G6
-      if data["G6"][0] <= 1 or data["G6"][1] <= 0.4:
-        flags.append("DPG6")
-      else:
-        if (data["G6"][1] >= 1.3 and data["G6"][1] < 4) and data["G6"][0] > 1:
-          flags.append("LRG6")
-        if data["G6"][1] > 4 and data["G6"][0] > 1:
-          flags.append("VLRG6")
-        if abs(data["G6"][0] - 200) >= 30 and data["G6"][0] > 1:
-          flags.append("BPG6")
-      # G12
-      if data["G12"][0] <= 1 or data["G12"][1] <= 0.5:
-        flags.append("DPG12")
-      else:
-        if abs(data["G12"][0] - 200) >= 30 and data["G12"][0] > 1:
-          flags.append("BPG12")
-        if (data["G12"][1] >=2.1 and data["G12"][1] < 6) and data["G12"][0] > 1:
-          flags.append("LRG12")
-        if data["G12"][1] > 6 and data["G12"][0] > 1:
-          flags.append("VLRG12")
+      def PedestalComparison(key, deadlimits, badlimits):
+        tmpflags = []
+        if data[key][0] <= deadlimits[0] or data[key][1] <= deadlimits[1]:
+          tmpflags.append("DP" + key)
+        else:
+          if data[key][1] >= badlimits[0] and data[key][1] < badlimits[1] and data[key][0] > deadlimits[0]:
+            tmpflags.append("LR" + key)
+          if data[key][1] > badlimits[1] and data[key][0] > deadlimits[0]:
+            tmpflags.append("VLR" + key)
+          if abs(data[key][0] - 200) >= 30 and data[key][0] > deadlimits[0]:
+            tmpflags.append("BP" + key)
+        return tmpflags
+      flags += PedestalComparison("G1", (1, 0.2), (1.1, 3))
+      flags += PedestalComparison("G6", (1, 0.4), (1.3, 4))
+      flags += PedestalComparison("G12", (1, 0.5), (2.1, 6))
     elif self.runtype == "testpulse":
       for i in ('1', '6', '12'):
         if data["G" + i][0] <= 0:
