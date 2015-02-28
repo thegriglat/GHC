@@ -27,7 +27,7 @@ for i in DataLB.getDataKeys():
     else:
       dimx =  ((0, 5), (0, 0.1))[j]
     h = DataLB.get1DHistogram(i, dimx, j)
-    saveHistogram(h, "RESULTS/laser_blue/{0}{1}.png".format(i, ("", "_RMS")[j]))
+    saveHistogram(h, "RESULTS/laser_blue/{0}{1}.pdf".format(i, ("", "_RMS")[j]))
     del h
 
 print "=== END LASER BLUE ==="
