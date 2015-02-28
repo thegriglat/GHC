@@ -35,7 +35,6 @@ class Data:
   average  = {}
   isClassified = False
   # channel = {
-  #   "active" : True|False
   #   "data"   : {
   #       "G1"  : [value, rms],
   #       "G6"  : [value, rms],
@@ -67,15 +66,6 @@ class Data:
   def findInactiveChannels(self):
     return [ch for ch in self.channels.keys() if self.isInactive(ch)]
   
-  def setInactive(self, channel):
-    try:
-      self.channels[channel].active = False
-    except:
-      for ch in channel:
-        self.channels[ch].active = False
-    finally:
-      return
-  
   def isActive(self, channel):
     return [True, False][len(self.channels[channel]["data"].keys()) == 0]
 
@@ -85,8 +75,8 @@ class Data:
   def getActiveChannels(self):
     return [ a for a in self.channels.keys() if self.isActive(a)]
 
-  def getNewChannel(self, active = False, data = {}):
-    return {"active" : active, "data" : data}
+  def getNewChannel(self, data = {}):
+    return {"data" : data}
 
   def readAllChannels(self, filename):
     fd = open(filename, 'r')
@@ -182,6 +172,7 @@ class Data:
           print "  Hmm. It seems channel {0} is not present in list of all channels. Continue ...".format(channelid)
         else:
           self.setChannelData(channelid, {"G12": [float(gain12), float(rms12)], "APD/DN" : [APD_OVER_PN_MEAN, APD_OVER_PN_RMS]})
+          self.channels[channelid]["active"] = True
           n = n + 1
       print "  Done. Processed {0} records.".format(n)
     return n
