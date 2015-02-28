@@ -195,6 +195,33 @@ class Data:
         print "  Cannot add value from channel {0} and key {1} {2}!".format(ch, key, ("", "(RMS)")[RMS])
     return hist
 
+  def get2DHistogram(self, key, RMS = False):
+    def getEtaPhi(channel):
+      # return (eta, phi)
+      ch = int(channel) - 1011000000
+      xtal = ch % 10000
+      sm = (ch - xtal) / 10000
+      if sm < 19:
+        return ((xtal - 1) / 20, 19 - (xtal - 1) % 20  + (sm - 1) * 20)
+      else:
+        return (84 - (xtal - 1) / 20 - 85, (xtal - 1) % 20 + (sm - 19) * 20)
+    d1 =("", " (RMS)")[RMS]
+    name = "{0}{1}".format(key, d1)
+    hist = ROOT.TH2F (name, name, 360, 0, 360, 170, -85, 85) 
+    lim = {True: {"G1" : (0.3, 0.8), "G6" : (0.4, 1.1), "G12" : (0.8, 2.2)}, False : {"G1": (160, 240), "G6" : (160, 240), "G12" : (160, 240)}}
+    hist.SetMinimum(lim[RMS][key][0])
+    hist.SetMaximum(lim[RMS][key][1])
+    hist.SetNdivisions(18, "X")
+    hist.SetNdivisions(2, "Y")
+    hist.SetXTitle("phi")
+    hist.SetYTitle("eta")
+    for c in self.getActiveChannels():
+      try:
+        hist.SetBinContent(getEtaPhi(c)[1] + 1, getEtaPhi(c)[0] + 86, self.channels[c]["data"][key][RMS])
+      except:
+        print "Cannot add bin content to histogram for channel", c
+    return hist
+
   def getChannelFlags(self, channel):
     data = self.channels[channel]["data"]
     flags = []
@@ -268,16 +295,22 @@ class Data:
     t = [ c for c in self.getActiveChannels() if isChannelHasFlags(c, flags)]
     return list(set(t)) 
 
-def saveHistogram(histogram, filename):
+def saveHistogram(histogram, filename, drawopt = None):
   ROOT.gROOT.SetBatch(ROOT.kTRUE)
   try:
     c = ROOT.TCanvas()
-    c.SetLogy()
-    histogram.Draw()
+    if drawopt != None:
+      histogram.Draw(drawopt)
+      c.SetGridx(True)
+      c.SetGridy(True)
+      ROOT.gStyle.SetOptStat("e")
+    else:
+      c.SetLogy()
+      histogram.Draw()
     c.Update()
     c.SaveAs(filename)
     return True
   except:
-    print "Cannot save '{0}'into {1}".format(repr(hist),filename)
+    print "Cannot save '{0}'into {1}".format(repr(histogram),filename)
     return False
 
