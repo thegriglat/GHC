@@ -34,6 +34,7 @@ class Data:
   channels = {}
   average  = {}
   isClassified = False
+  runtype = None
   # channel = {
   #   "data"   : {
   #       "G1"  : [value, rms],
