@@ -33,15 +33,15 @@ print "{0:40s} | {1:5d} | {2:12s} | {3:5d} | {4:12s} | {5:5d} | {6:12s}".format(
 print "{0:40s} | {1:5d} | {2:12s} | {3:5d} | {4:12s} | {5:5d} | {6:12s}".format("Bad pedestal and noisy channels", len(shorter(["BPG1", "LRG1"])), "BPG1+LRG1", len(shorter(["BPG6","LRG6"])), "BPG6+LRG6", len(shorter(["BPG12","LGR12"])), "BPG12+LRG12")
 print "{0:40s} | {1:5d} | {2:12s} | {3:5d} | {4:12s} | {5:5d} | {6:12s}".format("Bad pedestal and very noisy", len(shorter(["BPG1","VLRG1"])), "BPG1+VLRG1", len(shorter(["BPG6","VLGR6"])), "BPG6+VLRG6", len(shorter(["BPG12","VLRG12"])), "BPG12+VLRG12")
 print "-----------------------------------------------------------------------------------------------------------"
-
 del shorter
+print "Total problematic pedestal channels:", len([c for c in DataP.getActiveChannels() if len(DataP.getChannel(c)["flags"]) != 0])
 
-
+print ""
 print "Get statistics by FLAGS:"
 for i in PEDESTAL_FLAGS:
   print "  {0:8s} : {1:5d}".format(i, len(DataP.getChannelsByFlag(i)))
 
-
+print ""
 if not os.path.exists("RESULTS/pedestals"):
   os.mkdir("RESULTS/pedestals")
 for i in DataP.getDataKeys():
@@ -49,6 +49,5 @@ for i in DataP.getDataKeys():
     h = DataP.get1DHistogram(i, None,  j)
     saveHistogram(h, "RESULTS/pedestals/{0}{1}.png".format(i, ("", "_RMS")[j])) 
     del h
-
 
 print "=== END PEDESTALS ==="
