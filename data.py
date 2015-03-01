@@ -328,6 +328,7 @@ class Data:
       else:
         c.SetLogy()
         histogram.Draw()
+        ROOT.gStyle.SetOptStat("emruo")
       c.Update()
       c.SaveAs(filename)
       return True
