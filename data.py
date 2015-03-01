@@ -298,12 +298,12 @@ class Data:
     t = [ c for c in self.getActiveChannels() if isChannelHasFlags(c, flags)]
     return list(set(t)) 
 
-  def saveHistogram(self, histogram, filename, drawopt = None):
+  def saveHistogram(self, histogram, filename, is2D = False):
     ROOT.gROOT.SetBatch(ROOT.kTRUE)
     try:
       c = ROOT.TCanvas()
-      if drawopt != None:
-        histogram.Draw(drawopt)
+      if is2D:
+        histogram.Draw("colz")
         c.SetGridx(True)
         c.SetGridy(True)
         ROOT.gStyle.SetOptStat("e")
