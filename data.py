@@ -2,31 +2,6 @@
 
 import ROOT
 
-FLAGS = {
-     0   :  "Pedestal G1 <= 1 or RMS G1 <= 0.2  ADC counts (dead channels)",
-     2   :  "Pedestal G1 < 170 or > 230 ADC counts",
-     4   :  "RMS Pedestal G1 > 1.1 ADC counts",
-     8   :  "RMS Pedestal G1 > 3.0 ADC counts",
-     8   :  "Pedestal G6 <= 1 or RMS G6 <= 0.4  ADC counts (dead channels)",
-     16  :  "Pedestal G6 < 170 or > 230 ADC counts",
-     32  :  "RMS Pedestal G6 > 1.3 ADC counts",
-     64  :  "RMS Pedestal G6 > 4.0 ADC counts",
-     64  :  "Pedestal G12 <= 1 or RMS G12 <= 0.5 ADC counts (dead channels)", 
-     128 :  "Pedestal G12 < 170 or > 230 ADC counts",
-     256 :  "RMS Pedestal G12 > 2.1 ADC counts",
-     512 :  "RMS Pedestal G12 > 6.0 ADC counts"
-}
-
-PEDESTAL_FLAGS = ["DPG1", "BPG1", "LRG1", "VLRG1",
-          "DPG6", "BPG6", "LRG6", "VLRG6",
-          "DPG12", "BPG12", "LRG12", "VLRG12"
-]
-TESTPULSE_FLAGS = [ "DTPG1", "STPG1", "LTPG1",
-                    "DTPG6", "STPG6", "LTPG6",
-                    "DTPG12","STPG12","LTPG12"
-]
-
-BLUELASER_FLAGS = ["DLAMPL", "SLAMPL", "LLERRO"]
 
 HVOFF_FLAGS = ["-"]
 
@@ -42,7 +17,15 @@ class Data:
   #       "G12" : [value, rms] 
   #   }
   # }
-
+  PEDESTAL_FLAGS = ["DPG1", "BPG1", "LRG1", "VLRG1",
+          "DPG6", "BPG6", "LRG6", "VLRG6",
+          "DPG12", "BPG12", "LRG12", "VLRG12"
+  ]
+  TESTPULSE_FLAGS = [ "DTPG1", "STPG1", "LTPG1",
+                    "DTPG6", "STPG6", "LTPG6",
+                    "DTPG12","STPG12","LTPG12"
+  ]
+  BLUELASER_FLAGS = ["DLAMPL", "SLAMPL", "LLERRO"]
 
   def __init__(self):
     pass
@@ -63,6 +46,11 @@ class Data:
 
   def getEB(self, channel):
     return int(str(channel)[-6:-4])
+
+  def getSM(self, channel):
+   channel = int(channel) - 1011000000
+   xtal = channel % 10000
+   return (channel - xtal) / 10000
 
   def findInactiveChannels(self):
     return [ch for ch in self.channels.keys() if self.isInactive(ch)]

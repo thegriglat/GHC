@@ -38,7 +38,7 @@ print "Total problematic pedestal channels:", len([c for c in DataP.getActiveCha
 
 print ""
 print "Get statistics by FLAGS:"
-for i in PEDESTAL_FLAGS:
+for i in DataP.PEDESTAL_FLAGS:
   print "  {0:8s} : {1:5d}".format(i, len(DataP.getChannelsByFlag(i)))
 
 print ""
