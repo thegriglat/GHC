@@ -201,22 +201,40 @@ class Data:
       xtal = ch % 10000
       sm = (ch - xtal) / 10000
       if sm < 19:
-        return ((xtal - 1) / 20, 19 - (xtal - 1) % 20  + (sm - 1) * 20)
+        return ((xtal - 1) / 20 + 86, 19 - (xtal - 1) % 20  + (sm - 1) * 20 + 1)
       else:
-        return (84 - (xtal - 1) / 20 - 85, (xtal - 1) % 20 + (sm - 19) * 20)
+        return (84 - (xtal - 1) / 20 - 85 + 86, (xtal - 1) % 20 + (sm - 19) * 20 + 1)
+    def getXY(channel):
+      channel = int(channel) - 2010000000
+      side = channel / 1000000
+      channel = channel - (side * 1000000)
+      y = channel % 1000
+      x = channel / 1000
+      x = [x, x + 100][side == 0]
+      return (y, x)
     d1 =("", " (RMS)")[RMS]
     name = "{0}{1}".format(key, d1)
-    hist = ROOT.TH2F (name, name, 360, 0, 360, 170, -85, 85) 
-    lim = {True: {"G1" : (0.3, 0.8), "G6" : (0.4, 1.1), "G12" : (0.8, 2.2)}, False : {"G1": (160, 240), "G6" : (160, 240), "G12" : (160, 240)}}
+    if self.getOption("2dplottype") == "endcap":
+      hist = ROOT.TH2F (name, name, 200, 0, 200, 100, 0, 100) 
+      lim = {True: {"G1" : (0.3, 0.8), "G6" : (0.7, 1.5), "G12" : (1.2, 3.4)}, False : {"G1": (160, 240), "G6" : (160, 240), "G12" : (160, 240)}}
+      hist.SetNdivisions(40, "X")
+      hist.SetNdivisions(20, "Y")
+      hist.SetXTitle("iX")
+      hist.SetYTitle("iY")
+      func = getXY
+    else:
+      hist = ROOT.TH2F (name, name, 360, 0, 360, 170, -85, 85) 
+      lim = {True: {"G1" : (0.3, 0.8), "G6" : (0.4, 1.1), "G12" : (0.8, 2.2)}, False : {"G1": (160, 240), "G6" : (160, 240), "G12" : (160, 240)}}
+      hist.SetNdivisions(18, "X")
+      hist.SetNdivisions(2, "Y")
+      hist.SetXTitle("phi")
+      hist.SetYTitle("eta")
+      func = getEtaPhi
     hist.SetMinimum(lim[RMS][key][0])
     hist.SetMaximum(lim[RMS][key][1])
-    hist.SetNdivisions(18, "X")
-    hist.SetNdivisions(2, "Y")
-    hist.SetXTitle("phi")
-    hist.SetYTitle("eta")
     for c in self.getActiveChannels():
       try:
-        hist.SetBinContent(getEtaPhi(c)[1] + 1, getEtaPhi(c)[0] + 86, self.channels[c]["data"][key][RMS])
+        hist.SetBinContent(func(c)[1], func(c)[0], self.channels[c]["data"][key][RMS])
       except:
         print "Cannot add bin content to histogram for channel", c
     return hist
