@@ -90,7 +90,7 @@ class Data:
       self.runtype = "pedestal"
       return self.readPedestalHVOFF(source)
     elif type == "testpulse":
-      self.runtype == type
+      self.runtype = type
       return self.readTestPulse(source)
     elif type == "laserblue":
       self.runtype = type
@@ -216,7 +216,10 @@ class Data:
     name = "{0}{1}".format(key, d1)
     if self.getOption("2dplottype") == "endcap":
       hist = ROOT.TH2F (name, name, 200, 0, 200, 100, 0, 100) 
-      lim = {True: {"G1" : (0.3, 0.8), "G6" : (0.7, 1.5), "G12" : (1.2, 3.4)}, False : {"G1": (160, 240), "G6" : (160, 240), "G12" : (160, 240)}}
+      if self.runtype == "pedestal":
+        lim = {True: {"G1" : (0.3, 0.8), "G6" : (0.7, 1.5), "G12" : (1.2, 3.4)}, False : {"G1": (160, 240), "G6" : (160, 240), "G12" : (160, 240)}}
+      elif self.runtype == "testpulse":
+        lim = {True: {"G1" : (0, 12), "G6" : (0, 6), "G12" : (0, 6)}, False : {"G1": (2000, 3500), "G6" : (2000, 3000), "G12" : (2000, 3000)}}
       hist.SetNdivisions(40, "X")
       hist.SetNdivisions(20, "Y")
       hist.SetXTitle("iX")
@@ -224,7 +227,10 @@ class Data:
       func = getXY
     else:
       hist = ROOT.TH2F (name, name, 360, 0, 360, 170, -85, 85) 
-      lim = {True: {"G1" : (0.3, 0.8), "G6" : (0.4, 1.1), "G12" : (0.8, 2.2)}, False : {"G1": (160, 240), "G6" : (160, 240), "G12" : (160, 240)}}
+      if self.runtype == "pedestal":
+        lim = {True: {"G1" : (0.3, 0.8), "G6" : (0.4, 1.1), "G12" : (0.8, 2.2)}, False : {"G1": (160, 240), "G6" : (160, 240), "G12" : (160, 240)}}
+      elif self.runtype == "testpulse":
+        lim = {True: {"G1" : (0, 10), "G6" : (0, 4), "G12" : (0, 3)}, False : {"G1": (1400, 3000), "G6" : (1400, 3000), "G12" : (1400, 3000)}}
       hist.SetNdivisions(18, "X")
       hist.SetNdivisions(2, "Y")
       hist.SetXTitle("phi")
@@ -268,7 +274,7 @@ class Data:
           flags.append("DTPG" + i)
         if data["G" + i][0] / self.getAvgGain("G" + i) <= 0.5:
           flags.append("STPG" + i)
-        if data["G" + i][0] / self.getAvgGain("G" + i) >= 1.5:
+        if data["G" + i][0] / self.getAvgGain("G" + i) > 1.5:
           flags.append("LTPG" + i)
     elif self.runtype == "laserblue":
       if data["G12"][0] <= 0:
@@ -280,14 +286,14 @@ class Data:
     return list(set(flags))
 
   def getAvgGain(self, gain):
-    sum = 0
-    ach = self.getActiveChannels()
-    for c in ach:
-      sum += self.channels[c]["data"][gain][0]
-    if not self.average.has_key(gain):
-      self.average[gain] = sum / float(len(ach))
+    if self.average.has_key(gain):
       return self.average[gain]
     else:
+      sum = 0
+      ach = self.getActiveChannels()
+      for c in ach:
+        sum += self.channels[c]["data"][gain][0]
+      self.average[gain] = sum / float(len(ach))
       return self.average[gain]
 
   def getChannel(self, channel):
