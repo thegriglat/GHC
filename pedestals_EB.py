@@ -47,10 +47,10 @@ if not os.path.exists("RESULTS/pedestals"):
 for i in DataP.getDataKeys():
   for j in (True, False):
     h = DataP.get1DHistogram(i, None,  j)
-    saveHistogram(h, "RESULTS/pedestals/1D_{0}{1}.pdf".format(i, ("", "_RMS")[j])) 
+    DataP.saveHistogram(h, "RESULTS/pedestals/1D_{0}{1}.pdf".format(i, ("", "_RMS")[j])) 
     del h
     h = DataP.get2DHistogram(i, j)
-    saveHistogram(h, "RESULTS/pedestals/2D_{0}{1}.pdf".format(i, ("", "_RMS")[j]), "colz") 
+    DataP.saveHistogram(h, "RESULTS/pedestals/2D_{0}{1}.pdf".format(i, ("", "_RMS")[j]), "colz") 
     del h
 
 print "=== END PEDESTALS ==="
