@@ -11,12 +11,12 @@ class LaserBlueData(Data):
   def getChannelFlags(self, channel):
     data = self.channels[channel]["data"]
     flags = []
-      if data["G12"][0] <= 0:
-        flags.append("DLAMPL")
-      if data["G12"][0] / self.getAvgGain("G12") < 0.1 and data["G12"][0] > 0:
-        flags.append("SLAMPL")
-      if data["G12"][0] > 0 and data["G12"][1] / float(data["G12"][0]) > 0.2:
-        flags.append("LLERRO")
+    if data["G12"][0] <= 0:
+      flags.append("DLAMPL")
+    if data["G12"][0] / self.getAvgGain("G12") < 0.1 and data["G12"][0] > 0:
+      flags.append("SLAMPL")
+    if data["G12"][0] > 0 and data["G12"][1] / float(data["G12"][0]) > 0.2:
+      flags.append("LLERRO")
     return list(set(flags))
 
   def readLaserBlue(self, source = None):

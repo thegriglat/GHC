@@ -3,16 +3,18 @@
 import os
 import sys
 import shutil
-from data import *
+
+sys.path.append("modules")
+from LaserBlue import *
 
 if not os.path.exists("RESULTS"):
   os.mkdir("RESULTS")
 
 print "=== LASER BLUE ==="
-DataLB = Data()
+DataLB = LaserBlueData()
 source = "data/MON_LASER_BLUE.dat"
 numall = DataLB.readAllChannels("data/EB_all_ch.txt")
-numread = DataLB.readLaserBlue(source)
+numread = DataLB.readData(source)
 
 print "Number of inactive channels : {0}".format(len(DataLB.findInactiveChannels()))
 print "Number of inactive channels : {0}".format(numall - numread)

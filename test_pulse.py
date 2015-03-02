@@ -3,6 +3,8 @@
 import os
 import sys
 import shutil
+
+sys.path.append("modules")
 from TestPulse  import *
 
 if not os.path.exists("RESULTS"):

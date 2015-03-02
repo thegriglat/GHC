@@ -2,7 +2,9 @@
 
 import os
 import sys
-import shutil 
+import shutil
+
+sys.path.append("modules")
 from Pedestal import *
 
 if not os.path.exists("RESULTS"):
