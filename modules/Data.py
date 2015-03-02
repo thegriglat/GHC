@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import ROOT
 import sys
 
 class Data:
@@ -99,6 +98,7 @@ class Data:
     return 0
 
   def get1DHistogram(self, key, dimx = None, RMS = False, name = ""):
+    import ROOT
     d1 =("", " (RMS)")[RMS]
     if name == "":
       name = "{0}{1}".format(key, d1)
@@ -114,6 +114,7 @@ class Data:
     return hist
 
   def get2DHistogram(self, key, RMS = False, plottype = "barrel", name = "", lim = None):
+    import ROOT
     def getEtaPhi(channel):
       # return (eta, phi)
       ch = int(channel) - 1011000000
@@ -199,6 +200,7 @@ class Data:
     return list(set(t)) 
 
   def saveHistogram(self, histogram, filename, is2D = False):
+    import ROOT
     ROOT.gROOT.SetBatch(ROOT.kTRUE)
     try:
       c = ROOT.TCanvas()
