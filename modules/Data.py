@@ -99,13 +99,13 @@ class Data:
 
   def get1DHistogram(self, key, dimx = None, RMS = False, name = ""):
     import ROOT
-    d1 =("", " (RMS)")[RMS]
     if name == "":
-      name = "{0}{1}".format(key, d1)
+      name = "{0} {1}, Gain {2}".format(self.runtype[0].upper() + self.runtype[1:], ("mean", "RMS")[RMS], key)
     activech = self.getActiveChannels()
     if dimx == None:
       dimx = ((150, 250), (0, 5))[RMS]
     hist = ROOT.TH1F(name, name, 100, dimx[0], dimx[1]) 
+    hist.SetXTitle("{0} (ADC counts)".format(("Mean", "RMS")[RMS]))
     for ch in activech:
       try:
         hist.Fill(self.channels[ch]["data"][key][RMS])
@@ -132,9 +132,17 @@ class Data:
       x = channel / 1000
       x = [x, x + 100][side == 0]
       return (y, x)
-    d1 =("", " (RMS)")[RMS]
+    def drawEBNumbers():
+      l = ROOT.TLatex()
+      l.SetTextSize(0.032768)
+      for x in xrange(0.170, 0.830 + 0.039, 0.039):
+        idx = 1
+        for y in ((0.7, "+"), (0.3, "-")):
+          l.DrawLatex(x, y[0], "{0}{1:2d}".format(y[1], idx))
+          idx += 1
+      return l
     if name == "":
-      name = "{0}{1}".format(key, d1)
+      name = "{0} {1}, Gain {2}".format(self.runtype[0].upper() + self.runtype[1:], ("mean", "RMS")[RMS], key)
     if plottype == "endcap":
       hist = ROOT.TH2F (name, name, 200, 0, 200, 100, 0, 100) 
       if self.runtype == "pedestal":
@@ -146,6 +154,7 @@ class Data:
       hist.SetXTitle("iX")
       hist.SetYTitle("iY")
       func = getXY
+      drawEBNumbers()
     elif plottype == "barrel":
       hist = ROOT.TH2F (name, name, 360, 0, 360, 170, -85, 85) 
       if self.runtype == "pedestal":
@@ -154,8 +163,8 @@ class Data:
         lim = ({True: {"G1" : (0, 10), "G6" : (0, 4), "G12" : (0, 3)}, False : {"G1": (1400, 3000), "G6" : (1400, 3000), "G12" : (1400, 3000)}}, lim)[lim != None]
       hist.SetNdivisions(18, "X")
       hist.SetNdivisions(2, "Y")
-      hist.SetXTitle("phi")
-      hist.SetYTitle("eta")
+      hist.SetXTitle("i#phi")
+      hist.SetYTitle("i#eta")
       func = getEtaPhi
     else:
       print "Unsupported plottype '{0}'".format(plottype)
