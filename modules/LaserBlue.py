@@ -33,7 +33,8 @@ class LaserBlueData(Data):
         except:
           print "  Cannot parse line\n  '{0}'\n  for 7 fields!"
         if not self.channels.has_key(channelid):
-          print "  Hmm. It seems channel {0} is not present in list of all channels. Continue ...".format(channelid)
+          pass
+#          print "  Hmm. It seems channel {0} is not present in list of all channels. Continue ...".format(channelid)
         else:
           self.setChannelData(channelid, {"G12": [float(gain12), float(rms12)], "APD/DN" : [APD_OVER_PN_MEAN, APD_OVER_PN_RMS]})
           self.channels[channelid]["active"] = True
