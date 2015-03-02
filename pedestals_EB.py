@@ -16,7 +16,6 @@ numall = DataP.readAllChannels("data/EB_all_ch.txt")
 numread = DataP.readData('pedestal', source)
 
 DataP.setOption("pedestallimits", {"G1" : ((1, 0.2), (1.1, 3)), "G6" : ((1, 0.4), (1.3, 4)), "G12" : ((1, 0.5), (2.1, 6))})
-DataP.setOption("2dplottype", "barrel")
 
 print "Number of inactive channels : {0}".format(len(DataP.findInactiveChannels()))
 print "Number of inactive channels : {0}".format(numall - numread)
@@ -52,7 +51,7 @@ for i in DataP.getDataKeys():
     h = DataP.get1DHistogram(i, None,  j)
     DataP.saveHistogram(h, "RESULTS/pedestals/1D_{0}{1}_EB.pdf".format(i, ("", "_RMS")[j])) 
     del h
-    h = DataP.get2DHistogram(i, j)
+    h = DataP.get2DHistogram(i, j, plottype = "barrel")
     DataP.saveHistogram(h, "RESULTS/pedestals/2D_{0}{1}_EB.pdf".format(i, ("", "_RMS")[j]), True) 
     del h
 

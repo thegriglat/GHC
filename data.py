@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 
 import ROOT
-
-
-HVOFF_FLAGS = ["-"]
+import sys
 
 class Data:
   channels = {}
@@ -194,7 +192,7 @@ class Data:
         print "  Cannot add value from channel {0} and key {1} {2}!".format(ch, key, ("", "(RMS)")[RMS])
     return hist
 
-  def get2DHistogram(self, key, RMS = False):
+  def get2DHistogram(self, key, RMS = False, plottype = "barrel"):
     def getEtaPhi(channel):
       # return (eta, phi)
       ch = int(channel) - 1011000000
@@ -214,7 +212,7 @@ class Data:
       return (y, x)
     d1 =("", " (RMS)")[RMS]
     name = "{0}{1}".format(key, d1)
-    if self.getOption("2dplottype") == "endcap":
+    if plottype == "endcap":
       hist = ROOT.TH2F (name, name, 200, 0, 200, 100, 0, 100) 
       if self.runtype == "pedestal":
         lim = {True: {"G1" : (0.3, 0.8), "G6" : (0.7, 1.5), "G12" : (1.2, 3.4)}, False : {"G1": (160, 240), "G6" : (160, 240), "G12" : (160, 240)}}
@@ -225,7 +223,7 @@ class Data:
       hist.SetXTitle("iX")
       hist.SetYTitle("iY")
       func = getXY
-    else:
+    elif plottype == "barrel":
       hist = ROOT.TH2F (name, name, 360, 0, 360, 170, -85, 85) 
       if self.runtype == "pedestal":
         lim = {True: {"G1" : (0.3, 0.8), "G6" : (0.4, 1.1), "G12" : (0.8, 2.2)}, False : {"G1": (160, 240), "G6" : (160, 240), "G12" : (160, 240)}}
@@ -236,6 +234,9 @@ class Data:
       hist.SetXTitle("phi")
       hist.SetYTitle("eta")
       func = getEtaPhi
+    else:
+      print "Unsupported plottype '{0}'".format(plottype)
+      sys.exit(0)
     hist.SetMinimum(lim[RMS][key][0])
     hist.SetMaximum(lim[RMS][key][1])
     for c in self.getActiveChannels():

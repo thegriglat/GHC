@@ -14,7 +14,6 @@ DataTP = Data()
 source = "data/MON_TEST_PULSE_DAT-60342-content.dat"
 numall = DataTP.readAllChannels("data/EB_all_ch.txt")
 numread = DataTP.readData('testpulse', source)
-DataTP.setOption("2dplottype", "pedestal")
 
 print "Number of inactive channels : {0}".format(len(DataTP.findInactiveChannels()))
 print "Number of inactive channels : {0}".format(numall - numread)
@@ -42,7 +41,7 @@ for i in DataTP.getDataKeys():
     h = DataTP.get1DHistogram(i, dimx, j)
     DataTP.saveHistogram(h, "RESULTS/test_pulse/1D_{0}{1}.pdf".format(i, ("", "_RMS")[j]))
     del h
-    h = DataTP.get2DHistogram(i, j)
+    h = DataTP.get2DHistogram(i, j, plottype = "barrel")
     DataTP.saveHistogram(h, "RESULTS/test_pulse/2D_{0}{1}.pdf".format(i, ("", "_RMS")[j]), True)
     del h
 
