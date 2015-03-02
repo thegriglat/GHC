@@ -140,7 +140,7 @@ class Data:
       fd = open(source, 'r')
       print "Reading Test Pulse data ..."
       n = 0
-      for line in fd.readlines():
+      for line in fd.readlines()[1:]:
         line = line.strip()
         try:
           IOV_ID, channelid, gain1, gain6, gain12, rms1, rms6, rms12, taskstatus = line.split()
