@@ -132,15 +132,6 @@ class Data:
       x = channel / 1000
       x = [x, x + 100][side == 0]
       return (y, x)
-    def drawEBNumbers():
-      l = ROOT.TLatex()
-      l.SetTextSize(0.032768)
-      for x in xrange(0.170, 0.830 + 0.039, 0.039):
-        idx = 1
-        for y in ((0.7, "+"), (0.3, "-")):
-          l.DrawLatex(x, y[0], "{0}{1:2d}".format(y[1], idx))
-          idx += 1
-      return l
     if name == "":
       name = "{0} {1}, Gain {2}".format(self.runtype[0].upper() + self.runtype[1:], ("mean", "RMS")[RMS], key)
     if plottype == "endcap":
@@ -154,7 +145,6 @@ class Data:
       hist.SetXTitle("iX")
       hist.SetYTitle("iY")
       func = getXY
-      drawEBNumbers()
     elif plottype == "barrel":
       hist = ROOT.TH2F (name, name, 360, 0, 360, 170, -85, 85) 
       if self.runtype == "pedestal":
@@ -208,7 +198,15 @@ class Data:
     t = [ c for c in self.getActiveChannels() if isChannelHasFlags(c, flags)]
     return list(set(t)) 
 
-  def saveHistogram(self, histogram, filename, is2D = False):
+  def saveHistogram(self, histogram, filename, is2D = False, plottype = "barrel"):
+    def drawEBNumbers():
+      l = ROOT.TLatex()
+      l.SetTextSize(0.03)
+      for y in ((42.5, "+"), (-42.5, "-")):
+        idx = 1
+        for x in xrange(5, 360, 20):
+          l.DrawLatex(x, y[0], "{0}{1:2d}".format(y[1], idx))
+          idx += 1
     import ROOT
     ROOT.gROOT.SetBatch(ROOT.kTRUE)
     try:
@@ -218,6 +216,8 @@ class Data:
         c.SetGridx(True)
         c.SetGridy(True)
         ROOT.gStyle.SetOptStat("e")
+        if plottype == "barrel":
+          drawEBNumbers()
       else:
         c.SetLogy()
         histogram.Draw()
