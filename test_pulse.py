@@ -3,17 +3,17 @@
 import os
 import sys
 import shutil
-from data import *
+from TestPulse  import *
 
 if not os.path.exists("RESULTS"):
   os.mkdir("RESULTS")
 
 print "=== TEST PULSE ==="
 
-DataTP = Data()
+DataTP = TestPulseData()
 source = "data/MON_TEST_PULSE_DAT-60342-content.dat"
 numall = DataTP.readAllChannels("data/EB_all_ch.txt")
-numread = DataTP.readData('testpulse', source)
+numread = DataTP.readData(source)
 
 print "Number of inactive channels : {0}".format(len(DataTP.findInactiveChannels()))
 print "Number of inactive channels : {0}".format(numall - numread)

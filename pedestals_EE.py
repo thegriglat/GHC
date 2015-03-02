@@ -3,17 +3,17 @@
 import os
 import sys
 import shutil 
-from data import *
+from Pedestal import *
 
 if not os.path.exists("RESULTS"):
   os.mkdir("RESULTS")
 
 print "=== PEDESTALS EE ==="
 
-DataP = Data()
+DataP = PedestalData()
 source = "data/MON_PEDESTALS_DAT-60343-content.dat"
 numall = DataP.readAllChannels("data/EE_all_ch.txt")
-numread = DataP.readData('pedestal', source)
+numread = DataP.readData(source)
 
 DataP.setOption("pedestallimits", {"G1" : ((1, 0.2), (1.5, 4)), "G6" : ((1, 0.4), (2, 5)), "G12" : ((1, 0.5), (3.2, 7))})
 
