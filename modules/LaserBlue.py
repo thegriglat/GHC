@@ -4,18 +4,30 @@ from Data import *
 
 class LaserBlueData(Data):
   runtype = "laserblue"
+  average = {}
 
   def readData(self, source):
     return self.readLaserBlue(source)    
   
+  def getAvgGain(self, gain):
+    if self.average.has_key(gain):
+      return self.average[gain]
+    else:
+      sum = 0
+      ach = self.getActiveChannels()
+      for c in ach:
+        sum += self.channels[c]["data"][gain][0]
+      self.average[gain] = sum / float(len(ach))
+      return self.average[gain]
+
   def getChannelFlags(self, channel):
     data = self.channels[channel]["data"]
     flags = []
-    if data["G12"][0] <= 0:
+    if data["Laser"][0] <= 0:
       flags.append("DLAMPL")
-    if data["G12"][0] / self.getAvgGain("G12") < 0.1 and data["G12"][0] > 0:
+    if data["Laser"][0] / self.getAvgGain("Laser") < 0.1 and data["Laser"][0] > 0:
       flags.append("SLAMPL")
-    if data["G12"][0] > 0 and data["G12"][1] / float(data["G12"][0]) > 0.2:
+    if data["Laser"][0] > 0 and data["Laser"][1] / float(data["Laser"][0]) > 0.2:
       flags.append("LLERRO")
     return list(set(flags))
 
@@ -36,7 +48,7 @@ class LaserBlueData(Data):
           pass
 #          print "  Hmm. It seems channel {0} is not present in list of all channels. Continue ...".format(channelid)
         else:
-          self.setChannelData(channelid, {"G12": [float(gain12), float(rms12)], "APD/DN" : [APD_OVER_PN_MEAN, APD_OVER_PN_RMS]})
+          self.setChannelData(channelid, {"Laser": [float(gain12), float(rms12)], "APD.DN" : [float(APD_OVER_PN_MEAN), float(APD_OVER_PN_RMS)]})
           self.channels[channelid]["active"] = True
           n = n + 1
       print "  Done. Processed {0} records.".format(n)

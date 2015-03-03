@@ -22,7 +22,7 @@ class Data:
                     "DTPG6", "STPG6", "LTPG6",
                     "DTPG12","STPG12","LTPG12"
   ]
-  BLUELASER_FLAGS = ["DLAMPL", "SLAMPL", "LLERRO"]
+  LASERBLUE_FLAGS = ["DLAMPL", "SLAMPL", "LLERRO"]
 
   def __init__(self):
     pass
@@ -108,7 +108,7 @@ class Data:
     hist.SetXTitle("{0} (ADC counts)".format(("Mean", "RMS")[RMS]))
     for ch in activech:
       try:
-        hist.Fill(self.channels[ch]["data"][key][RMS])
+        hist.Fill(float(self.channels[ch]["data"][key][RMS]))
       except:
         print "  Cannot add value from channel {0} and key {1} {2}!".format(ch, key, ("", "(RMS)")[RMS])
     return hist
@@ -140,6 +140,8 @@ class Data:
         lim = ({True: {"G1" : (0.3, 0.8), "G6" : (0.7, 1.5), "G12" : (1.2, 3.4)}, False : {"G1": (160, 240), "G6" : (160, 240), "G12" : (160, 240)}}, lim)[lim != None]
       elif self.runtype == "testpulse":
         lim = ({True: {"G1" : (0, 12), "G6" : (0, 6), "G12" : (0, 6)}, False : {"G1": (2000, 3500), "G6" : (2000, 3000), "G12" : (2000, 3000)}}, lim)[lim != None]
+      elif self.runtype == "laserblue":
+        lim = ({True: {"Laser" : (0, 60), 'APD.DN' : (0, 0.05)}, False: {"Laser" : (0, 2000), 'APD.DN' : (0, 2.5)}}, lim)[lim != None]
       hist.SetNdivisions(40, "X")
       hist.SetNdivisions(20, "Y")
       hist.SetXTitle("iX (iX + 100)")
@@ -151,6 +153,8 @@ class Data:
         lim = ({True: {"G1" : (0.3, 0.8), "G6" : (0.4, 1.1), "G12" : (0.8, 2.2)}, False : {"G1": (160, 240), "G6" : (160, 240), "G12" : (160, 240)}}, lim)[lim != None]
       elif self.runtype == "testpulse":
         lim = ({True: {"G1" : (0, 10), "G6" : (0, 4), "G12" : (0, 3)}, False : {"G1": (1400, 3000), "G6" : (1400, 3000), "G12" : (1400, 3000)}}, lim)[lim != None]
+      elif self.runtype == "laserblue":
+        lim = ({True: {"Laser" : (0, 50), 'APD.DN' : (0, 0.06)}, False: {"Laser" : (0, 2000), 'APD.DN' : (0, 3)}}, lim)[lim != None]
       hist.SetNdivisions(18, "X")
       hist.SetNdivisions(2, "Y")
       hist.SetXTitle("i#phi")
@@ -163,7 +167,7 @@ class Data:
     hist.SetMaximum(lim[RMS][key][1])
     for c in self.getActiveChannels():
       try:
-        hist.SetBinContent(func(c)[1], func(c)[0], self.channels[c]["data"][key][RMS])
+        hist.SetBinContent(func(c)[1], func(c)[0], float(self.channels[c]["data"][key][RMS]))
       except:
         print "Cannot add bin content to histogram for channel", c
     return hist
