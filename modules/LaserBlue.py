@@ -4,6 +4,7 @@ from Data import *
 
 class LaserBlueData(Data):
   runtype = "laserblue"
+  description = "Laser"
   average = {}
 
   def readData(self, source):

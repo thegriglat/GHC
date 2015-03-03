@@ -4,6 +4,7 @@ from Data import *
 
 class TestPulseData(Data):
   runtype = "testpulse"
+  description = "Test Pulse"
   average = {}
 
   def readData(self, source):

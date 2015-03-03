@@ -6,6 +6,7 @@ class Data:
   channels = {}
   isClassified = False
   runtype = None
+  description = None
   options = {}
   # channel = {
   #   "data"   : {
@@ -26,6 +27,12 @@ class Data:
 
   def __init__(self):
     pass
+
+  def setDesc(self, desc):
+    self.description = desc
+
+  def getDesc(self):
+    return self.description
 
   def getTT(self, channel):
     channel = str(channel)
@@ -100,7 +107,7 @@ class Data:
   def get1DHistogram(self, key, dimx = None, RMS = False, name = ""):
     import ROOT
     if name == "":
-      name = "{0} {1}, Gain {2}".format(self.runtype[0].upper() + self.runtype[1:], ("mean", "RMS")[RMS], key)
+      name = "{0} {1}, Gain {2}".format(self.description, ("mean", "RMS")[RMS], key)
     activech = self.getActiveChannels()
     if dimx == None:
       dimx = ((150, 250), (0, 5))[RMS]
@@ -133,7 +140,7 @@ class Data:
       x = [x, x + 100][side == 0]
       return (y, x)
     if name == "":
-      name = "{0} {1}, Gain {2}".format(self.runtype[0].upper() + self.runtype[1:], ("mean", "RMS")[RMS], key)
+      name = "{0} {1}, Gain {2}".format(self.description, ("mean", "RMS")[RMS], key)
     if plottype == "endcap":
       hist = ROOT.TH2F (name, name, 200, 0, 200, 100, 0, 100) 
       if self.runtype == "pedestal":

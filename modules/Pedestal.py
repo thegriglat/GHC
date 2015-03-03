@@ -4,6 +4,7 @@ from Data import *
 
 class PedestalData(Data):
   runtype = "pedestal"
+  description = "Pedestal"
 
   def readData(self, source):
     return self.readPedestal(source)    
