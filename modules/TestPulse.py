@@ -23,6 +23,9 @@ class TestPulseData(Data):
     return list(set(flags))
 
   def getAvgGain(self, gain):
+    """
+      Returns average  value for <gain>. The function caches results.
+    """
     if self.average.has_key(gain):
       return self.average[gain]
     else:
