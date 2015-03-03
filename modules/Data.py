@@ -278,6 +278,8 @@ class Data:
         if plottype == "barrel":
           drawEBNumbers()
         elif plottype == "endcap":
+          ROOT.gStyle.SetLabelSize(0.017, "X")
+          ROOT.gStyle.SetLabelSize(0.017, "Y")
           lines = []
           for p in getEELines():
             lines.append(DrawLine(p[0], p[1]))
