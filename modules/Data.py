@@ -69,7 +69,7 @@ class Data:
     return [ a for a in self.channels.keys() if self.isActive(a)]
 
   def getNewChannel(self, data = {}):
-    return {"data" : data}
+    return {"data" : data, 'flags' : []}
 
   def readAllChannels(self, filename):
     fd = open(filename, 'r')
