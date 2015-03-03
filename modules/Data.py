@@ -202,7 +202,7 @@ class Data:
     t = [ c for c in self.getActiveChannels() if isChannelHasFlags(c, flags)]
     return list(set(t)) 
 
-  def saveHistogram(self, histogram, filename, is2D = False, plottype = "barrel"):
+  def saveHistogram(self, histogram, filename, plottype = "barrel"):
     import ROOT
     def drawEBNumbers():
       l = ROOT.TLatex()
@@ -274,7 +274,7 @@ class Data:
     ROOT.gROOT.SetBatch(ROOT.kTRUE)
     try:
       c = ROOT.TCanvas()
-      if is2D:
+      if type(histogram) is ROOT.TH2F:
         histogram.Draw("colz")
         c.SetGridx(True)
         c.SetGridy(True)

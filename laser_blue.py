@@ -37,7 +37,7 @@ for i in DataLB.getDataKeys():
     DataLB.saveHistogram(h, "RESULTS/laser_blue/1D_{0}{1}_EE.pdf".format(i, ("", "_RMS")[j]))
     del h
     h = DataLB.get2DHistogram(i, j, plottype="endcap")
-    DataLB.saveHistogram(h, "RESULTS/laser_blue/2D_{0}{1}_EE.pdf".format(i, ("", "_RMS")[j]), True, plottype = "endcap")
+    DataLB.saveHistogram(h, "RESULTS/laser_blue/2D_{0}{1}_EE.pdf".format(i, ("", "_RMS")[j]), plottype = "endcap")
 
 print "=== END LASER BLUE ==="
 

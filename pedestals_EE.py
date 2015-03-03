@@ -54,7 +54,7 @@ for i in DataP.getDataKeys():
     DataP.saveHistogram(h, "RESULTS/pedestals/1D_{0}{1}_EE.pdf".format(i, ("", "_RMS")[j])) 
     del h
     h = DataP.get2DHistogram(i, j, plottype = "endcap")
-    DataP.saveHistogram(h, "RESULTS/pedestals/2D_{0}{1}_EE.pdf".format(i, ("", "_RMS")[j]), True, plottype = "endcap") 
+    DataP.saveHistogram(h, "RESULTS/pedestals/2D_{0}{1}_EE.pdf".format(i, ("", "_RMS")[j]), plottype = "endcap") 
     del h
 
 print "=== END PEDESTALS EE ==="
