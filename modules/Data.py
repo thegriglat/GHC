@@ -3,6 +3,9 @@
 import sys
 
 class Data:
+  """
+    Basic class for Data obtained from detector
+  """
   channels = {}
   isClassified = False
   runtype = None
@@ -26,15 +29,27 @@ class Data:
   LASERBLUE_FLAGS = ["DLAMPL", "SLAMPL", "LLERRO"]
 
   def __init__(self):
+    """
+      At the moment do nothing.
+    """
     pass
 
   def setDesc(self, desc):
+    """ 
+      Set description for object
+    """
     self.description = desc
 
   def getDesc(self):
+    """
+      Returns description of object
+    """
     return self.description
 
   def getTT(self, channel):
+    """
+      Returns TT number for channel
+    """
     channel = str(channel)
     l1 = self.getXtal(channel)
     l2 = self.getEB(channel)
@@ -46,32 +61,59 @@ class Data:
     return TT
 
   def getXtal(self, channel):
+    """
+      Returns crystal number for channel
+    """
     return int(str(channel)[-4:])
 
   def getEB(self, channel):
+    """
+      Returns EB number for channel
+    """
     return int(str(channel)[-6:-4])
 
   def getSM(self, channel):
-   channel = int(channel) - 1011000000
-   xtal = channel % 10000
-   return (channel - xtal) / 10000
+    """
+      Returns supermodule (SM) number for channel
+    """
+    channel = int(channel) - 1011000000
+    xtal = channel % 10000
+    return (channel - xtal) / 10000
 
   def findInactiveChannels(self):
+    """
+      Returns list of inactive channels
+    """
     return [ch for ch in self.channels.keys() if self.isInactive(ch)]
   
   def isActive(self, channel):
+    """
+      Returns True|False if channel is active or not
+    """
     return [True, False][len(self.channels[channel]["data"].keys()) == 0]
 
   def isInactive(self, channel):
+    """
+      Returns ! isActive(channel)
+    """
     return not self.isActive(channel)
 
   def getActiveChannels(self):
+    """
+      Returns list of active channels
+    """ 
     return [ a for a in self.channels.keys() if self.isActive(a)]
 
   def getNewChannel(self, data = {}):
+    """
+      Returns hash-table which is dummy template for new channel
+    """
     return {"data" : data, 'flags' : []}
 
   def readAllChannels(self, filename):
+    """
+      Reads all channels into self.channels
+    """
     fd = open(filename, 'r')
     print "Getting list of all channels ..."
     n = 0
@@ -83,28 +125,56 @@ class Data:
     return n
 
   def setChannelData(self, channel, data):
+    """
+      Set channel data hash table
+    """
     self.channels[channel]["data"] = data
   
   def readData(self, type,  source = None):
+    """
+      Void function for reading data from source.
+      This function should be overloaded in other classes
+    """
     print "Function 'readData' should be overloaded in other classes."
     pass
   
   def getDataKeys(self):
+    """
+      Returns available data keys for the class.
+      At the moment it chechs only first available channel
+    """
     return self.channels[self.getActiveChannels()[0]]["data"].keys()
 
   def setOption(self, option, value):
+    """
+      Set self.options[option] to value
+    """
     self.options[option] = value
 
   def getOption(self, option):
+    """
+      Returns self.options[option]
+    """
     if self.options.has_key(option):
       return self.options[option]
     else:
       return None
 
   def DBread(self, source):
+    """
+      At the moment do nothing
+    """
     return 0
 
   def get1DHistogram(self, key, dimx = None, RMS = False, name = ""):
+    """
+      Return TH1F histogram.
+      Parameters:
+        key  : data[key] which will be used
+        dimx : range of X axis. Default is ((150, 250), (0, 5))[RMS]
+        RMS  : use mean (False) or RMS (True) data. Default is False
+        name : title of histogram. Default is "{0} {1}, Gain {2}".format(self.description, ("mean", "RMS")[RMS], key)
+    """
     import ROOT
     if name == "":
       name = "{0} {1}, Gain {2}".format(self.description, ("mean", "RMS")[RMS], key)
@@ -121,6 +191,15 @@ class Data:
     return hist
 
   def get2DHistogram(self, key, RMS = False, plottype = "barrel", name = "", lim = None):
+    """
+      Returns TH2F histogram.
+      Parameters:
+        key      : data[key] which will be used
+        RMS      : use mean (False) or RMS (True) data. Default is False
+        plottype : "barrel"|"endcap"
+        name     : title of histogram. Default is "{0} {1}, Gain {2}".format(self.description, ("mean", "RMS")[RMS], key)
+        lim      : hash table which determines X,Y axis range 
+    """
     import ROOT
     def getEtaPhi(channel):
       # return (eta, phi)
@@ -180,21 +259,31 @@ class Data:
     return hist
 
   def getChannelFlags(self, channel):
+    """
+      Compare channel data with limits and return list of error flags
+      Function getChannelFlags should be overloaded in other modules.
+    """
     print "Function getChannelFlags should be overloaded in other modules."
     return []
 
   def getChannel(self, channel):
+    """
+      Return channel by its number
+    """
     return self.channels[channel]
 
-  def getChannelsByFlag(self, flag):
-    return [a for a in self.channels.keys() if flag in self.channels[a]["flags"]]
-
   def classifyChannels(self):
+    """
+      Call getChannelFlags for each active channel and set 'flags' value for channels
+    """
     for c in self.getActiveChannels():
       self.channels[c]["flags"] = self.getChannelFlags(c)
     self.isClassified = True
 
   def getChannelsByFlag(self, flags):
+    """
+      Returns list of channels which has <flags> (string|list)
+    """
     def isChannelHasFlags(channel, flags):
       if not isinstance(flags, list):
         flags = [flags]
@@ -210,6 +299,9 @@ class Data:
     return list(set(t)) 
 
   def saveHistogram(self, histogram, filename, plottype = "barrel"):
+    """
+      Save <histogram> into filename according to <plottype>
+    """
     import ROOT
     def drawEBNumbers():
       l = ROOT.TLatex()
