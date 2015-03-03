@@ -282,6 +282,7 @@ class Data:
         if plottype == "barrel":
           drawEBNumbers()
         elif plottype == "endcap":
+          c.SetCanvasSize(1000, 500)
           ROOT.gStyle.SetLabelSize(0.017, "X")
           ROOT.gStyle.SetLabelSize(0.017, "Y")
           lines = []
