@@ -44,7 +44,7 @@ for i in DataTP.getDataKeys():
     DataTP.saveHistogram(h, "RESULTS/test_pulse/1D_{0}{1}.pdf".format(i, ("", "_RMS")[j]))
     del h
     h = DataTP.get2DHistogram(i, j, plottype = "barrel")
-    DataTP.saveHistogram(h, "RESULTS/test_pulse/2D_{0}{1}.pdf".format(i, ("", "_RMS")[j]), True)
+    DataTP.saveHistogram(h, "RESULTS/test_pulse/2D_{0}{1}.pdf".format(i, ("", "_RMS")[j]), True, plottype = "barrel")
     del h
 
 print "=== END TEST PULSE ==="
