@@ -227,7 +227,7 @@ class Data:
       elif self.runtype == "testpulse":
         lim = ({True: {"G1" : (0, 12), "G6" : (0, 6), "G12" : (0, 6)}, False : {"G1": (2000, 3500), "G6" : (2000, 3000), "G12" : (2000, 3000)}}, lim)[lim != None]
       elif self.runtype == "laserblue":
-        lim = ({True: {"Laser" : (0, 60), 'APD.DN' : (0, 0.05)}, False: {"Laser" : (0, 2000), 'APD.DN' : (0, 2.5)}}, lim)[lim != None]
+        lim = ({True: {"Laser" : (0, 60), 'APD/DN' : (0, 0.05)}, False: {"Laser" : (0, 2000), 'APD/DN' : (0, 2.5)}}, lim)[lim != None]
       hist.SetNdivisions(40, "X")
       hist.SetNdivisions(20, "Y")
       hist.SetXTitle("iX (iX + 100)")
@@ -240,7 +240,7 @@ class Data:
       elif self.runtype == "testpulse":
         lim = ({True: {"G1" : (0, 10), "G6" : (0, 4), "G12" : (0, 3)}, False : {"G1": (1400, 3000), "G6" : (1400, 3000), "G12" : (1400, 3000)}}, lim)[lim != None]
       elif self.runtype == "laserblue":
-        lim = ({True: {"Laser" : (0, 50), 'APD.DN' : (0, 0.06)}, False: {"Laser" : (0, 2000), 'APD.DN' : (0, 3)}}, lim)[lim != None]
+        lim = ({True: {"Laser" : (0, 50), 'APD/DN' : (0, 0.06)}, False: {"Laser" : (0, 2000), 'APD/DN' : (0, 3)}}, lim)[lim != None]
       hist.SetNdivisions(18, "X")
       hist.SetNdivisions(2, "Y")
       hist.SetXTitle("i#phi")

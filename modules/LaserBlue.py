@@ -44,7 +44,7 @@ class LaserBlueData(Data):
     if not self.channels.has_key(channelid):
       return false
     else:
-      self.setChannelData(channelid, {"Laser": [float(gain12), float(rms12)], "APD.DN" : [float(APD_OVER_PN_MEAN), float(APD_OVER_PN_RMS)]})
+      self.setChannelData(channelid, {"Laser": [float(gain12), float(rms12)], "APD/DN" : [float(APD_OVER_PN_MEAN), float(APD_OVER_PN_RMS)]})
       self.channels[channelid]["active"] = True
       return True
 
