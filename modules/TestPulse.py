@@ -36,6 +36,19 @@ class TestPulseData(Data):
       self.average[gain] = sum / float(len(ach))
       return self.average[gain]
 
+  def readChannel(self, str):
+    str = str.strip()
+    try:
+      IOV_ID, channelid, gain1, gain6, gain12, rms1, rms6, rms12, taskstatus = str.split()
+    except:
+      print "  Cannot parse line\n  '{0}'\n  for 9 fields!"
+    if not self.channels.has_key(channelid):
+      return False
+    else:
+      self.setChannelData(channelid, {"G1": [float(gain1), float(rms1)], "G6" : [float(gain6), float(rms6)], "G12" : [float(gain12), float(rms12)]})
+      return True
+    
+
   def readTestPulse(self, source = None):
     if source == None:
       return self.DBread(source)
@@ -44,16 +57,7 @@ class TestPulseData(Data):
       print "Reading Test Pulse data ..."
       n = 0
       for line in fd.readlines()[1:]:
-        line = line.strip()
-        try:
-          IOV_ID, channelid, gain1, gain6, gain12, rms1, rms6, rms12, taskstatus = line.split()
-        except:
-          print "  Cannot parse line\n  '{0}'\n  for 9 fields!"
-        if not self.channels.has_key(channelid):
-          pass
-#          print "  Hmm. It seems channel {0} is not present in list of all channels. Continue ...".format(channelid)
-        else:
-          self.setChannelData(channelid, {"G1": [float(gain1), float(rms1)], "G6" : [float(gain6), float(rms6)], "G12" : [float(gain12), float(rms12)]})
+        if self.readChannel(line):
           n = n + 1
       print "  Done. Processed {0} records.".format(n)
     return n

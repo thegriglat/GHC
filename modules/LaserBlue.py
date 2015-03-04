@@ -35,6 +35,19 @@ class LaserBlueData(Data):
       flags.append("LLERRO")
     return list(set(flags))
 
+  def readChannel(self, str):
+    str = str.strip()
+    try:
+      IOV_ID, channelid, gain12, rms12, APD_OVER_PN_MEAN, APD_OVER_PN_RMS, taskstatus = str.split()
+    except:
+      print "  Cannot parse line\n  '{0}'\n  for 7 fields!"
+    if not self.channels.has_key(channelid):
+      return false
+    else:
+      self.setChannelData(channelid, {"Laser": [float(gain12), float(rms12)], "APD.DN" : [float(APD_OVER_PN_MEAN), float(APD_OVER_PN_RMS)]})
+      self.channels[channelid]["active"] = True
+      return True
+
   def readLaserBlue(self, source = None):
     if source == None:
       return DBread(source)
@@ -43,17 +56,7 @@ class LaserBlueData(Data):
       print "Reading Laser blue data ..."
       n = 0
       for line in fd.readlines():
-        line = line.strip()
-        try:
-          IOV_ID, channelid, gain12, rms12, APD_OVER_PN_MEAN, APD_OVER_PN_RMS, taskstatus = line.split()
-        except:
-          print "  Cannot parse line\n  '{0}'\n  for 7 fields!"
-        if not self.channels.has_key(channelid):
-          pass
-#          print "  Hmm. It seems channel {0} is not present in list of all channels. Continue ...".format(channelid)
-        else:
-          self.setChannelData(channelid, {"Laser": [float(gain12), float(rms12)], "APD.DN" : [float(APD_OVER_PN_MEAN), float(APD_OVER_PN_RMS)]})
-          self.channels[channelid]["active"] = True
+        if self.readChannel(line):
           n = n + 1
       print "  Done. Processed {0} records.".format(n)
     return n
