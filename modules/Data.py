@@ -288,8 +288,8 @@ def saveHistogram(histogram, filename, plottype = "barrel"):
     # Dee 
     l.DrawLatex(5,   95, "Dee1")
     l.DrawLatex(85,  95, "Dee2")
-    l.DrawLatex(105, 95, "Dee3")
-    l.DrawLatex(185, 95, "Dee4")
+    l.DrawLatex(105, 95, "Dee4")
+    l.DrawLatex(185, 95, "Dee3")
     for xo in (0 - 3, 100 - 3):
       sign = ("+", "-")[xo > 50]
       l.DrawLatex(xo + 40, 85, sign + '1')
