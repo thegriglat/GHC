@@ -10,10 +10,19 @@ from TestPulse  import *
 if not os.path.exists("RESULTS"):
   os.mkdir("RESULTS")
 
+if len(sys.argv) > 2:
+  print "Please provide input file name or use - as stdin"
+  sys.exit(0)
+else: 
+  if len(sys.argv) == 1 or sys.argv[1] == "-": 
+    source = sys.stdin
+  else:
+    source = open(sys.argv[1])
+
+
 print "=== TEST PULSE ==="
 
 DataTP = TestPulseData()
-source = "data/MON_TEST_PULSE_DAT-60342-content.dat"
 numall = DataTP.readAllChannels("data/EB_all_ch.txt")
 numread = DataTP.readData(source)
 

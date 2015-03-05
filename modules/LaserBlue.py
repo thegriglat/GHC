@@ -52,10 +52,9 @@ class LaserBlueData(Data.Data):
     if source == None:
       return DBread(source)
     else:
-      fd = open(source, 'r')
       print "Reading Laser blue data ..."
       n = 0
-      for line in fd.readlines():
+      for line in source.readlines():
         if self.readChannel(line):
           n = n + 1
       print "  Done. Processed {0} records.".format(n)

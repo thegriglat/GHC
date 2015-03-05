@@ -10,10 +10,17 @@ from Pedestal import *
 if not os.path.exists("RESULTS"):
   os.mkdir("RESULTS")
 
-print "=== PEDESTALS EB ==="
+if len(sys.argv) > 2:
+  print "Please provide input file name or use - as stdin"
+  sys.exit(0)
+else:
+  if len(sys.argv) == 1 or sys.argv[1] == "-":
+    source = sys.stdin
+  else:
+    source = open(sys.argv[1])
 
+print "=== PEDESTALS EB ==="
 DataP = PedestalData()
-source = "data/MON_PEDESTALS_DAT-60343-content.dat"
 numall = DataP.readAllChannels("data/EB_all_ch.txt")
 numread = DataP.readData(source)
 

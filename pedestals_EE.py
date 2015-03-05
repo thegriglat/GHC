@@ -12,8 +12,16 @@ if not os.path.exists("RESULTS"):
 
 print "=== PEDESTALS EE ==="
 
+if len(sys.argv) > 2:
+  print "Please provide input file name or use - as stdin"
+  sys.exit(0)
+else:
+  if len(sys.argv) == 1 or sys.argv[1] == "-":
+    source = sys.stdin
+  else:
+    source = open(sys.argv[1])
+
 DataP = PedestalData()
-source = "data/MON_PEDESTALS_DAT-60343-content.dat"
 numall = DataP.readAllChannels("data/EE_all_ch.txt")
 numread = DataP.readData(source)
 

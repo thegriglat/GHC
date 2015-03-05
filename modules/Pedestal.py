@@ -49,10 +49,9 @@ class PedestalData(Data.Data):
     if source == None:
       return self.DBread(source)
     else:
-      fd = open(source, 'r')
       print "Reading Pedestal data ..."
       n = 0
-      for line in fd.readlines()[1:]:
+      for line in source.readlines()[1:]:
         if self.readChannel(line):
           n = n + 1
       print "  Done. Processed {0} records.".format(n)

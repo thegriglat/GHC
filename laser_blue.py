@@ -10,9 +10,17 @@ from LaserBlue import *
 if not os.path.exists("RESULTS"):
   os.mkdir("RESULTS")
 
+if len(sys.argv) > 2:
+  print "Please provide input file name or use - as stdin"
+  sys.exit(0)
+else: 
+  if len(sys.argv) == 1 or sys.argv[1] == "-": 
+    source = sys.stdin
+  else:
+    source = open(sys.argv[1])
+
 print "=== LASER BLUE ==="
 DataLB = LaserBlueData()
-source = "data/MON_LASER_BLUE.dat"
 numall = DataLB.readAllChannels("data/EE_all_ch.txt")
 numread = DataLB.readData(source)
 
