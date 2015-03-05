@@ -46,40 +46,6 @@ class Data:
     """
     return self.description
 
-  def getTT(channel):
-    """
-      Returns TT number for channel
-    """
-    channel = str(channel)
-    l1 = self.getXtal(channel)
-    l2 = self.getEB(channel)
-    row = (l1 - 1) / 20 + 1
-    col = (l1 - 1) % 20 + 1
-    TTrow = (row - 1) / 5
-    TTcol = (col - 1) / 5
-    TT = TTrow * 4 + TTcol + 1
-    return TT
-
-  def getXtal(channel):
-    """
-      Returns crystal number for channel
-    """
-    return int(str(channel)[-4:])
-
-  def getEB(channel):
-    """
-      Returns EB number for channel
-    """
-    return int(str(channel)[-6:-4])
-
-  def getSM(channel):
-    """
-      Returns supermodule (SM) number for channel
-    """
-    channel = int(channel) - 1011000000
-    xtal = channel % 10000
-    return (channel - xtal) / 10000
-
   def findInactiveChannels(self):
     """
       Returns list of inactive channels
@@ -401,3 +367,36 @@ class Data:
       print "Cannot save '{0}'into {1}".format(repr(histogram),filename)
       return False
 
+def getTT(channel):
+  """
+    Returns TT number for channel
+  """
+  channel = str(channel)
+  l1 = getXtal(channel)
+  l2 = getEB(channel)
+  row = (l1 - 1) / 20 + 1
+  col = (l1 - 1) % 20 + 1
+  TTrow = (row - 1) / 5
+  TTcol = (col - 1) / 5
+  TT = TTrow * 4 + TTcol + 1
+  return TT
+
+def getXtal(channel):
+  """
+    Returns crystal number for channel
+  """
+  return int(str(channel)[-4:])
+
+def getEB(channel):
+  """
+    Returns EB number for channel
+  """
+  return int(str(channel)[-6:-4])
+
+def getSM(channel):
+  """
+    Returns supermodule (SM) number for channel
+  """
+  channel = int(channel) - 1011000000
+  xtal = channel % 10000
+  return (channel - xtal) / 10000
