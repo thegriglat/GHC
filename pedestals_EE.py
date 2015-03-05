@@ -51,10 +51,10 @@ if not os.path.exists("RESULTS/pedestals"):
 for i in DataP.getDataKeys():
   for j in (True, False):
     h = DataP.get1DHistogram(i, None,  j)
-    DataP.saveHistogram(h, "RESULTS/pedestals/1D_{0}{1}_EE.pdf".format(i, ("", "_RMS")[j])) 
+    Data.saveHistogram(h, "RESULTS/pedestals/1D_{0}{1}_EE.pdf".format(i, ("", "_RMS")[j])) 
     del h
     h = DataP.get2DHistogram(i, j, plottype = "endcap")
-    DataP.saveHistogram(h, "RESULTS/pedestals/2D_{0}{1}_EE.pdf".format(i, ("", "_RMS")[j]), plottype = "endcap") 
+    Data.saveHistogram(h, "RESULTS/pedestals/2D_{0}{1}_EE.pdf".format(i, ("", "_RMS")[j]), plottype = "endcap") 
     del h
 
 print "=== END PEDESTALS EE ==="

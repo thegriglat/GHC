@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-from Data import *
+import Data
 
-class TestPulseData(Data):
+class TestPulseData(Data.Data):
   runtype = "testpulse"
   description = "Test Pulse"
   average = {}

@@ -1,8 +1,7 @@
 #!/usr/bin/env python
+import Data
 
-from Data import *
-
-class PedestalData(Data):
+class PedestalData(Data.Data):
   runtype = "pedestal"
   description = "Pedestal"
 

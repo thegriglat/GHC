@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-from Data import *
+import Data 
 
-class LaserBlueData(Data):
+class LaserBlueData(Data.Data):
   runtype = "laserblue"
   description = "Laser"
   average = {}
