@@ -143,7 +143,10 @@ class Data:
         name : title of histogram. Default is "{0} {1}, Gain {2}".format(self.description, ("mean", "RMS")[RMS], key)
     """
     if name == "":
-      name = "{0} {1}, Gain {2}".format(self.description, ("mean", "RMS")[RMS], key)
+      if self.runtype == "pedestal" or self.runtype == "testpulse":
+        name = "{0} {1}, Gain {2} (ADC counts)".format(self.description, ("mean", "RMS")[RMS], key[1:])
+      elif self.runtype == "laserblue":
+        name = "Laser {0}".format(("Amplitude " + (" ", "RMS")[RMS] + "(ADC counts)", key + ' ' + ("ratio", "RMS")[RMS])[key == "APD/PN"])
     activech = self.getActiveChannels()
     if dimx == None:
       dimx = ((150, 250), (0, 5))[RMS]
@@ -184,7 +187,10 @@ class Data:
       x = [x, x + 100][side == 0]
       return (y, x)
     if name == "":
-      name = "{0} {1}, Gain {2}".format(self.description, ("mean", "RMS")[RMS], key)
+      if self.runtype == "pedestal" or self.runtype == "testpulse":
+        name = "{0} {1}, Gain {2} (ADC counts)".format(self.description, ("mean", "RMS")[RMS], key[1:])
+      elif self.runtype == "laserblue":
+        name = "Laser {0}".format(("Amplitude " + (" ", "RMS")[RMS] + "(ADC counts)", key + ' ' + ("ratio", "RMS")[RMS])[key == "APD/DN"])
     if plottype == "endcap":
       hist = ROOT.TH2F (name, name, 200, 0, 200, 100, 0, 100) 
       if self.runtype == "pedestal":
@@ -284,7 +290,7 @@ def saveHistogram(histogram, filename, plottype = "barrel"):
     return line
   def getEENumbers():
     l = ROOT.TLatex()
-    l.SetTextSize(0.03)
+    l.SetTextSize(0.04)
     # Dee 
     l.DrawLatex(5,   95, "Dee1")
     l.DrawLatex(85,  95, "Dee2")
@@ -348,6 +354,7 @@ def saveHistogram(histogram, filename, plottype = "barrel"):
         c.SetCanvasSize(1000, 500)
         ROOT.gStyle.SetLabelSize(0.017, "X")
         ROOT.gStyle.SetLabelSize(0.017, "Y")
+        ROOT.gStyle.SetTickLength(0.01, "xy")
         lines = []
         for p in getEELines():
           lines.append(DrawLine(p[0], p[1]))
