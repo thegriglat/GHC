@@ -398,3 +398,12 @@ def getSM(channel):
   channel = int(channel) - 1011000000
   xtal = channel % 10000
   return (channel - xtal) / 10000
+
+def getChannelClass(channel):
+  """
+    Returns EB|EE depending on detector place of channel
+  """
+  if str(channel)[0] == "1":
+    return "EB"
+  else:
+    return "EE"
