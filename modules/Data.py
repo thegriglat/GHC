@@ -343,18 +343,18 @@ def saveHistogram(histogram, filename, plottype = "barrel"):
   ROOT.gROOT.SetBatch(ROOT.kTRUE)
   try:
     c = ROOT.TCanvas()
+    ROOT.gStyle.SetLabelSize(0.017, "X")
+    ROOT.gStyle.SetLabelSize(0.017, "Y")
     if type(histogram) is ROOT.TH2F:
       histogram.Draw("colz")
       c.SetGridx(True)
       c.SetGridy(True)
       ROOT.gStyle.SetOptStat("e")
+      ROOT.gStyle.SetTickLength(0.01, "xy")
       if plottype == "barrel":
         drawEBNumbers()
       elif plottype == "endcap":
         c.SetCanvasSize(1000, 500)
-        ROOT.gStyle.SetLabelSize(0.017, "X")
-        ROOT.gStyle.SetLabelSize(0.017, "Y")
-        ROOT.gStyle.SetTickLength(0.01, "xy")
         lines = []
         for p in getEELines():
           lines.append(DrawLine(p[0], p[1]))
@@ -371,6 +371,7 @@ def saveHistogram(histogram, filename, plottype = "barrel"):
   except:
     print "Cannot save '{0}'into {1}".format(repr(histogram),filename)
     return False
+  ROOT.gStyle.Clear()
 
 def getTT(channel):
   """
