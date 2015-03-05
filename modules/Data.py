@@ -46,7 +46,7 @@ class Data:
     """
     return self.description
 
-  def getTT(self, channel):
+  def getTT(channel):
     """
       Returns TT number for channel
     """
@@ -60,19 +60,19 @@ class Data:
     TT = TTrow * 4 + TTcol + 1
     return TT
 
-  def getXtal(self, channel):
+  def getXtal(channel):
     """
       Returns crystal number for channel
     """
     return int(str(channel)[-4:])
 
-  def getEB(self, channel):
+  def getEB(channel):
     """
       Returns EB number for channel
     """
     return int(str(channel)[-6:-4])
 
-  def getSM(self, channel):
+  def getSM(channel):
     """
       Returns supermodule (SM) number for channel
     """
@@ -298,7 +298,7 @@ class Data:
     t = [ c for c in self.getActiveChannels() if isChannelHasFlags(c, flags)]
     return list(set(t)) 
 
-  def saveHistogram(self, histogram, filename, plottype = "barrel"):
+  def saveHistogram(histogram, filename, plottype = "barrel"):
     """
       Save <histogram> into filename according to <plottype>
     """
