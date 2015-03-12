@@ -5,8 +5,8 @@ It is an effort of reimplementation of Good Healt Check system for CERN CMS ECAL
 
 Structure of the project:
 .
-|-- data                                        # directory with exported dat files
-|   |-- EB_all_ch.txt                           # mainly used for example data
+|-- data
+|   |-- EB_all_ch.txt
 |   |-- EE_all_channels.txt
 |   |-- EE_all_ch.txt
 |   |-- MON_LASER_BLUE.dat
@@ -19,19 +19,18 @@ Structure of the project:
 |   |-- MON_RUN_DAT-60343-content.dat
 |   |-- MON_TEST_PULSE.dat
 |   `-- MON_TEST_PULSE_DAT-60342-content.dat
-|-- modules                                     # directory with Python modules used for data analysis
+|-- modules
 |   |-- Data.py
-|   |-- Data.pyc
 |   |-- LaserBlue.py
-|   |-- LaserBlue.pyc
 |   |-- Pedestal.py
-|   |-- Pedestal.pyc
-|   |-- TestPulse.py
-|   `-- TestPulse.pyc
-|-- laser_blue.py                               # Python scripts which used modules and call analysis functions
+|   `-- TestPulse.py
+|-- laser_blue.py
 |-- pedestals_EB.py
 |-- pedestals_EE.py
-`-- test_pulse.py
+|-- test_pulse.py
+`-- Readme.txt
+
+6 directories, 70 files
 
 # How to use
 to run data analysis use filename of pipe.
