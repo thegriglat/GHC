@@ -5,8 +5,9 @@ class PedestalData(Data.Data):
 
   def __init__(self):
     super(PedestalData, self).__init__()
-    self.tuntype = "pedestal"
+    self.runtype = "pedestal"
     self.description = "Pedestal"
+    self.channels = {}
 
   def readData(self, source):
     return self.readPedestal(source)    
