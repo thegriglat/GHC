@@ -112,7 +112,10 @@ class Data(object):
       Returns available data keys for the class.
       At the moment it chechs only first available channel
     """
-    return self.channels[self.getActiveChannels()[0]]["data"].keys()
+    try:
+      return self.channels[self.getActiveChannels()[0]]["data"].keys()
+    except:
+      return []
 
   def setOption(self, option, value):
     """
