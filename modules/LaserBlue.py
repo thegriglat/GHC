@@ -45,7 +45,7 @@ class LaserBlueData(Data.Data):
     except:
       print "  Cannot parse line\n  '{0}'\n  for 7 fields!"
     if not self.channels.has_key(channelid):
-      return false
+      return False
     else:
       self.setChannelData(channelid, {"Laser": [float(gain12), float(rms12)], "APD/PN" : [float(APD_OVER_PN_MEAN), float(APD_OVER_PN_RMS)]})
       self.channels[channelid]["active"] = True
