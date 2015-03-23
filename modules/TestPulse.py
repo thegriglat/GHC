@@ -3,9 +3,12 @@
 import Data
 
 class TestPulseData(Data.Data):
-  runtype = "testpulse"
-  description = "Test Pulse"
-  average = {}
+
+  def __init__(self):
+    super(TestPulseData, self).__init__()
+    self.runtype = "testpulse"
+    self.description = "Test Pulse"
+    self.average = {}
 
   def readData(self, source):
     return self.readTestPulse(source)    

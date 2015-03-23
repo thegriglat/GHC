@@ -2,8 +2,11 @@
 import Data
 
 class PedestalData(Data.Data):
-  runtype = "pedestal"
-  description = "Pedestal"
+
+  def __init__(self):
+    super(PedestalData, self).__init__()
+    self.tuntype = "pedestal"
+    self.description = "Pedestal"
 
   def readData(self, source):
     return self.readPedestal(source)    

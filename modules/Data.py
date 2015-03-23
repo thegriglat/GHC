@@ -3,15 +3,10 @@
 import sys
 import ROOT
 
-class Data:
+class Data(object):
   """
     Basic class for Data obtained from detector
   """
-  channels = {}
-  isClassified = False
-  runtype = None
-  description = None
-  options = {}
   # channel = {
   #   "data"   : {
   #       "G1"  : [value, rms],
@@ -33,7 +28,11 @@ class Data:
     """
       At the moment do nothing.
     """
-    pass
+    self.channels = {}
+    self.isClassified = False
+    self.runtype = None
+    self.description = None
+    self.options = {}
 
   def setDesc(self, desc):
     """ 
@@ -46,6 +45,9 @@ class Data:
       Returns description of object
     """
     return self.description
+
+  def getChannels(self):
+    return self.channels
 
   def findInactiveChannels(self):
     """

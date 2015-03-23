@@ -3,9 +3,12 @@
 import Data 
 
 class LaserBlueData(Data.Data):
-  runtype = "laserblue"
-  description = "Laser"
-  average = {}
+
+  def __init__(self):
+    super(LaserBlueData, self).__init__()
+    self.runtype = "laserblue"
+    self.description = "Laser"
+    self.average = {}
 
   def readData(self, source):
     return self.readLaserBlue(source)    
