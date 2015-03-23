@@ -20,33 +20,40 @@ else:
     source = open(sys.argv[1])
 
 print "=== LASER BLUE ==="
-DataLB = LaserBlueData()
-numall = DataLB.readAllChannels("data/EE_all_ch.txt")
-numread = DataLB.readData(source)
+DataEB = LaserBlueData()
+DataEE = LaserBlueData()
+DataEB.readAllChannels("data/EB_all_ch.txt")
+DataEE.readAllChannels("data/EE_all_ch.txt")
 
-print "Number of inactive channels : {0}".format(len(DataLB.findInactiveChannels()))
-print "Number of inactive channels : {0}".format(numall - numread)
+for l in source.readlines()[1:]:
+  l = l.strip()
+  DataEB.readChannel(l)
+  DataEE.readChannel(l)
 
-print "List of available keys: ", DataLB.getDataKeys()
+for D in (DataEB, DataEE):
+  print "    === LASER {0} ANALYSIS ===".format(("EE","EB")[D == DataEB])
+  print "Number of inactive channels : {0}".format(len(D.findInactiveChannels()))
 
-print "Getting info per error key :"
-for i in DataLB.LASERBLUE_FLAGS:
-  print "{0:15s} : {1:5d}".format(i, len(DataLB.getChannelsByFlag(i)))
+  print "List of available keys: ", D.getDataKeys()
 
-if not os.path.exists("RESULTS/laser_blue"):
-  os.mkdir("RESULTS/laser_blue")
-for i in DataLB.getDataKeys():
-  for j in (True, False):
-    if i == "Laser":
-      dimx =  ((0, 6000), (0, 200))[j]
-    else:
-      dimx =  ((0, 5), (0, 0.1))[j]
-    h = DataLB.get1DHistogram(i, dimx, j)
-    Data.saveHistogram(h, "RESULTS/laser_blue/{0}{1}_EE.1D.pdf".format(i.replace("/", "."), ("", "_RMS")[j]))
-    del h
-    h = DataLB.get2DHistogram(i, j, plottype="endcap")
-    Data.saveHistogram(h, "RESULTS/laser_blue/{0}{1}_EE.2D.pdf".format(i.replace("/","."), ("", "_RMS")[j]), plottype = "endcap")
+  print "Getting info per error key :"
+  for i in D.LASERBLUE_FLAGS:
+    print "{0:15s} : {1:5d}".format(i, len(D.getChannelsByFlag(i)))
 
-print "=== END LASER BLUE ==="
+  if not os.path.exists("RESULTS/laser_blue"):
+    os.mkdir("RESULTS/laser_blue")
+  for i in D.getDataKeys():
+    for j in (True, False):
+      if i == "Laser":
+        dimx =  ((0, 6000), (0, 200))[j]
+      else:
+        dimx =  ((0, 5), (0, 0.1))[j]
+      h = D.get1DHistogram(i, dimx, j)
+      Data.saveHistogram(h, "RESULTS/laser_blue/{0}{1}_{2}.1D.pdf".format(i.replace("/", "."), ("", "_RMS")[j], ("EE","EB")[D == DataEB]))
+      del h
+      h = D.get2DHistogram(i, j, plottype="endcap")
+      Data.saveHistogram(h, "RESULTS/laser_blue/{0}{1}_{2}.2D.pdf".format(i.replace("/","."), ("", "_RMS")[j], ("EE","EB")[D == DataEB]), plottype = "endcap")
+  
+  print "=== END LASER BLUE {0} ===".format(("EE","EB")[D == DataEB])
 
 
