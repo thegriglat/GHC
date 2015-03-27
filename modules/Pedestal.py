@@ -37,6 +37,9 @@ class PedestalData(Data.Data):
     return list(set(flags))
 
   def readChannel(self, str):
+    """
+      Read channel data from string
+    """
     str = str.strip()
     try:
       IOV_ID, channelid, gain1, rms1, gain6, rms6, gain12, rms12, taskstatus = str.split()
@@ -49,15 +52,53 @@ class PedestalData(Data.Data):
       self.setChannelData(channelid, {"G1": [float(gain1), float(rms1)], "G6" : [float(gain6), float(rms6)], "G12" : [float(gain12), float(rms12)]})
       return True
 
-  def readPedestal(self, source = None):
-    if source == None:
-      return self.DBread(source)
+  def readPedestalsDB(self, connstr, runnum):
+    """
+      Read pedestal values from database
+        connstr : connection string to database
+        runnum  : array of runs which contains data
+    """
+    import Database
+    dbh = Database.DB(connstr.split('oracle://')[1])
+    for run in runnum:
+      result = dbh.execute("select LOGIC_ID, PED_MEAN_G1, PED_RMS_G1, PED_MEAN_G6, PED_RMS_G6, PED_MEAN_G12, PED_RMS_G12 \
+        from MON_PEDESTALS_DAT where IOV_ID=(select IOV_ID from MON_RUN_IOV where RUN_IOV_ID=(select IOV_ID from RUN_IOV where RUN_NUM={0}))".format(run))
+      for row in result:
+        if self.channels.has_key(str(row[0])):
+          values = {}
+          data = self.channels[str(row[0])]["data"]
+          idx = 1
+          for k in ('G1', 'G6', 'G12'):
+            q = 2 * idx - 1
+            if data.has_key(k):
+              values[k] = [(data[k][0], row[q])[row[q] != -1.0],
+                           (data[k][1], row[q + 1])[row[q + 1] != -1.0]
+                          ]
+            else:
+              values[k] = [row[q], row[q + 1]]
+            idx += 1
+          self.setChannelData(str(row[0]), {'G1': values['G1'], "G6" : values['G6'], "G12" : values['G12']})
+    
+    dbh.close()
+    return result
+
+  def readPedestal(self, source = None, **kwargs):
+    """
+      Switch-function for readin pedestal data.
+        source : filename or oracle://<connection string>
+        kwargs : runnum, ...
+    """
+    if  "oracle://" in source:
+      if kwargs.has_key('runnum'):
+        self.readPedestalsDB(source, kwargs['runnum'])
+      else:
+        print "Run number is not specified in readPedestal!"
     else:
       print "Reading Pedestal data ..."
       n = 0
-      for line in source.readlines()[1:]:
+      for line in open(source, 'r').readlines()[1:]:
         if self.readChannel(line):
           n = n + 1
       print "  Done. Processed {0} records.".format(n)
-    return n
+      return n
 

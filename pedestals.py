@@ -17,7 +17,7 @@ else:
   if len(sys.argv) == 1 or sys.argv[1] == "-":
     source = sys.stdin
   else:
-    source = open(sys.argv[1])
+    source = sys.argv[1]
 
 print "=== PEDESTALS ==="
 DataEB = PedestalData()
@@ -25,10 +25,10 @@ DataEE = PedestalData()
 DataEB.readAllChannels("data/EB_all_ch.txt")
 DataEE.readAllChannels("data/EE_all_ch.txt")
 
-for l in source.readlines()[1:]:
-  l = l.strip()
-  DataEE.readChannel(l)
-  DataEB.readChannel(l)
+#DataEB.readPedestal(source, runnum=[238566, 238569, 238572])
+DataEB.readPedestal(source, runnum=[238569])
+#DataEE.readPedestal(source, runnum=[238566, 238569, 238572])
+DataEB.readPedestal(source, runnum=[238569])
 
 DataEB.setOption("pedestallimits", {"G1" : ((1, 0.2), (1.1, 3)), "G6" : ((1, 0.4), (1.3, 4)), "G12" : ((1, 0.5), (2.1, 6))})
 DataEE.setOption("pedestallimits", {"G1" : ((1, 0.2), (1.5, 4)), "G6" : ((1, 0.4), (2, 5)),   "G12" : ((1, 0.5), (3.2, 7))})
