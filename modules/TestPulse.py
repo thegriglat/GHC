@@ -51,16 +51,49 @@ class TestPulseData(Data.Data):
       self.setChannelData(channelid, {"G1": [float(gain1), float(rms1)], "G6" : [float(gain6), float(rms6)], "G12" : [float(gain12), float(rms12)]})
       return True
     
+  def readTestPulseDB(self, connstr, runnum):
+    """
+      Read test pulse values from database
+        connstr : connection string to database
+        runnum  : array of runs which contains data
+    """
+    import Database
+    dbh = Database.DB(connstr.split('oracle://')[1])
+    for run in runnum:
+      result = dbh.execute("select LOGIC_ID, ADC_MEAN_G1, ADC_RMS_G1, ADC_MEAN_G6, ADC_RMS_G6, ADC_MEAN_G12, ADC_RMS_G12 \
+        from MON_TEST_PULSE_DAT where IOV_ID=(select IOV_ID from MON_RUN_IOV where RUN_IOV_ID=(select IOV_ID from RUN_IOV where RUN_NUM={0}))".format(run))
+      for row in result:
+        if self.channels.has_key(str(row[0])):
+          values = {}
+          data = self.channels[str(row[0])]["data"]
+          idx = 1
+          for k in ('G1', 'G6', 'G12'):
+            q = 2 * idx - 1
+            if data.has_key(k):
+              values[k] = [(data[k][0], row[q])[row[q] != -1.0],
+                           (data[k][1], row[q + 1])[row[q + 1] != -1.0]
+                          ]
+            else:
+              values[k] = [row[q], row[q + 1]]
+            idx += 1
+          self.setChannelData(str(row[0]), {'G1': values['G1'], "G6" : values['G6'], "G12" : values['G12']})
 
-  def readTestPulse(self, source = None):
-    if source == None:
-      return self.DBread(source)
+    dbh.close()
+    return result
+
+
+  def readTestPulse(self, source = None, **kwargs):
+    if  "oracle://" in source:
+      if kwargs.has_key('runnum'):
+        self.readTestPulseDB(source, kwargs['runnum'])
+      else:
+        print "Run number is not specified in readTestPulse!"
     else:
       print "Reading Test Pulse data ..."
       n = 0
-      for line in source.readlines()[1:]:
+      for line in open(source, 'r').readlines()[1:]:
         if self.readChannel(line):
           n = n + 1
       print "  Done. Processed {0} records.".format(n)
-    return n
+      return n
 

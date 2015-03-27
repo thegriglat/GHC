@@ -17,7 +17,7 @@ else:
   if len(sys.argv) == 1 or sys.argv[1] == "-": 
     source = sys.stdin
   else:
-    source = open(sys.argv[1])
+    source = sys.argv[1]
 
 
 print "=== TEST PULSE ==="
@@ -27,10 +27,8 @@ DataEE = TestPulseData()
 DataEB.readAllChannels("data/EB_all_ch.txt")
 DataEB.readAllChannels("data/EE_all_ch.txt")
 
-for l in source.readlines()[1:]:
-  l = l.strip()
-  DataEB.readChannel(l)
-  DataEE.readChannel(l)
+DataEB.readTestPulse(source, runnum = [238577,238574,238581])
+DataEE.readTestPulse(source, runnum = [238577,238574,238581])
 
 for D in (DataEB, DataEE):
   print "    === TEST PULSE {0} ANALYSIS ===".format(("EE","EB")[D == DataEB])
