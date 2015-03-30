@@ -3,6 +3,7 @@
 import os
 import sys
 import shutil
+import argparse
 
 sys.path.append("modules")
 from Pedestal import *
@@ -10,14 +11,23 @@ from Pedestal import *
 if not os.path.exists("RESULTS"):
   os.mkdir("RESULTS")
 
-if len(sys.argv) > 2:
-  print "Please provide input file name or use - as stdin"
-  sys.exit(0)
-else:
-  if len(sys.argv) == 1 or sys.argv[1] == "-":
+parser = argparse.ArgumentParser()
+parser.add_argument('runs', metavar="RUN", nargs="+", help = "Run(s) to analyse (can be <num> or <num>:<gain>. Use '-' for reading from stdin")
+parser.add_argument('-c', '--dbstr', help="Connection string to DB", dest='dbstr')
+parser.add_argument('-g', '--makegraph', action="store_true", help="Produce plots", dest='graph')
+parser.add_argument('-s', '--summary',   action="store_true", help="Produce summary table", dest='summary')
+parser.add_argument('-bl','--barrel-limits', dest="barrel_limits", help = "Limits for barrel")
+parser.add_argument('-el','--endcap-limits', dest="endcap_limits", help = "Limits for endcap")
+args = parser.parse_args()
+
+if args.runs == ['-']:
     source = sys.stdin
-  else:
-    source = sys.argv[1]
+else:
+    runs = args.runs
+    if args.dbstr is None:
+      print "Please specify --dbstr!"
+      sys.exit(0)
+    source = args.dbstr
 
 print "=== PEDESTALS ==="
 DataEB = PedestalData()
@@ -25,13 +35,16 @@ DataEE = PedestalData()
 DataEB.readAllChannels("data/EB_all_ch.txt")
 DataEE.readAllChannels("data/EE_all_ch.txt")
 
-#DataEB.readPedestal(source, runnum=[238566, 238569, 238572])
-DataEB.readPedestal(source, runnum=[238569])
-#DataEE.readPedestal(source, runnum=[238566, 238569, 238572])
-DataEB.readPedestal(source, runnum=[238569])
-
-DataEB.setOption("pedestallimits", {"G1" : ((1, 0.2), (1.1, 3)), "G6" : ((1, 0.4), (1.3, 4)), "G12" : ((1, 0.5), (2.1, 6))})
-DataEE.setOption("pedestallimits", {"G1" : ((1, 0.2), (1.5, 4)), "G6" : ((1, 0.4), (2, 5)),   "G12" : ((1, 0.5), (3.2, 7))})
+DataEB.readPedestal(source, runnum=runs)
+DataEE.readPedestal(source, runnum=runs)
+if not args.barrel_limits is None:
+  DataEB.setOption("pedestallimits", {"G1" : ((1, 0.2), (1.1, 3)), "G6" : ((1, 0.4), (1.3, 4)), "G12" : ((1, 0.5), (2.1, 6))})
+else:
+  DataEB.setOption("pedestallimits", args.barrel_limits)
+if not args.endcap_limits is None: 
+  DataEE.setOption("pedestallimits", {"G1" : ((1, 0.2), (1.5, 4)), "G6" : ((1, 0.4), (2, 5)),   "G12" : ((1, 0.5), (3.2, 7))})
+else:
+  DataEE.setOption("pedestallimits", args.endcap_limits)
 
 for D in (DataEB, DataEE):
   print "    === {0} ANALYSIS ===".format(("EE", "EB")[D == DataEB])
@@ -61,15 +74,15 @@ for D in (DataEB, DataEE):
     print "  {0:8s} : {1:5d}".format(i, len(D.getChannelsByFlag(i)))
   
   print ""
-  if not os.path.exists("RESULTS/pedestals"):
-    os.mkdir("RESULTS/pedestals")
-
-  for i in D.getDataKeys():
-    for j in (True, False):
-      h = D.get1DHistogram(i, None,  j)
-      Data.saveHistogram(h, "RESULTS/pedestals/{0}{1}_EB.1D.pdf".format(i, ("", "_RMS")[j])) 
-      del h
-      h = D.get2DHistogram(i, j, plottype = "barrel")
-      Data.saveHistogram(h, "RESULTS/pedestals/{0}{1}_EB.2D.pdf".format(i, ("", "_RMS")[j]), "barrel") 
-      del h
+  if args.graph:
+    if not os.path.exists("RESULTS/pedestals"):
+      os.mkdir("RESULTS/pedestals")
+    for i in D.getDataKeys():
+      for j in (True, False):
+        h = D.get1DHistogram(i, None,  j)
+        Data.saveHistogram(h, "RESULTS/pedestals/{0}{1}_EB.1D.pdf".format(i, ("", "_RMS")[j])) 
+        del h
+        h = D.get2DHistogram(i, j, plottype = "barrel")
+        Data.saveHistogram(h, "RESULTS/pedestals/{0}{1}_EB.2D.pdf".format(i, ("", "_RMS")[j]), "barrel") 
+        del h
   print "    === END PEDESTALS {0} ===".format(("EE", "EB")[D == DataEB])
