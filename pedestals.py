@@ -13,7 +13,7 @@ if not os.path.exists("RESULTS"):
 
 parser = argparse.ArgumentParser()
 parser.add_argument('runs', metavar="RUN", nargs="+", help = "Run(s) to analyse (can be <num> or <num>:<gain>. Use '-' for reading from stdin")
-parser.add_argument('-c', '--dbstr', help="Connection string to DB", dest='dbstr')
+parser.add_argument('-c', '--dbstr', help="Connection string to DB (oracle://user/pass@db)", dest='dbstr')
 parser.add_argument('-g', '--makegraph', action="store_true", help="Produce plots", dest='graph')
 parser.add_argument('-s', '--summary',   action="store_true", help="Produce summary table", dest='summary')
 parser.add_argument('-bl','--barrel-limits', dest="barrel_limits", help = "Limits for barrel")
