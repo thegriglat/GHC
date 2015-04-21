@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import Data
+import log
 
 class PedestalData(Data.Data):
 
@@ -74,6 +75,8 @@ class PedestalData(Data.Data):
               values[k] = [(data[k][0], row[q])[row[q] != -1.0],
                            (data[k][1], row[q + 1])[row[q + 1] != -1.0]
                           ]
+              log.debug("RUN {0:6s} | Old [mean, RMS] values for gain {1:3s}, channel {2:13d}: {3}".format(run, k, row[0], (row[q], row[q + 1])))
+              log.debug("RUN {0:6s} | New [mean, RMS] values for gain {1:3s}, channel {2:13d}: {3}".format(run, k, row[0], values[k]))
             else:
               values[k] = [row[q], row[q + 1]]
             idx += 1
