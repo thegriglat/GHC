@@ -23,7 +23,7 @@ class Data(object):
                     "DTPG6", "STPG6", "LTPG6",
                     "DTPG12","STPG12","LTPG12"
   ]
-  LASERBLUE_FLAGS = ["DLAMPL", "SLAMPL", "LLERRO"]
+  LASER_FLAGS = ["DLAMPL", "SLAMPL", "LLERRO"]
 
   def __init__(self):
     """
@@ -151,7 +151,7 @@ class Data(object):
     if name == "":
       if self.runtype == "pedestal" or self.runtype == "testpulse":
         name = "{0} {1}, Gain {2} (ADC counts)".format(self.description, ("mean", "RMS")[RMS], key[1:])
-      elif self.runtype == "laserblue":
+      elif self.runtype == "laser":
         name = "Laser {0}".format(("Amplitude " + (" ", "RMS")[RMS] + "(ADC counts)", key + ' ' + ("ratio", "RMS")[RMS])[key == "APD/PN"])
     activech = self.getActiveChannels()
     if dimx == None:
@@ -195,7 +195,7 @@ class Data(object):
     if name == "":
       if self.runtype == "pedestal" or self.runtype == "testpulse":
         name = "{0} {1}, Gain {2} (ADC counts)".format(self.description, ("mean", "RMS")[RMS], key[1:])
-      elif self.runtype == "laserblue":
+      elif self.runtype == "laser":
         name = "Laser {0}".format(("Amplitude " + (" ", "RMS")[RMS] + "(ADC counts)", key + ' ' + ("ratio", "RMS")[RMS])[key == "APD/PN"])
     if plottype == "endcap":
       hist = ROOT.TH2F (name, name, 200, 0, 200, 100, 0, 100) 
@@ -203,7 +203,7 @@ class Data(object):
         lim = ({True: {"G1" : (0.3, 0.8), "G6" : (0.7, 1.5), "G12" : (1.2, 3.4)}, False : {"G1": (160, 240), "G6" : (160, 240), "G12" : (160, 240)}}, lim)[lim != None]
       elif self.runtype == "testpulse":
         lim = ({True: {"G1" : (0, 12), "G6" : (0, 6), "G12" : (0, 6)}, False : {"G1": (2000, 3500), "G6" : (2000, 3000), "G12" : (2000, 3000)}}, lim)[lim != None]
-      elif self.runtype == "laserblue":
+      elif self.runtype == "laser":
         lim = ({True: {"Laser" : (0, 60), 'APD/PN' : (0, 0.05)}, False: {"Laser" : (0, 2000), 'APD/PN' : (0, 2.5)}}, lim)[lim != None]
       hist.SetNdivisions(40, "X")
       hist.SetNdivisions(20, "Y")
@@ -216,7 +216,7 @@ class Data(object):
         lim = ({True: {"G1" : (0.3, 0.8), "G6" : (0.4, 1.1), "G12" : (0.8, 2.2)}, False : {"G1": (160, 240), "G6" : (160, 240), "G12" : (160, 240)}}, lim)[lim != None]
       elif self.runtype == "testpulse":
         lim = ({True: {"G1" : (0, 10), "G6" : (0, 4), "G12" : (0, 3)}, False : {"G1": (1400, 3000), "G6" : (1400, 3000), "G12" : (1400, 3000)}}, lim)[lim != None]
-      elif self.runtype == "laserblue":
+      elif self.runtype == "laser":
         lim = ({True: {"Laser" : (0, 50), 'APD/PN' : (0, 0.06)}, False: {"Laser" : (0, 2000), 'APD/PN' : (0, 3)}}, lim)[lim != None]
       hist.SetNdivisions(18, "X")
       hist.SetNdivisions(2, "Y")

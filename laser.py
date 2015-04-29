@@ -5,7 +5,7 @@ import sys
 import shutil
 
 sys.path.append("modules")
-from LaserBlue import *
+from Laser import *
 
 if not os.path.exists("RESULTS"):
   os.mkdir("RESULTS")
@@ -20,8 +20,8 @@ else:
     source = open(sys.argv[1])
 
 print "=== LASER BLUE ==="
-DataEB = LaserBlueData()
-DataEE = LaserBlueData()
+DataEB = LaserData()
+DataEE = LaserData()
 DataEB.readAllChannels("data/EB_all_ch.txt")
 DataEE.readAllChannels("data/EE_all_ch.txt")
 
@@ -37,7 +37,7 @@ for D in (DataEB, DataEE):
   print "List of available keys: ", D.getDataKeys()
 
   print "Getting info per error key :"
-  for i in D.LASERBLUE_FLAGS:
+  for i in D.LASER_FLAGS:
     print "{0:15s} : {1:5d}".format(i, len(D.getChannelsByFlag(i)))
 
   if not os.path.exists("RESULTS/laser_blue"):

@@ -2,16 +2,16 @@
 
 import Data 
 
-class LaserBlueData(Data.Data):
+class LaserData(Data.Data):
 
   def __init__(self):
-    super(LaserBlueData, self).__init__()
-    self.runtype = "laserblue"
+    super(LaserData, self).__init__()
+    self.runtype = "laser"
     self.description = "Laser"
     self.average = {}
 
   def readData(self, source):
-    return self.readLaserBlue(source)    
+    return self.readLaser(source)    
   
   def getAvgGain(self, gain):
     """
@@ -51,7 +51,7 @@ class LaserBlueData(Data.Data):
       self.channels[channelid]["active"] = True
       return True
 
-  def readLaserBlue(self, source = None):
+  def readLaser(self, source = None):
     if source == None:
       return DBread(source)
     else:
