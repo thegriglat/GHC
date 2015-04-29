@@ -3,6 +3,7 @@
 import os
 import sys
 import shutil
+import argparse
 
 sys.path.append("modules")
 from TestPulse  import *
@@ -10,25 +11,28 @@ from TestPulse  import *
 if not os.path.exists("RESULTS"):
   os.mkdir("RESULTS")
 
-if len(sys.argv) > 2:
-  print "Please provide input file name or use - as stdin"
-  sys.exit(0)
-else: 
-  if len(sys.argv) == 1 or sys.argv[1] == "-": 
-    source = sys.stdin
-  else:
-    source = sys.argv[1]
+parser = argparse.ArgumentParser()
+parser.add_argument('runs', metavar="RUN", nargs="+", help = "Run(s) to analyse (can be <num> or <num>:<gain>. Use '-' for reading from stdin")
+parser.add_argument('-c', '--dbstr', help="Connection string to DB (oracle://user/pass@db)", dest='dbstr')
+args = parser.parse_args()
 
+if args.runs == ['-']:
+    source = sys.stdin
+else:
+    runs = args.runs
+    if args.dbstr is None:
+      print "Please specify --dbstr!"
+      sys.exit(0)
+    source = args.dbstr
 
 print "=== TEST PULSE ==="
-
 DataEB = TestPulseData()
 DataEE = TestPulseData()
 DataEB.readAllChannels("data/EB_all_ch.txt")
 DataEB.readAllChannels("data/EE_all_ch.txt")
 
-DataEB.readTestPulse(source, runnum = [238577,238574,238581])
-DataEE.readTestPulse(source, runnum = [238577,238574,238581])
+DataEB.readTestPulse(source, runnum = runs)
+DataEE.readTestPulse(source, runnum = runs)
 
 for D in (DataEB, DataEE):
   print "    === TEST PULSE {0} ANALYSIS ===".format(("EE","EB")[D == DataEB])
@@ -36,7 +40,7 @@ for D in (DataEB, DataEE):
   print "List of available keys: ", D.getDataKeys()
 
   print "Statistics of channels by problem classes: "
-  print "{classn:40s} | {empty:5s} | {tags:12s} | {empty:5s} | {tags:12s} | {empty:5s} | {tags:12s}".format(classn = "Classes of Test Pulse problematic channels",         empty="", tags="Short name")
+  print "{classn:40s} | {empty:5s} | {tags:12s} | {empty:5s} | {tags:12s} | {empty:5s} | {tags:12s}".format(classn = "Classes of Test Pulse problematic channels", empty="", tags="Short name")
 
   print "-----------------------------------------------------------------------------------------------------------"
   shorter = D.getChannelsByFlag
