@@ -14,8 +14,6 @@ if not os.path.exists("RESULTS"):
 parser = argparse.ArgumentParser()
 parser.add_argument('runs', metavar="RUN", nargs="+", help = "Run(s) to analyse (can be <num> or <num>:<gain>. Use '-' for reading from stdin")
 parser.add_argument('-c', '--dbstr', help="Connection string to DB (oracle://user/pass@db)", dest='dbstr')
-parser.add_argument('-g', '--makegraph', action="store_true", help="Produce plots", dest='graph')
-parser.add_argument('-s', '--summary',   action="store_true", help="Produce summary table", dest='summary')
 parser.add_argument('-bl','--barrel-limits', dest="barrel_limits", help = "Limits for barrel")
 parser.add_argument('-el','--endcap-limits', dest="endcap_limits", help = "Limits for endcap")
 args = parser.parse_args()
@@ -74,15 +72,14 @@ for D in (DataEB, DataEE):
     print "  {0:8s} : {1:5d}".format(i, len(D.getChannelsByFlag(i)))
   
   print ""
-  if args.graph:
-    if not os.path.exists("RESULTS/pedestals"):
-      os.mkdir("RESULTS/pedestals")
-    for i in D.getDataKeys():
-      for j in (True, False):
-        h = D.get1DHistogram(i, None,  j)
-        Data.saveHistogram(h, "RESULTS/pedestals/{0}{1}_EB.1D.pdf".format(i, ("", "_RMS")[j])) 
-        del h
-        h = D.get2DHistogram(i, j, plottype = "barrel")
-        Data.saveHistogram(h, "RESULTS/pedestals/{0}{1}_EB.2D.pdf".format(i, ("", "_RMS")[j]), "barrel") 
-        del h
+  if not os.path.exists("RESULTS/pedestals"):
+    os.mkdir("RESULTS/pedestals")
+  for i in D.getDataKeys():
+    for j in (True, False):
+      h = D.get1DHistogram(i, None,  j)
+      Data.saveHistogram(h, "RESULTS/pedestals/{0}{1}_EB.1D.pdf".format(i, ("", "_RMS")[j])) 
+      del h
+      h = D.get2DHistogram(i, j, plottype = "barrel")
+      Data.saveHistogram(h, "RESULTS/pedestals/{0}{1}_EB.2D.pdf".format(i, ("", "_RMS")[j]), "barrel") 
+      del h
   print "    === END PEDESTALS {0} ===".format(("EE", "EB")[D == DataEB])
