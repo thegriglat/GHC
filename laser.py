@@ -3,6 +3,7 @@
 import os
 import sys
 import shutil
+import argparse
 
 sys.path.append("modules")
 from Laser import *
@@ -10,14 +11,20 @@ from Laser import *
 if not os.path.exists("RESULTS"):
   os.mkdir("RESULTS")
 
-if len(sys.argv) > 2:
-  print "Please provide input file name or use - as stdin"
-  sys.exit(0)
-else: 
-  if len(sys.argv) == 1 or sys.argv[1] == "-": 
+parser = argparse.ArgumentParser()
+parser.add_argument('runs', metavar="RUN", nargs="+", help = "Run(s) to analyse (can be <num> or <num>:<gain>. Use '-' for reading from stdin")
+parser.add_argument('-c', '--dbstr', help="Connection string to DB (oracle://user/pass@db)", dest='dbstr')
+parser.add_argument('-t', '--table', help="Table name of Laser data in DB (e.g. MON_LASER_IRED_DAT)", dest='table')
+args = parser.parse_args()
+
+if args.runs == ['-']:
     source = sys.stdin
-  else:
-    source = open(sys.argv[1])
+else:
+    runs = args.runs
+    if args.dbstr is None:
+      print "Please specify --dbstr!"
+      sys.exit(0)
+    source = args.dbstr
 
 print "=== LASER BLUE ==="
 DataEB = LaserData()
@@ -25,10 +32,12 @@ DataEE = LaserData()
 DataEB.readAllChannels("data/EB_all_ch.txt")
 DataEE.readAllChannels("data/EE_all_ch.txt")
 
-for l in source.readlines()[1:]:
-  l = l.strip()
-  DataEB.readChannel(l)
-  DataEE.readChannel(l)
+DataEB.readLaser(source, runnum = runs)
+DataEE.readLaser(source, runnum = runs)
+
+if args.table:
+  DataEB.setOption("LaserDBtable", args.table)
+  DataEE.setOption("LaserDBtable", args.table)
 
 for D in (DataEB, DataEE):
   print "    === LASER {0} ANALYSIS ===".format(("EE","EB")[D == DataEB])
