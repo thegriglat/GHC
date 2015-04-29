@@ -45,10 +45,10 @@ class PedestalData(Data.Data):
     try:
       IOV_ID, channelid, gain1, rms1, gain6, rms6, gain12, rms12, taskstatus = str.split()
     except:
-      print "  Cannot parse line\n  '{0}'\n  for 9 fields!"
+      log.error( "  Cannot parse line\n  '{0}'\n  for 9 fields!")
     if not self.channels.has_key(channelid):
       return False
-#      print "  Hmm. It seems channel {0} is not present in list of all channels. Continue ...".format(channelid)
+      log.debug("  Hmm. It seems channel {0} is not present in list of all channels. Continue ...".format(channelid))
     else:
       self.setChannelData(channelid, {"G1": [float(gain1), float(rms1)], "G6" : [float(gain6), float(rms6)], "G12" : [float(gain12), float(rms12)]})
       return True
@@ -95,13 +95,13 @@ class PedestalData(Data.Data):
       if kwargs.has_key('runnum'):
         self.readPedestalsDB(source, kwargs['runnum'])
       else:
-        print "Run number is not specified in readPedestal!"
+        log.error( "Run number is not specified in readPedestal!")
     else:
-      print "Reading Pedestal data ..."
+      log.info( "Reading Pedestal data ...")
       n = 0
       for line in open(source, 'r').readlines()[1:]:
         if self.readChannel(line):
           n = n + 1
-      print "  Done. Processed {0} records.".format(n)
+      log.info( "  Done. Processed {0} records.".format(n))
       return n
 

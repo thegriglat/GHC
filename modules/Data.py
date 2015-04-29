@@ -2,6 +2,7 @@
 
 import sys
 import ROOT
+import log
 
 class Data(object):
   """
@@ -84,13 +85,13 @@ class Data(object):
       Reads all channels into self.channels
     """
     fd = open(filename, 'r')
-    print "Getting list of all channels ..."
+    log.info( "Getting list of all channels ...")
     n = 0
     for line in fd.readlines():
       line = line.strip()
       self.channels[line] = self.getNewChannel()
       n = n + 1
-    print "  Done. Processed {0} records.".format(n)
+    log.info( "  Done. Processed {0} records.".format(n))
     return n
 
   def setChannelData(self, channel, data):
@@ -104,7 +105,7 @@ class Data(object):
       Void function for reading data from source.
       This function should be overloaded in other classes
     """
-    print "Function 'readData' should be overloaded in other classes."
+    log.error( "Function 'readData' should be overloaded in other classes.")
     pass
   
   def getDataKeys(self):
@@ -161,7 +162,7 @@ class Data(object):
       try:
         hist.Fill(float(self.channels[ch]["data"][key][RMS]))
       except:
-        print "  Cannot add value from channel {0} and key {1} {2}!".format(ch, key, ("", "(RMS)")[RMS])
+        log.error( "  Cannot add value from channel {0} and key {1} {2}!".format(ch, key, ("", "(RMS)")[RMS]))
     return hist
 
   def get2DHistogram(self, key, RMS = False, plottype = "barrel", name = "", lim = None):
@@ -223,7 +224,7 @@ class Data(object):
       hist.SetYTitle("i#eta")
       func = getEtaPhi
     else:
-      print "Unsupported plottype '{0}'".format(plottype)
+      log.error( "Unsupported plottype '{0}'".format(plottype))
       sys.exit(0)
     hist.SetMinimum(lim[RMS][key][0])
     hist.SetMaximum(lim[RMS][key][1])
@@ -231,7 +232,7 @@ class Data(object):
       try:
         hist.SetBinContent(func(c)[1], func(c)[0], float(self.channels[c]["data"][key][RMS]))
       except:
-        print "Cannot add bin content to histogram for channel", c
+        log.error( "Cannot add bin content to histogram for channel", c)
     return hist
 
   def getChannelFlags(self, channel):

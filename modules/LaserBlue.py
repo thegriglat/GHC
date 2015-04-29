@@ -43,7 +43,7 @@ class LaserBlueData(Data.Data):
     try:
       IOV_ID, channelid, gain12, rms12, APD_OVER_PN_MEAN, APD_OVER_PN_RMS, taskstatus = str.split()
     except:
-      print "  Cannot parse line\n  '{0}'\n  for 7 fields!"
+      log.error( "  Cannot parse line\n  '{0}'\n  for 7 fields!")
     if not self.channels.has_key(channelid):
       return False
     else:
@@ -55,12 +55,12 @@ class LaserBlueData(Data.Data):
     if source == None:
       return DBread(source)
     else:
-      print "Reading Laser blue data ..."
+      log.info ("Reading Laser blue data ...")
       n = 0
       for line in source.readlines():
         if self.readChannel(line):
           n = n + 1
-      print "  Done. Processed {0} records.".format(n)
+      log.info( "  Done. Processed {0} records.".format(n))
     return n
 
 

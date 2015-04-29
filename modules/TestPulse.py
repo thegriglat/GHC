@@ -44,7 +44,7 @@ class TestPulseData(Data.Data):
     try:
       IOV_ID, channelid, gain1, gain6, gain12, rms1, rms6, rms12, taskstatus = str.split()
     except:
-      print "  Cannot parse line\n  '{0}'\n  for 9 fields!"
+      log.error( "  Cannot parse line\n  '{0}'\n  for 9 fields!")
     if not self.channels.has_key(channelid):
       return False
     else:
@@ -87,13 +87,13 @@ class TestPulseData(Data.Data):
       if kwargs.has_key('runnum'):
         self.readTestPulseDB(source, kwargs['runnum'])
       else:
-        print "Run number is not specified in readTestPulse!"
+        log.error( "Run number is not specified in readTestPulse!")
     else:
-      print "Reading Test Pulse data ..."
+      log.info( "Reading Test Pulse data ...")
       n = 0
       for line in open(source, 'r').readlines()[1:]:
         if self.readChannel(line):
           n = n + 1
-      print "  Done. Processed {0} records.".format(n)
+      log.info( "  Done. Processed {0} records.".format(n))
       return n
 
