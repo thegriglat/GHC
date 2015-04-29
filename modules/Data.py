@@ -91,7 +91,7 @@ class Data(object):
       line = line.strip()
       self.channels[line] = self.getNewChannel()
       n = n + 1
-    log.info( "  Done. Processed {0} records.".format(n))
+    log.info( "Done. Processed {0} records.".format(n))
     return n
 
   def setChannelData(self, channel, data):

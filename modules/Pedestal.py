@@ -102,6 +102,6 @@ class PedestalData(Data.Data):
       for line in open(source, 'r').readlines()[1:]:
         if self.readChannel(line):
           n = n + 1
-      log.info( "  Done. Processed {0} records.".format(n))
+      log.info( "Done. Processed {0} records.".format(n))
       return n
 

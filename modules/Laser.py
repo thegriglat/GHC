@@ -94,7 +94,7 @@ class LaserData(Data.Data):
       for line in source.readlines():
         if self.readChannel(line):
           n = n + 1
-      log.info( "  Done. Processed {0} records.".format(n))
+      log.info( "Done. Processed {0} records.".format(n))
       return n
 
 
