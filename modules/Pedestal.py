@@ -28,21 +28,6 @@ class PedestalData(Data.Data):
       return tmpflags
     data = self.channels[channel]["data"]
     flags = []
-    # pedestallimits in the following format 
-    #
-    # mean < dead_limit_mean OR rms <= dead_limit_rms                     ~> DP**
-    # mean > dead_limit_mean and bad_limit_rms_1 <= rms < bad_limit_rms_2 ~> LR**
-    # mean > dead_limit_mean and rms > bad_limit_rms_2                    ~> VLR**
-    # mean > dead_limit_mean ad 170 <= mean <= 230                        ~> BP**
-    #
-    # limits = {
-    #   "G1"  : (
-    #     [ dead_limit_mean, dead_limit_rms  ],
-    #     [ bad_limit_rms_1, bad_limit_rms_2 ]
-    #   ) ,
-    #   "G6"  : ...,
-    #   "G12" : ...
-    # }
     if self.getOption("pedestallimits") != None:
       limits = self.getOption("pedestallimits")
     else:
