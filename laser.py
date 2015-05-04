@@ -12,7 +12,7 @@ if not os.path.exists("RESULTS"):
   os.mkdir("RESULTS")
 
 parser = argparse.ArgumentParser()
-parser.add_argument('runs', metavar="RUN", nargs="+", help = "Run(s) to analyse (can be <num> or <num>:<gain>. Use '-' for reading from stdin")
+parser.add_argument('runs', metavar="RUN", nargs="+", help = "Run(s) to analyse. Use '-' for reading from stdin")
 parser.add_argument('-c', '--dbstr', help="Connection string to DB (oracle://user/pass@db)", dest='dbstr')
 parser.add_argument('-t', '--table', help="Table name of Laser data in DB (e.g. MON_LASER_IRED_DAT)", dest='table')
 args = parser.parse_args()
