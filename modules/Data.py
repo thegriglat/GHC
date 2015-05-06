@@ -15,10 +15,7 @@ class Data(object):
   #       "G12" : [value, rms] 
   #   }
   # }
-  PEDESTAL_FLAGS = ["DPG1", "BPG1", "LRG1", "VLRG1",
-          "DPG6", "BPG6", "LRG6", "VLRG6",
-          "DPG12", "BPG12", "LRG12", "VLRG12"
-  ]
+  PEDESTAL_FLAGS = ["DP", "BP", "LR", "VLR" ]
   TESTPULSE_FLAGS = [ "DTPG1", "STPG1", "LTPG1",
                     "DTPG6", "STPG6", "LTPG6",
                     "DTPG12","STPG12","LTPG12"
