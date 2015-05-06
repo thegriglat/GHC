@@ -50,7 +50,7 @@ else:
   DataEE.setOption("pedestallimits", args.endcap_limits)
 
 for D in (DataEB, DataEE):
-  print "    === {0} ANALYSIS ===".format(("EE", "EB")[D == DataEB])
+  print "=== {0} ANALYSIS ===".format(("EE", "EB")[D == DataEB])
   print "Number of inactive channels : {0}".format(len(D.findInactiveChannels()))
   print "Number of active channels   : {0}".format(len(D.channels) - len(D.findInactiveChannels()))
   

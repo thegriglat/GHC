@@ -31,7 +31,7 @@ else:
       sys.exit(0)
     source = args.dbstr
 
-print "=== LASER BLUE ==="
+print "=== LASER ==="
 DataEB = LaserData()
 DataEE = LaserData()
 DataEB.readAllChannels("data/EB_all_ch.txt")
