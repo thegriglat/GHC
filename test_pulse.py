@@ -68,7 +68,7 @@ for D in (DataEB, DataEE):
     for i in D.TESTPULSE_FLAGS:
       tpc += len([ c for c in D.getActiveChannels() if i+k in D.getChannel(c)["flags"]])
       print "  {0:8s} : {1:5d}".format(i + k, len(D.getChannelsByFlag(i + k)))
-  print "Total problematic pedestal channels:", tpc
+  print "Total problematic test pulse channels:", tpc
 
   if not os.path.exists(outputdir + "/test_pulse"):
     os.mkdir(outputdir + "/test_pulse")
