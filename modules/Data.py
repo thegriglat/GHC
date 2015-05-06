@@ -16,8 +16,7 @@ class Data(object):
   #   }
   # }
   PEDESTAL_FLAGS = ["DP", "BP", "LR", "VLR" ]
-  TESTPULSE_FLAGS = [ "DTP", "STP", "LTP",
-  ]
+  TESTPULSE_FLAGS = [ "DTP", "STP", "LTP" ]
   LASER_FLAGS = ["DLAMPL", "SLAMPL", "LLERRO"]
 
   def __init__(self):
