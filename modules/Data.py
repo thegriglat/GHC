@@ -16,9 +16,7 @@ class Data(object):
   #   }
   # }
   PEDESTAL_FLAGS = ["DP", "BP", "LR", "VLR" ]
-  TESTPULSE_FLAGS = [ "DTPG1", "STPG1", "LTPG1",
-                    "DTPG6", "STPG6", "LTPG6",
-                    "DTPG12","STPG12","LTPG12"
+  TESTPULSE_FLAGS = [ "DTP", "STP", "LTP",
   ]
   LASER_FLAGS = ["DLAMPL", "SLAMPL", "LLERRO"]
 

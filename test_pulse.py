@@ -37,24 +37,35 @@ DataEE.readTestPulse(source, runnum = runs)
 for D in (DataEB, DataEE):
   print "    === TEST PULSE {0} ANALYSIS ===".format(("EE","EB")[D == DataEB])
   print "Number of inactive channels : {0}".format(len(D.findInactiveChannels()))
-  print "List of available keys: ", D.getDataKeys()
+
+  activekeys = []
+  for k in sorted(D.getDataKeys()):
+    if not len(D.channels) - len(D.findInactiveChannels()) == len(D.getChannelsByFlag('DTP' + str(k))):
+      activekeys.append(k)
+      print "Data are available for the gain", str(k)
 
   print "Statistics of channels by problem classes: "
-  print "{classn:40s} | {empty:5s} | {tags:12s} | {empty:5s} | {tags:12s} | {empty:5s} | {tags:12s}".format(classn = "Classes of Test Pulse problematic channels", empty="", tags="Short name")
+  print "{classn:40s} | {empty:5s} | {tags:12s}".format(classn = "Classes of Test Pulse problematic channels", empty="", tags="Short name")
 
   print "-----------------------------------------------------------------------------------------------------------"
   shorter = D.getChannelsByFlag
-  print "{0:40s} | {1:5d} | {2:12s} | {3:5d} | {4:12s} | {5:5d} | {6:12s}".format("Dead TP channels", len(shorter("DTPG1")), "DTPG1", len(shorter("DTPG6")), "DTPG6",  len(shorter("DTPG12")), "DTPG12")
-  print "{0:40s} | {1:5d} | {2:12s} | {3:5d} | {4:12s} | {5:5d} | {6:12s}".format("Low TP amplitude", len(shorter("STPG1")), "STPG1", len(shorter("STPG6")), "STPG6", len(shorter("STPG12")), "STPG12")
-  print "{0:40s} | {1:5d} | {2:12s} | {3:5d} | {4:12s} | {5:5d} | {6:12s}".format("Large TP amplitude", len(shorter("LTPG1")), "LTPG1", len(shorter("LTPG6")),      "LTPG6", len(shorter("LTPG12")), "LTPG12")
-  print "-----------------------------------------------------------------------------------------------------------"
+  for k in activekeys:
+    print "{0:40s} | {1:5d} | {2:12s}".format("Dead TP channels", len(shorter("DTP" + k)), "DTP" + k)
+    print "{0:40s} | {1:5d} | {2:12s}".format("Low TP amplitude", len(shorter("STP" + k)), "STP" + k)
+    print "{0:40s} | {1:5d} | {2:12s}".format("Large TP amplitude", len(shorter("LTP" + k)), "LTP" + k)
+    print "-----------------------------------------------------------------------------------------------------------"
   del shorter
 
   print "Total problematic pedestal channels:", len([c for c in D.getActiveChannels() if len(D.getChannel(c)["flags"]) != 0])
 
+  print "Get statistics by FLAGS:"
+  for k in activekeys:
+    for i in D.TESTPULSE_FLAGS:
+      print "  {0:8s} : {1:5d}".format(i + k, len(D.getChannelsByFlag(i + k)))
+
   if not os.path.exists("RESULTS/test_pulse"):
     os.mkdir("RESULTS/test_pulse")
-  for i in D.getDataKeys():
+  for i in activekeys:
     for j in (True, False):
       dimx = ((1000, 3000), (0, 20))[j]
       h = D.get1DHistogram(i, dimx, j)
