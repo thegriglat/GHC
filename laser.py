@@ -65,8 +65,9 @@ for D in (DataEB, DataEE):
       h = D.get1DHistogram(i, dimx, j)
       Data.saveHistogram(h, outputdir + "/laser/{0}{1}_{2}.1D.pdf".format(i.replace("/", "."), ("", "_RMS")[j], ("EE","EB")[D == DataEB]))
       del h
-      h = D.get2DHistogram(i, j, plottype="endcap")
-      Data.saveHistogram(h, outputdir + "/laser/{0}{1}_{2}.2D.pdf".format(i.replace("/","."), ("", "_RMS")[j], ("EE","EB")[D == DataEB]), plottype = "endcap")
+      plttype = ("barrel", "endcap")[D == DataEE]
+      h = D.get2DHistogram(i, j, plottype=plttype)
+      Data.saveHistogram(h, outputdir + "/laser/{0}{1}_{2}.2D.pdf".format(i.replace("/","."), ("", "_RMS")[j], ("EE","EB")[D == DataEB]), plttype)
   
   print "=== END LASER BLUE {0} ===".format(("EE","EB")[D == DataEB])
 

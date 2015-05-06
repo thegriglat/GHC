@@ -93,7 +93,8 @@ for D in (DataEB, DataEE):
       h = D.get1DHistogram(i, None,  j)
       Data.saveHistogram(h, outputdir + "/pedestals/{0}{1}_EB.1D.pdf".format(i, ("", "_RMS")[j])) 
       del h
-      h = D.get2DHistogram(i, j, plottype = "barrel")
-      Data.saveHistogram(h, outputdir + "/pedestals/{0}{1}_EB.2D.pdf".format(i, ("", "_RMS")[j]), "barrel") 
+      plttype = ("barrel", "endcap")[D == DataEE]
+      h = D.get2DHistogram(i, j, plottype = plttype)
+      Data.saveHistogram(h, outputdir + "/pedestals/{0}{1}_{2}.2D.pdf".format(i, ("", "_RMS")[j],("EE","EB")[D == DataEB]), plttype) 
       del h
   print "    === END PEDESTALS {0} ===".format(("EE", "EB")[D == DataEB])
