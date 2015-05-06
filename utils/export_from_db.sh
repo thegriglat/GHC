@@ -1,5 +1,11 @@
 #!/bin/sh
 
+usage(){
+  echo "Usage: "
+  echo "  $0 <connection string to Oracle DB> <output file name> <table name> <run number>"
+}
+
+if test -z "$1" -o -z "$2" -o -z "$3" -o -z "$4" ;then usage; exit; fi
 
 connstr="$1"
 outfile="$2"
