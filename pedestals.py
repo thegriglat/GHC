@@ -8,15 +8,20 @@ import argparse
 sys.path.append("modules")
 from Pedestal import *
 
-if not os.path.exists("RESULTS"):
-  os.mkdir("RESULTS")
-
 parser = argparse.ArgumentParser()
 parser.add_argument('runs', metavar="RUN", nargs="+", help = "Run(s) to analyse. Use '-' for reading from stdin")
+parser.add_argument('-o', '--output', help="Results directory (default: RESULTS)", dest='output')
 parser.add_argument('-c', '--dbstr', help="Connection string to DB (oracle://user/pass@db)", dest='dbstr')
 parser.add_argument('-bl','--barrel-limits', dest="barrel_limits", help = "Limits for barrel. Check Readme.txt")
 parser.add_argument('-el','--endcap-limits', dest="endcap_limits", help = "Limits for endcap, Check Readme.txt")
 args = parser.parse_args()
+
+if not args.output:
+  outputdir = "RESULTS"
+else:
+  outputdir = args.output
+if not os.path.exists(outputdir):
+  os.mkdir(outputdir)
 
 if args.runs == ['-']:
     source = sys.stdin
@@ -78,14 +83,14 @@ for D in (DataEB, DataEE):
       print "  {0:8s} : {1:5d}".format(i + k, len(D.getChannelsByFlag(i + k)))
   
   print ""
-  if not os.path.exists("RESULTS/pedestals"):
-    os.mkdir("RESULTS/pedestals")
+  if not os.path.exists(outputdir + "/pedestals"):
+    os.mkdir(outputdir + "/pedestals")
   for i in activekeys:
     for j in (True, False):
       h = D.get1DHistogram(i, None,  j)
-      Data.saveHistogram(h, "RESULTS/pedestals/{0}{1}_EB.1D.pdf".format(i, ("", "_RMS")[j])) 
+      Data.saveHistogram(h, outputdir + "/pedestals/{0}{1}_EB.1D.pdf".format(i, ("", "_RMS")[j])) 
       del h
       h = D.get2DHistogram(i, j, plottype = "barrel")
-      Data.saveHistogram(h, "RESULTS/pedestals/{0}{1}_EB.2D.pdf".format(i, ("", "_RMS")[j]), "barrel") 
+      Data.saveHistogram(h, outputdir + "/pedestals/{0}{1}_EB.2D.pdf".format(i, ("", "_RMS")[j]), "barrel") 
       del h
   print "    === END PEDESTALS {0} ===".format(("EE", "EB")[D == DataEB])
