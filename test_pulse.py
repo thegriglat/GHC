@@ -43,6 +43,7 @@ DataEE.readTestPulse(source, runnum = runs)
 for D in (DataEB, DataEE):
   print "=== TEST PULSE {0} ANALYSIS ===".format(("EE","EB")[D == DataEB])
   print "Number of inactive channels : {0}".format(len(D.findInactiveChannels()))
+  print "Number of active channels   : {0}".format(len(D.channels) - len(D.findInactiveChannels()))
 
   activekeys = []
   for k in sorted(D.getDataKeys()):
