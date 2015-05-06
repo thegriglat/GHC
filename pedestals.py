@@ -74,14 +74,17 @@ for D in (DataEB, DataEE):
     print "{0:40s} | {1:5d} | {2:12s}".format("Bad pedestal and very noisy", len(shorter(["BP" + k,"VLR" + k])), "BP" + k + "+VLR" + k)
     print "-----------------------------------------------------------------------------------------------------------"
   del shorter
-  print "Total problematic pedestal channels:", len([c for c in D.getActiveChannels() if len(D.getChannel(c)["flags"]) != 0])
-
+  
   print ""
+
+  tpc = 0
   print "Get statistics by FLAGS:"
   for k in activekeys:
     for i in D.PEDESTAL_FLAGS:
+      tpc += len([ c for c in D.getActiveChannels() if i+k in D.getChannel(c)["flags"]])
       print "  {0:8s} : {1:5d}".format(i + k, len(D.getChannelsByFlag(i + k)))
-  
+  print "Total problematic pedestal channels:", tpc
+
   print ""
   if not os.path.exists(outputdir + "/pedestals"):
     os.mkdir(outputdir + "/pedestals")

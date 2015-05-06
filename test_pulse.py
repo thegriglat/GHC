@@ -41,7 +41,7 @@ DataEB.readTestPulse(source, runnum = runs)
 DataEE.readTestPulse(source, runnum = runs)
 
 for D in (DataEB, DataEE):
-  print "    === TEST PULSE {0} ANALYSIS ===".format(("EE","EB")[D == DataEB])
+  print "=== TEST PULSE {0} ANALYSIS ===".format(("EE","EB")[D == DataEB])
   print "Number of inactive channels : {0}".format(len(D.findInactiveChannels()))
 
   activekeys = []
@@ -49,7 +49,6 @@ for D in (DataEB, DataEE):
     if not len(D.channels) - len(D.findInactiveChannels()) == len(D.getChannelsByFlag('DTP' + str(k))):
       activekeys.append(k)
       print "Data are available for the gain", str(k)
-
   print "Statistics of channels by problem classes: "
   print "{classn:40s} | {empty:5s} | {tags:12s}".format(classn = "Classes of Test Pulse problematic channels", empty="", tags="Short name")
 
@@ -62,12 +61,13 @@ for D in (DataEB, DataEE):
     print "-----------------------------------------------------------------------------------------------------------"
   del shorter
 
-  print "Total problematic pedestal channels:", len([c for c in D.getActiveChannels() if len(D.getChannel(c)["flags"]) != 0])
-
+  tpc = 0
   print "Get statistics by FLAGS:"
   for k in activekeys:
     for i in D.TESTPULSE_FLAGS:
+      tpc += len([ c for c in D.getActiveChannels() if i+k in D.getChannel(c)["flags"]])
       print "  {0:8s} : {1:5d}".format(i + k, len(D.getChannelsByFlag(i + k)))
+  print "Total problematic pedestal channels:", tpc
 
   if not os.path.exists(outputdir + "/test_pulse"):
     os.mkdir(outputdir + "/test_pulse")
