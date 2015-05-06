@@ -61,17 +61,17 @@ for D in (DataEB, DataEE):
       print "Data are available for the gain", str(k)
 
   print "Statistics of channels by problem classes: "
-  print "{classn:40s} | {empty:5s} | {tags:12s}".format(classn = "Classes of pedestal problematic channels", empty="", tags="Short name")
+  print "{classn:45s} | {empty:5s} | {tags:12s}".format(classn = "Classes of pedestal problematic channels", empty="", tags="Short name")
 
   print "-----------------------------------------------------------------------------------------------------------"
   shorter = D.getChannelsByFlag
   for k in activekeys:
-    print "{0:40s} | {1:5d} | {2:12s}".format("Dead pedestal channels", len(shorter("DP" + k)), "DP" + k)
-    print "{0:40s} | {1:5d} | {2:12s}".format("Pedestal mean outside [170,230]", len(shorter("BP" + k)), "BP" + k)
-    print "{0:40s} | {1:5d} | {2:12s}".format("Large RMS (noisy channels)", len(shorter("LR" + k)), "LR" + k)
-    print "{0:40s} | {1:5d} | {2:12s}".format("Very large RMS (very noisy channels)", len(shorter("VLR" + k)), "VLR" + k)
-    print "{0:40s} | {1:5d} | {2:12s}".format("Bad pedestal and noisy channels", len(shorter(["BP" + k, "LR" + k])), "BP" + k +"+LR" + k)
-    print "{0:40s} | {1:5d} | {2:12s}".format("Bad pedestal and very noisy", len(shorter(["BP" + k,"VLR" + k])), "BP" + k + "+VLR" + k)
+    print "{0:45s} | {1:5d} | {2:12s}".format("Dead pedestal channels", len(shorter("DP" + k)), "DP" + k)
+    print "{0:45s} | {1:5d} | {2:12s}".format("Pedestal mean outside [170,230]", len(shorter("BP" + k)), "BP" + k)
+    print "{0:45s} | {1:5d} | {2:12s}".format("Large RMS (noisy channels)", len(shorter("LR" + k)), "LR" + k)
+    print "{0:45s} | {1:5d} | {2:12s}".format("Very large RMS (very noisy channels)", len(shorter("VLR" + k)), "VLR" + k)
+    print "{0:45s} | {1:5d} | {2:12s}".format("Bad pedestal and noisy channels", len(shorter(["BP" + k, "LR" + k])), "BP" + k +"+LR" + k)
+    print "{0:45s} | {1:5d} | {2:12s}".format("Bad pedestal and very noisy", len(shorter(["BP" + k,"VLR" + k])), "BP" + k + "+VLR" + k)
     print "-----------------------------------------------------------------------------------------------------------"
   del shorter
   

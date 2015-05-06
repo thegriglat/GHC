@@ -51,14 +51,14 @@ for D in (DataEB, DataEE):
       activekeys.append(k)
       print "Data are available for the gain", str(k)
   print "Statistics of channels by problem classes: "
-  print "{classn:40s} | {empty:5s} | {tags:12s}".format(classn = "Classes of Test Pulse problematic channels", empty="", tags="Short name")
+  print "{classn:45s} | {empty:5s} | {tags:12s}".format(classn = "Classes of Test Pulse problematic channels", empty="", tags="Short name")
 
   print "-----------------------------------------------------------------------------------------------------------"
   shorter = D.getChannelsByFlag
   for k in activekeys:
-    print "{0:40s} | {1:5d} | {2:12s}".format("Dead TP channels", len(shorter("DTP" + k)), "DTP" + k)
-    print "{0:40s} | {1:5d} | {2:12s}".format("Low TP amplitude", len(shorter("STP" + k)), "STP" + k)
-    print "{0:40s} | {1:5d} | {2:12s}".format("Large TP amplitude", len(shorter("LTP" + k)), "LTP" + k)
+    print "{0:45s} | {1:5d} | {2:12s}".format("Dead TP channels", len(shorter("DTP" + k)), "DTP" + k)
+    print "{0:45s} | {1:5d} | {2:12s}".format("Low TP amplitude", len(shorter("STP" + k)), "STP" + k)
+    print "{0:45s} | {1:5d} | {2:12s}".format("Large TP amplitude", len(shorter("LTP" + k)), "LTP" + k)
     print "-----------------------------------------------------------------------------------------------------------"
   del shorter
 
