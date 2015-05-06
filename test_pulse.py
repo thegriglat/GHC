@@ -35,7 +35,7 @@ print "=== TEST PULSE ==="
 DataEB = TestPulseData()
 DataEE = TestPulseData()
 DataEB.readAllChannels("data/EB_all_ch.txt")
-DataEB.readAllChannels("data/EE_all_ch.txt")
+DataEE.readAllChannels("data/EE_all_ch.txt")
 
 DataEB.readTestPulse(source, runnum = runs)
 DataEE.readTestPulse(source, runnum = runs)
