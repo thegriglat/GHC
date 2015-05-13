@@ -15,6 +15,16 @@ parser.add_argument('-G', '--compareGHC', help="Compare multiple GHC runs", acti
 args = parser.parse_args()
 
 def transformdata(data):
+  #datanew: {
+  #  channel : {
+  #    flags : [],
+  #    data : {
+  #      file1 : {<data>},
+  #      file2 : {<data>}
+  #      }
+  #    }
+  #  }
+  #}
   datanew = {}
   for key in data.keys():
     for ch in data[key].keys():
@@ -37,15 +47,20 @@ def has_regexp(regexp, liststr):
         return True
   return False
 
+def getRMS(value):
+  from numpy import mean, sqrt, square, arange
+  return sqrt(mean(square(value)))
+
 data = {}
 for D in args.files:
   log.info("Reading file " + D + " ...")
   data.update({D : Data.jsonLoad(open(D,'r').read())})
   log.info("Finished " + D + ".")
 
-log.info("Trasform data structure ...")
-data = transformdata(data)
-log.info("Finished.")
+if not args.cGHC:
+  log.info("Trasform data structure ...")
+  data = transformdata(data)
+  log.info("Finished.")
 
 if args.joinjson:
   log.info("Writing merged data to file " + args.joinjson + ' ...')
@@ -71,4 +86,25 @@ if args.summary:
 
 
 if args.cGHC:
-  pass
+  print "=== Compare GHC runs ==="
+  def getGHCStats(f):
+    subdata = data[f]
+    print "  " + f + " ==="
+    print "  Active channels                         :"
+    print "  Masked channels                         :", sum([1 for c in subdata.keys() if has_regexp("^DT?PG|^DLAMLP", subdata[c]['flags'])])
+    print "  Total Problematic channels              :", sum([1 for c in subdata.keys() if len(subdata[c]['flags']) != 0])
+    print "  Channels with design performance in G12 :", sum([1 for c in subdata.keys() if not has_regexp(".*G12", subdata[c]['flags'])])
+    print "  Noisy (2 <= rms <= 6 ADC counts) in G12   :", sum([1 for c in subdata.keys() if "LRG12" in subdata[c]['flags']])
+    print "  Very noisy (rms > 6 ADC counts) in G12  :", sum([1 for c in subdata.keys() if "VLRG12" in subdata[c]['flags']])
+    
+    print "  => Please select name of pedestal tag:"
+    print "  => Possible values are: " + " ".join(data[f].items()[0][1]['data'].keys())
+    f1 = raw_input ("  : ") 
+    print "  Pedestal rms ADC counts in G12          :", getRMS([subdata[c]['data'][f1]['G12'][1] for c in subdata.keys() if subdata[c]['data'][f1].has_key('G12')])
+    print "  Pedestal rms ADC counts in G6           :", getRMS([subdata[c]['data'][f1]['G6'][1] for c in subdata.keys() if subdata[c]['data'][f1].has_key('G6')])
+    print "  Pedestal rms ADC counts in G1           :", getRMS([subdata[c]['data'][f1]['G1'][1] for c in subdata.keys() if subdata[c]['data'][f1].has_key('G1')])
+    print "  APD with bad or no connection to HV     :", sum([1 for c in subdata.keys() if "SLAMPL" in subdata[c]['flags']])
+    print "  Dead channels due to LVR board problems :", sum([1 for c in subdata.keys() if "DLAMPL" in subdata[c]['flags']])
+  for f in args.files:
+    getGHCStats(f)
+  
