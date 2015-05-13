@@ -12,6 +12,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('runs', metavar="RUN", nargs="+", help = "Run(s) to analyse. Use '-' for reading from stdin")
 parser.add_argument('-o', '--output', help="Results directory (default: RESULTS)", dest='output')
 parser.add_argument('-c', '--dbstr', help="Connection string to DB (oracle://user/pass@db)", dest='dbstr')
+parser.add_argument('-j', '--json', help="Filename for output to JSON format", dest='json')
 parser.add_argument('-bl','--barrel-limits', dest="barrel_limits", help = "Limits for barrel. Check README")
 parser.add_argument('-el','--endcap-limits', dest="endcap_limits", help = "Limits for endcap, Check README")
 args = parser.parse_args()
@@ -40,6 +41,13 @@ DataEE.readAllChannels("data/EE_all_ch.txt")
 
 DataEB.readPedestal(source, runnum=runs)
 DataEE.readPedestal(source, runnum=runs)
+
+if args.json:
+  sumdict = {}
+  sumdict.update(DataEB.getChannels())
+  sumdict.update(DataEE.getChannels())
+  Data.jsonExport(sumdict, open(args.json, 'w'))
+
 if not args.barrel_limits is None:
   DataEB.setOption("pedestallimits", {"G1" : ((1, 0.2), (1.1, 3)), "G6" : ((1, 0.4), (1.3, 4)), "G12" : ((1, 0.5), (2.1, 6))})
 else:

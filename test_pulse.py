@@ -13,6 +13,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('runs', metavar="RUN", nargs="+", help = "Run(s) to analyse. Use '-' for reading from stdin")
 parser.add_argument('-o', '--output', help="Results directory (default: RESULTS)", dest='output')
 parser.add_argument('-c', '--dbstr', help="Connection string to DB (oracle://user/pass@db)", dest='dbstr')
+parser.add_argument('-j', '--json', help="Filename for output to JSON format", dest='json')
 args = parser.parse_args()
 
 if not args.output:
@@ -39,6 +40,12 @@ DataEE.readAllChannels("data/EE_all_ch.txt")
 
 DataEB.readTestPulse(source, runnum = runs)
 DataEE.readTestPulse(source, runnum = runs)
+
+if args.json:
+  sumdict = {}
+  sumdict.update(DataEB.getChannels())
+  sumdict.update(DataEE.getChannels())
+  Data.jsonExport(sumdict, open(args.json, 'w'))
 
 for D in (DataEB, DataEE):
   print "=== TEST PULSE {0} ANALYSIS ===".format(("EE","EB")[D == DataEB])

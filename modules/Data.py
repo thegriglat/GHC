@@ -269,6 +269,17 @@ class Data(object):
     t = [ c for c in self.getActiveChannels() if isChannelHasFlags(c, flags)]
     return list(set(t)) 
 
+def jsonExport(data, file = None):
+  import json
+  if file == None:
+    return json.dumps(data)
+  else:
+    json.dump(data, file)
+
+def jsonLoad(jsonstr):
+  import json
+  return json.loads(jsonstr)
+
 def saveHistogram(histogram, filename, plottype = "barrel"):
   """
     Save <histogram> into filename according to <plottype>

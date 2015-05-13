@@ -12,6 +12,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('runs', metavar="RUN", nargs="+", help = "Run(s) to analyse. Use '-' for reading from stdin")
 parser.add_argument('-o', '--output', help="Results directory (default: RESULTS)", dest='output')
 parser.add_argument('-c', '--dbstr', help="Connection string to DB (oracle://user/pass@db)", dest='dbstr')
+parser.add_argument('-j', '--json', help="Filename for output to JSON format", dest='json')
 parser.add_argument('-t', '--table', help="Table name of Laser data in DB (e.g. MON_LASER_IRED_DAT)", dest='table')
 args = parser.parse_args()
 
@@ -39,6 +40,12 @@ DataEE.readAllChannels("data/EE_all_ch.txt")
 
 DataEB.readLaser(source, runnum = runs)
 DataEE.readLaser(source, runnum = runs)
+
+if args.json:
+  sumdict = {}
+  sumdict.update(DataEB.getChannels())
+  sumdict.update(DataEE.getChannels())
+  Data.jsonExport(sumdict, open(args.json, 'w'))
 
 if args.table:
   DataEB.setOption("LaserDBtable", args.table)
