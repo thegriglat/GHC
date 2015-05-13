@@ -6,6 +6,7 @@ import shutil
 import argparse
 
 sys.path.append("modules")
+import log
 from Laser import *
 
 parser = argparse.ArgumentParser()
