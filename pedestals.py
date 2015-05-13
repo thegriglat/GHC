@@ -42,12 +42,6 @@ DataEE.readAllChannels("data/EE_all_ch.txt")
 DataEB.readPedestal(source, runnum=runs)
 DataEE.readPedestal(source, runnum=runs)
 
-if args.json:
-  sumdict = {}
-  sumdict.update(DataEB.getChannels())
-  sumdict.update(DataEE.getChannels())
-  Data.jsonExport(sumdict, open(args.json, 'w'))
-
 if not args.barrel_limits is None:
   DataEB.setOption("pedestallimits", {"G1" : ((1, 0.2), (1.1, 3)), "G6" : ((1, 0.4), (1.3, 4)), "G12" : ((1, 0.5), (2.1, 6))})
 else:
@@ -106,3 +100,10 @@ for D in (DataEB, DataEE):
       Data.saveHistogram(h, outputdir + "/pedestals/{0}{1}_{2}.2D.pdf".format(i, ("", "_RMS")[j],("EE","EB")[D == DataEB]), plttype) 
       del h
   print "    === END PEDESTALS {0} ===".format(("EE", "EB")[D == DataEB])
+
+if args.json:
+  log.info ("Save json file " + args.json + ' ...')
+  sumdict = {}
+  sumdict.update(DataEB.getChannels())
+  sumdict.update(DataEE.getChannels())
+  Data.jsonExport(sumdict, open(args.json, 'w'))

@@ -41,12 +41,6 @@ DataEE.readAllChannels("data/EE_all_ch.txt")
 DataEB.readTestPulse(source, runnum = runs)
 DataEE.readTestPulse(source, runnum = runs)
 
-if args.json:
-  sumdict = {}
-  sumdict.update(DataEB.getChannels())
-  sumdict.update(DataEE.getChannels())
-  Data.jsonExport(sumdict, open(args.json, 'w'))
-
 for D in (DataEB, DataEE):
   print "=== TEST PULSE {0} ANALYSIS ===".format(("EE","EB")[D == DataEB])
   print "Number of inactive channels : {0}".format(len(D.findInactiveChannels()))
@@ -91,4 +85,11 @@ for D in (DataEB, DataEE):
       del h
   
   print "=== END TEST PULSE {0} ===".format(("EE","EB")[D == DataEB])
+
+if args.json:
+  log.info("Saving json file " + args.json + ' ...')
+  sumdict = {}
+  sumdict.update(DataEB.getChannels())
+  sumdict.update(DataEE.getChannels())
+  Data.jsonExport(sumdict, open(args.json, 'w'))
 

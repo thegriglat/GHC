@@ -41,12 +41,6 @@ DataEE.readAllChannels("data/EE_all_ch.txt")
 DataEB.readLaser(source, runnum = runs)
 DataEE.readLaser(source, runnum = runs)
 
-if args.json:
-  sumdict = {}
-  sumdict.update(DataEB.getChannels())
-  sumdict.update(DataEE.getChannels())
-  Data.jsonExport(sumdict, open(args.json, 'w'))
-
 if args.table:
   DataEB.setOption("LaserDBtable", args.table)
   DataEE.setOption("LaserDBtable", args.table)
@@ -78,4 +72,10 @@ for D in (DataEB, DataEE):
   
   print "=== END LASER BLUE {0} ===".format(("EE","EB")[D == DataEB])
 
+if args.json:
+  log.info("Saving json file " + args.json + ' ...')
+  sumdict = {}
+  sumdict.update(DataEB.getChannels())
+  sumdict.update(DataEE.getChannels())
+  Data.jsonExport(sumdict, open(args.json, 'w'))
 
