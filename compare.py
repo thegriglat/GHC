@@ -9,7 +9,7 @@ import log
 
 parser = argparse.ArgumentParser()
 parser.add_argument('files', metavar="JSONfile", nargs="+", help = "File(s) to analyse.")
-parser.add_argument('-jo', '--join', help="Join multiple JSON files into one", dest='joinjon')
+parser.add_argument('-jo', '--join', metavar="JSON", help="Join multiple JSON files into one", dest='joinjon')
 parser.add_argument('-s', '--summary', help="Print channels summary", action="store_true", dest="summary")
 args = parser.parse_args()
 
