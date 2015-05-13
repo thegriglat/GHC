@@ -9,8 +9,9 @@ import log
 
 parser = argparse.ArgumentParser()
 parser.add_argument('files', metavar="JSONfile", nargs="+", help = "File(s) to analyse.")
-parser.add_argument('-jo', '--join', metavar="JSON", help="Join multiple JSON files into one", dest='joinjon')
+parser.add_argument('-jo', '--join', metavar="JSON", help="Join multiple JSON files into one", dest='joinjson')
 parser.add_argument('-s', '--summary', help="Print channels summary", action="store_true", dest="summary")
+parser.add_argument('-G', '--compareGHC', help="Compare multiple GHC runs", action="store_true", dest="cGHC")
 args = parser.parse_args()
 
 def transformdata(data):
@@ -47,7 +48,7 @@ data = transformdata(data)
 log.info("Finished.")
 
 if args.joinjson:
-  log.info("Writing merged data to file + " + args.joinjson + ' ...')
+  log.info("Writing merged data to file " + args.joinjson + ' ...')
   import json
   json.dump(data, open(args.joinjson, 'w'))
   log.info("Finished.")
@@ -68,3 +69,6 @@ if args.summary:
   print "  Test Pulse + Laser problems only            :", sum([1 for c in data.keys() if has_regexp([tpregexp,lregexp], data[c]['flags'])])
   print "  Pedestals + Test Pulse + Laser problems only:", sum([1 for c in data.keys() if has_regexp([pregexp,tpregexp], data[c]['flags'])])
 
+
+if args.cGHC:
+  pass
