@@ -71,7 +71,7 @@ for D in (DataEB, DataEE):
       h = D.get2DHistogram(i, j, plottype=plttype)
       Data.saveHistogram(h, outputdir + "/laser/{0}{1}_{2}.2D.pdf".format(i.replace("/","."), ("", "_RMS")[j], ("EE","EB")[D == DataEB]), plttype)
   
-  print "=== END LASER BLUE {0} ===".format(("EE","EB")[D == DataEB])
+  print "=== END LASER {0} ===".format(("EE","EB")[D == DataEB])
 
 if args.json:
   log.info("Saving json file " + args.json + ' ...')
