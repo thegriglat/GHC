@@ -46,11 +46,13 @@ DataEE.readPedestal(source, runnum=runs)
 if not args.barrel_limits is None:
   DataEB.setOption("pedestallimits", {"G1" : ((1, 0.2), (1.1, 3)), "G6" : ((1, 0.4), (1.3, 4)), "G12" : ((1, 0.5), (2.1, 6))})
 else:
-  DataEB.setOption("pedestallimits", args.barrel_limits)
+  import ast
+  DataEB.setOption("pedestallimits", ast.literal_eval(args.barrel_limits))
 if not args.endcap_limits is None: 
   DataEE.setOption("pedestallimits", {"G1" : ((1, 0.2), (1.5, 4)), "G6" : ((1, 0.4), (2, 5)),   "G12" : ((1, 0.5), (3.2, 7))})
 else:
-  DataEE.setOption("pedestallimits", args.endcap_limits)
+  import ast
+  DataEE.setOption("pedestallimits", ast.literal_eval(args.endcap_limits))
 
 for D in (DataEB, DataEE):
   print "=== {0} ANALYSIS ===".format(("EE", "EB")[D == DataEB])
