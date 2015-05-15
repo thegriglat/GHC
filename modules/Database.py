@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
-import cx_Oracle
 import log
 
-class DB(object):
+class OracleDB(object):
   def __init__(self, connstring):
+    import cx_Oracle
     self.conn = cx_Oracle.connect(connstring)
     self.connstring = connstring
 
@@ -30,3 +30,17 @@ class DB(object):
     log.debug("closing db connection")
     self.conn.close()
     log.debug("connection closed")
+
+class SqliteDB(object):
+  def __init__(self, database):
+    import sqlite3
+    self.dbh = sqlite3.connect(database)
+    self.database = database
+  def execute(self, sql):
+    try:
+      cur = self.dbh.execute(sql)
+      return cur
+    except:
+      log.error("Cannot execute SQL query '" + sql + "'.")
+  def close(self):
+    self.dbh.close()

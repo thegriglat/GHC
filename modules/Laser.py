@@ -58,7 +58,7 @@ class LaserData(Data.Data):
         runnum  : array of runs which contains data
     """
     import Database
-    dbh = Database.DB(connstr.split('oracle://')[1])
+    dbh = Database.OracleDB(connstr.split('oracle://')[1])
     table = self.getOption("LaserDBTable")
     table = (table, "MON_LASER_IRED_DAT")[table == None]
     for run in runnum:

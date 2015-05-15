@@ -58,7 +58,7 @@ class TestPulseData(Data.Data):
         runnum  : array of runs which contains data
     """
     import Database
-    dbh = Database.DB(connstr.split('oracle://')[1])
+    dbh = Database.OracleDB(connstr.split('oracle://')[1])
     for run in runnum:
       result = dbh.execute("select LOGIC_ID, ADC_MEAN_G1, ADC_RMS_G1, ADC_MEAN_G6, ADC_RMS_G6, ADC_MEAN_G12, ADC_RMS_G12 \
         from MON_TEST_PULSE_DAT where IOV_ID=(select IOV_ID from MON_RUN_IOV where RUN_IOV_ID=(select IOV_ID from RUN_IOV where RUN_NUM={0}))".format(run))

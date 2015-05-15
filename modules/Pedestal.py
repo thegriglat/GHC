@@ -60,7 +60,7 @@ class PedestalData(Data.Data):
         runnum  : array of runs which contains data
     """
     import Database
-    dbh = Database.DB(connstr.split('oracle://')[1])
+    dbh = Database.OracleDB(connstr.split('oracle://')[1])
     for run in sorted(runnum):
       result = dbh.execute("select LOGIC_ID, PED_MEAN_G1, PED_RMS_G1, PED_MEAN_G6, PED_RMS_G6, PED_MEAN_G12, PED_RMS_G12 \
         from MON_PEDESTALS_DAT where IOV_ID=(select IOV_ID from MON_RUN_IOV where RUN_IOV_ID=(select IOV_ID from RUN_IOV where RUN_NUM={0}))".format(run))
