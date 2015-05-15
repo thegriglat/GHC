@@ -10,4 +10,4 @@ def info(str):
   print "INFO: ", str
 
 def error(str):
-  print "ERROR: ", str
+  raise RuntimeError(str)
