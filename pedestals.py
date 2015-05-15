@@ -43,12 +43,12 @@ DataEE.readAllChannels("data/EE_all_ch.txt")
 DataEB.readPedestal(source, runnum=runs)
 DataEE.readPedestal(source, runnum=runs)
 
-if not args.barrel_limits is None:
+if not args.barrel_limits is 'None':
   DataEB.setOption("pedestallimits", {"G1" : ((1, 0.2), (1.1, 3)), "G6" : ((1, 0.4), (1.3, 4)), "G12" : ((1, 0.5), (2.1, 6))})
 else:
   import ast
   DataEB.setOption("pedestallimits", ast.literal_eval(args.barrel_limits))
-if not args.endcap_limits is None: 
+if not args.endcap_limits is 'None': 
   DataEE.setOption("pedestallimits", {"G1" : ((1, 0.2), (1.5, 4)), "G6" : ((1, 0.4), (2, 5)),   "G12" : ((1, 0.5), (3.2, 7))})
 else:
   import ast
