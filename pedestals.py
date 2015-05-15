@@ -14,8 +14,8 @@ parser.add_argument('runs', metavar="RUN", nargs="+", help = "Run(s) to analyse.
 parser.add_argument('-o', '--output', help="Results directory (default: RESULTS)", dest='output')
 parser.add_argument('-c', '--dbstr', help="Connection string to DB (oracle://user/pass@db)", dest='dbstr')
 parser.add_argument('-j', '--json', help="Filename for output to JSON format", dest='json')
-parser.add_argument('-bl','--barrel-limits', dest="barrel_limits", help = "Limits for barrel. Check README")
-parser.add_argument('-el','--endcap-limits', dest="endcap_limits", help = "Limits for endcap, Check README")
+parser.add_argument('-bl','--barrel-limits', dest="barrel_limits", help = "Limits for barrel. Check Readme.md")
+parser.add_argument('-el','--endcap-limits', dest="endcap_limits", help = "Limits for endcap, Check Readme.md")
 args = parser.parse_args()
 
 if not args.output:
