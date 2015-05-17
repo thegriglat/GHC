@@ -308,7 +308,10 @@ def DumpDB(dbin, dbout):
           tmprow.append(i)
       dbout.execute ('insert into ' + tablename + ' values ' + str(tmprow).replace("[",'(').replace(']',')'))
     log.info (tablename + " : Done.")
-  dbout.execute("END TRANSACTION")
+  try:
+    dbout.execute("END TRANSACTION")
+  except:
+    pass
 
 def saveHistogram(histogram, filename, plottype = "barrel"):
   """
