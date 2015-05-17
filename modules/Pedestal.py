@@ -65,17 +65,19 @@ class PedestalData(Data.Data):
     log.info("OK")
     log.info("Exporting data from Oracle to inner DB ...")
     for run in sorted(runnum):
+      cur = self.dbh.cursor()
       log.info("Process run " + str(run) + " ...")
       result = dbh.execute("select LOGIC_ID, PED_MEAN_G1, PED_RMS_G1, PED_MEAN_G6, PED_RMS_G6, PED_MEAN_G12, PED_RMS_G12 \
         from MON_PEDESTALS_DAT where IOV_ID=(select IOV_ID from MON_RUN_IOV where RUN_IOV_ID=(select IOV_ID from RUN_IOV where RUN_NUM={0}))".format(run))
-      self.dbh.execute("insert into runs values ({0}, 'pedestal')".format(int(run)))
+      cur.execute("insert into runs values ({0}, 'pedestal')".format(int(run)))
       for row in result:
-        self.dbh.execute("insert into data values ({0}, {1}, 'PED_MEAN_G1', {2})".format(int(run), int(row[0]),  row[1]))
-        self.dbh.execute("insert into data values ({0}, {1}, 'PED_RMS_G1', {2})".format(int(run), int(row[0]),   row[2]))
-        self.dbh.execute("insert into data values ({0}, {1}, 'PED_MEAN_G6', {2})".format(int(run), int(row[0]),  row[3]))
-        self.dbh.execute("insert into data values ({0}, {1}, 'PED_RMS_G6', {2})".format(int(run), int(row[0]),   row[4]))
-        self.dbh.execute("insert into data values ({0}, {1}, 'PED_MEAN_G12', {2})".format(int(run), int(row[0]), row[5]))
-        self.dbh.execute("insert into data values ({0}, {1}, 'PED_RMS_G12', {2})".format(int(run), int(row[0]),  row[6]))
+        cur.execute("insert into data values ({0}, {1}, 'PED_MEAN_G1', {2})".format(int(run), int(row[0]),  row[1]))
+        cur.execute("insert into data values ({0}, {1}, 'PED_RMS_G1', {2})".format(int(run), int(row[0]),   row[2]))
+        cur.execute("insert into data values ({0}, {1}, 'PED_MEAN_G6', {2})".format(int(run), int(row[0]),  row[3]))
+        cur.execute("insert into data values ({0}, {1}, 'PED_RMS_G6', {2})".format(int(run), int(row[0]),   row[4]))
+        cur.execute("insert into data values ({0}, {1}, 'PED_MEAN_G12', {2})".format(int(run), int(row[0]), row[5]))
+        cur.execute("insert into data values ({0}, {1}, 'PED_RMS_G12', {2})".format(int(run), int(row[0]),  row[6]))
+      self.dbh.commit() 
     dbh.close()
 
   def readPedestal(self, source = None, **kwargs):
