@@ -36,12 +36,11 @@ else:
 
 print "=== PEDESTALS ==="
 DataEB = PedestalData()
-DataEE = PedestalData()
 DataEB.readAllChannels("data/EB_all_ch.txt")
-DataEE.readAllChannels("data/EE_all_ch.txt")
+DataEB.readAllChannels("data/EE_all_ch.txt")
 
+DataEE = DataEB
 DataEB.readPedestal(source, runnum=runs)
-DataEE.readPedestal(source, runnum=runs)
 
 if not args.barrel_limits is 'None':
   DataEB.setOption("pedestallimits", {"G1" : ((1, 0.2), (1.1, 3)), "G6" : ((1, 0.4), (1.3, 4)), "G12" : ((1, 0.5), (2.1, 6))})
@@ -54,10 +53,11 @@ else:
   import ast
   DataEE.setOption("pedestallimits", ast.literal_eval(args.endcap_limits))
 
-for D in (DataEB, DataEE):
+i = 1/0
+for D in (DataEE, DataEB):
   print "=== {0} ANALYSIS ===".format(("EE", "EB")[D == DataEB])
   print "Number of inactive channels : {0}".format(len(D.findInactiveChannels()))
-  print "Number of active channels   : {0}".format(len(D.channels) - len(D.findInactiveChannels()))
+  print "Number of active channels   : {0}".format(len(D.getChannels()) - len(D.findInactiveChannels()))
   
   activekeys = []
   for k in sorted(D.getDataKeys()):
