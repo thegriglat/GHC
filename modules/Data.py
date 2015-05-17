@@ -269,16 +269,44 @@ class Data(object):
     t = [ c for c in self.getActiveChannels() if isChannelHasFlags(c, flags)]
     return list(set(t)) 
 
-def jsonExport(data, file = None):
-  import json
-  if file == None:
-    return json.dumps(data)
-  else:
-    json.dump(data, file)
+  def Export(self, filename):
+    from Database import SqliteDB
+    dbout = SqliteDB(filename)
+    try:
+      DumpDB(self.dbh, dbout)
+    except:
+      log.error("Cannot dump memory database to file '" + filename + "'")
+    dbout.close()
 
-def jsonLoad(jsonstr):
-  import json
-  return json.loads(jsonstr)
+  def Load(self, filename):
+    from Database import SqliteDB
+    self.dbh = SqliteDB(":memory:")
+    dbin = SqliteDB(filename)
+    try:
+      DumpDB(dbin, self.dbh)
+    except:
+      log.error("Cannot load database from '" + filename+ "'")
+ 
+def DumpDB(dbin, dbout):
+  from Database import SqliteDB
+  for tablerow in dbin.execute('select * from sqlite_master').fetchall():
+    tablename = tablerow[2]
+    log.info ("Create table '" + tablename + "'")
+    try:
+      dbout.execute(tablerow[4])
+    except:
+      log.error("Cannot create table {0} in DB {1}!".format(tablename, str(dbout)))
+    log.info ("Exporting data from table '" + tablename + "' ...")
+    for row in dbin.execute('select * from ' + tablename).fetchall():
+      tmprow = []
+      for i in row:
+        if i.__class__ == unicode:
+          tmprow.append(str(i))
+        else:
+          tmprow.append(i)
+      tmprow = tuple(tmprow)
+      dbout.execute ('insert into ' + tablename + ' values ' + str(tmprow))
+    log.info (tablename + " : Done.")
 
 def saveHistogram(histogram, filename, plottype = "barrel"):
   """
