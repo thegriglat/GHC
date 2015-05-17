@@ -3,6 +3,7 @@
 import sys
 import ROOT
 import log
+import sqlite3
 from Database import SqliteDB
 
 class Data(object):
@@ -21,11 +22,13 @@ class Data(object):
     self.runtype = None
     self.description = None
     self.options = {}
-    dbh = SqliteDB(database)
-    dbh.execute("create table flags (channel_id, flag)")
-    dbh.execute("create table runs (run_num, run_type)")
-    dbh.execute("create table all_channels (channel_id)")
-    dbh.execute("create table data (run_num, channel_id, key, value)")
+    dbh = sqlite3.connect(database)
+    cur = dbh.cursor()
+    cur.execute("create table flags (channel_id, flag)")
+    cur.execute("create table runs (run_num, run_type)")
+    cur.execute("create table all_channels (channel_id)")
+    cur.execute("create table data (run_num, channel_id, key, value)")
+    dbh.commit()
     self.dbh = dbh
 
   def setDesc(self, desc):
@@ -47,31 +50,13 @@ class Data(object):
     """
       Returns list of inactive channels
     """
-    self.dbh.execute("BEGIN TRANSACTION")
-    return [ch for ch in self.getChannels() if self.isInactive(ch)]
+    return [ c[0] for c in self.dbh.execute("select channel_id from all_channels where channel_id not in (select channel_id from data)").fetchall()]
   
-  def isActive(self, channel):
-    """
-      Returns True|False if channel is active or not
-    """
-    channel = int(channel)
-    c = self.dbh.execute("select channel_id from data where channel_id = {0}".format(channel))
-    if len(c.fetchall()) == 0:
-      return False
-    else:
-      return True
-
-  def isInactive(self, channel):
-    """
-      Returns ! isActive(channel)
-    """
-    return not self.isActive(channel)
-
   def getActiveChannels(self):
     """
       Returns list of active channels
     """ 
-    return [ a for a in self.getChannels() if self.isActive(a)]
+    return [c[0] for c in self.dbh.execute("select channel_id from all_channels where channel_id in (select channel_id from data)").fetchall()]
 
   def getNewChannel(self, data = {}):
     """
@@ -86,10 +71,12 @@ class Data(object):
     fd = open(filename, 'r')
     log.info( "Getting list of all channels ...")
     n = 0
+    cur = self.dbh.cursor()
     for line in fd.readlines():
       line = line.strip()
-      self.dbh.execute("insert into all_channels values ({0})".format(int(line)))
+      cur.execute("insert into all_channels values ({0})".format(int(line)))
       n = n + 1
+    self.dbh.commit()
     log.info( "Done. Processed {0} records.".format(n))
     return n
 
@@ -275,7 +262,7 @@ class Data(object):
     return list(set(t)) 
 
   def Export(self, filename):
-    dbout = SqliteDB(filename)
+    dbout = sqlite3.connect(filename)
     try:
       DumpDB(self.dbh, dbout)
     except:
@@ -283,20 +270,20 @@ class Data(object):
     dbout.close()
 
   def Load(self, filename):
-    self.dbh = SqliteDB(":memory:")
-    dbin = SqliteDB(filename)
+    self.dbh = sqlite3.connect(":memory:")
+    dbin = sqlite3.connect(filename)
     try:
       DumpDB(dbin, self.dbh)
     except:
       log.error("Cannot load database from '" + filename+ "'")
  
 def DumpDB(dbin, dbout):
-  dbout.execute("BEGIN TRANSACTION")
+  cout = dbout.cursor()
   for tablerow in dbin.execute('select * from sqlite_master').fetchall():
     tablename = tablerow[2]
     log.info ("Create table '" + tablename + "'")
     try:
-      dbout.execute(tablerow[4])
+      cout.execute(tablerow[4])
     except:
       log.error("Cannot create table {0} in DB {1}!".format(tablename, str(dbout)))
     log.info ("Exporting data from table '" + tablename + "' ...")
@@ -307,12 +294,9 @@ def DumpDB(dbin, dbout):
           tmprow.append(str(i))
         else:
           tmprow.append(i)
-      dbout.execute ('insert into ' + tablename + ' values ' + str(tmprow).replace("[",'(').replace(']',')'))
+      cout.execute ('insert into ' + tablename + ' values ' + str(tmprow).replace("[",'(').replace(']',')'))
+    dbout.commit()
     log.info (tablename + " : Done.")
-  try:
-    dbout.execute("END TRANSACTION")
-  except:
-    pass
 
 def saveHistogram(histogram, filename, plottype = "barrel"):
   """
