@@ -41,12 +41,13 @@ class Data(object):
     return self.description
 
   def getChannels(self):
-    return tuple([c[0] for c in self.dbh.execute("select distinct channel_id from all_channels").fetchall()])
+    return [c[0] for c in self.dbh.execute("select channel_id from all_channels").fetchall()]
 
   def findInactiveChannels(self):
     """
       Returns list of inactive channels
     """
+    self.dbh.execute("BEGIN TRANSACTION")
     return [ch for ch in self.getChannels() if self.isInactive(ch)]
   
   def isActive(self, channel):
