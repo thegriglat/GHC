@@ -4,8 +4,8 @@ import log
 
 class PedestalData(Data.Data):
 
-  def __init__(self):
-    super(PedestalData, self).__init__()
+  def __init__(self, database = ":memory:"):
+    super(PedestalData, self).__init__(database)
     self.runtype = "pedestal"
     self.description = "Pedestal"
     self.channels = {}
@@ -60,30 +60,23 @@ class PedestalData(Data.Data):
         runnum  : array of runs which contains data
     """
     import Database
+    log.info("Trying to connect to Oracle")
     dbh = Database.OracleDB(connstr.split('oracle://')[1])
+    log.info("OK")
+    log.info("Exporting data from Oracle to inner DB ...")
     for run in sorted(runnum):
+      log.info("Process run " + str(run) + " ...")
       result = dbh.execute("select LOGIC_ID, PED_MEAN_G1, PED_RMS_G1, PED_MEAN_G6, PED_RMS_G6, PED_MEAN_G12, PED_RMS_G12 \
         from MON_PEDESTALS_DAT where IOV_ID=(select IOV_ID from MON_RUN_IOV where RUN_IOV_ID=(select IOV_ID from RUN_IOV where RUN_NUM={0}))".format(run))
+      self.dbh.execute("insert into runs values ({0}, 'pedestal')".format(int(run)))
       for row in result:
-        if self.channels.has_key(str(row[0])):
-          values = {}
-          data = self.channels[str(row[0])]["data"]
-          idx = 1
-          for k in ('G1', 'G6', 'G12'):
-            q = 2 * idx - 1
-            if data.has_key(k):
-              values[k] = [(data[k][0], row[q])[row[q] != -1.0],
-                           (data[k][1], row[q + 1])[row[q + 1] != -1.0]
-                          ]
-              log.debug("RUN {0:6s} | Old [mean, RMS] values for gain {1:3s}, channel {2:13d}: {3}".format(run, k, row[0], (row[q], row[q + 1])))
-              log.debug("RUN {0:6s} | New [mean, RMS] values for gain {1:3s}, channel {2:13d}: {3}".format(run, k, row[0], values[k]))
-            else:
-              values[k] = [row[q], row[q + 1]]
-            idx += 1
-          self.setChannelData(str(row[0]), {'G1': values['G1'], "G6" : values['G6'], "G12" : values['G12']})
-    
+        self.dbh.execute("insert into data values ({0}, {1}, 'PED_MEAN_G1', {2})".format(int(run), int(row[0]),  row[1]))
+        self.dbh.execute("insert into data values ({0}, {1}, 'PED_RMS_G1', {2})".format(int(run), int(row[0]),   row[2]))
+        self.dbh.execute("insert into data values ({0}, {1}, 'PED_MEAN_G6', {2})".format(int(run), int(row[0]),  row[3]))
+        self.dbh.execute("insert into data values ({0}, {1}, 'PED_RMS_G6', {2})".format(int(run), int(row[0]),   row[4]))
+        self.dbh.execute("insert into data values ({0}, {1}, 'PED_MEAN_G12', {2})".format(int(run), int(row[0]), row[5]))
+        self.dbh.execute("insert into data values ({0}, {1}, 'PED_RMS_G12', {2})".format(int(run), int(row[0]),  row[6]))
     dbh.close()
-    return result
 
   def readPedestal(self, source = None, **kwargs):
     """
