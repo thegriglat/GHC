@@ -39,8 +39,9 @@ class SqliteDB(object):
   def execute(self, sql):
     try:
       cur = self.dbh.execute(sql)
+      self.dbh.commit()
       return cur
-    except:
-      log.error("Cannot execute SQL query '" + sql + "'.")
+    except Exception as e:
+      log.error("Cannot execute SQL query '" + sql + "'. Error: " + str(e))
   def close(self):
     self.dbh.close()
