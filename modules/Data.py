@@ -3,31 +3,30 @@
 import sys
 import ROOT
 import log
+from Database import SqliteDB
 
 class Data(object):
   """
     Basic class for Data obtained from detector
   """
-  # channel = {
-  #   "data"   : {
-  #       "G1"  : [value, rms],
-  #       "G6"  : [value, rms],
-  #       "G12" : [value, rms] 
-  #   }
-  # }
   PEDESTAL_FLAGS = ["DP", "BP", "LR", "VLR" ]
   TESTPULSE_FLAGS = [ "DTP", "STP", "LTP" ]
   LASER_FLAGS = ["DLAMPL", "SLAMPL", "LLERRO"]
 
-  def __init__(self):
+  def __init__(self, database = ":memory:"):
     """
       At the moment do nothing.
     """
-    self.channels = {}
     self.isClassified = False
     self.runtype = None
     self.description = None
     self.options = {}
+    dbh = SqliteDB(database)
+    dbh.execute("create table flags (channel_id, flag)")
+    dbh.execute("create table runs (run_num, run_type)")
+    dbh.execute("create table all_channels (channel_id)")
+    dbh.execute("create table data (run_num, channel_id, key, value)")
+    self.dbh = dbh
 
   def setDesc(self, desc):
     """ 
@@ -42,19 +41,24 @@ class Data(object):
     return self.description
 
   def getChannels(self):
-    return self.channels
+    return tuple([c[0] for c in self.dbh.execute("select distinct channel_id from all_channels").fetchall()])
 
   def findInactiveChannels(self):
     """
       Returns list of inactive channels
     """
-    return [ch for ch in self.channels.keys() if self.isInactive(ch)]
+    return [ch for ch in self.getChannels() if self.isInactive(ch)]
   
   def isActive(self, channel):
     """
       Returns True|False if channel is active or not
     """
-    return [True, False][len(self.channels[channel]["data"].keys()) == 0]
+    channel = int(channel)
+    c = self.dbh.execute("select channel_id from data where channel_id = {0}".format(channel))
+    if len(c.fetchall()) == 0:
+      return False
+    else:
+      return True
 
   def isInactive(self, channel):
     """
@@ -66,7 +70,7 @@ class Data(object):
     """
       Returns list of active channels
     """ 
-    return [ a for a in self.channels.keys() if self.isActive(a)]
+    return [ a for a in self.getChannels() if self.isActive(a)]
 
   def getNewChannel(self, data = {}):
     """
@@ -83,7 +87,7 @@ class Data(object):
     n = 0
     for line in fd.readlines():
       line = line.strip()
-      self.channels[line] = self.getNewChannel()
+      self.dbh.execute("insert into all_channels values ({0})".format(int(line)))
       n = n + 1
     log.info( "Done. Processed {0} records.".format(n))
     return n
@@ -270,7 +274,6 @@ class Data(object):
     return list(set(t)) 
 
   def Export(self, filename):
-    from Database import SqliteDB
     dbout = SqliteDB(filename)
     try:
       DumpDB(self.dbh, dbout)
@@ -279,7 +282,6 @@ class Data(object):
     dbout.close()
 
   def Load(self, filename):
-    from Database import SqliteDB
     self.dbh = SqliteDB(":memory:")
     dbin = SqliteDB(filename)
     try:
@@ -288,7 +290,7 @@ class Data(object):
       log.error("Cannot load database from '" + filename+ "'")
  
 def DumpDB(dbin, dbout):
-  from Database import SqliteDB
+  dbout.execute("BEGIN TRANSACTION")
   for tablerow in dbin.execute('select * from sqlite_master').fetchall():
     tablename = tablerow[2]
     log.info ("Create table '" + tablename + "'")
@@ -304,9 +306,9 @@ def DumpDB(dbin, dbout):
           tmprow.append(str(i))
         else:
           tmprow.append(i)
-      tmprow = tuple(tmprow)
-      dbout.execute ('insert into ' + tablename + ' values ' + str(tmprow))
+      dbout.execute ('insert into ' + tablename + ' values ' + str(tmprow).replace("[",'(').replace(']',')'))
     log.info (tablename + " : Done.")
+  dbout.execute("END TRANSACTION")
 
 def saveHistogram(histogram, filename, plottype = "barrel"):
   """
