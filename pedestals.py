@@ -53,7 +53,6 @@ else:
   import ast
   DataEE.setOption("pedestallimits", ast.literal_eval(args.endcap_limits))
 
-i = 1/0
 for D in (DataEE, DataEB):
   print "=== {0} ANALYSIS ===".format(("EE", "EB")[D == DataEB])
   print "Number of inactive channels : {0}".format(len(D.findInactiveChannels()))
