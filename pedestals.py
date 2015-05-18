@@ -58,10 +58,8 @@ for D in (DataEE, DataEB):
   print "Number of inactive channels : {0}".format(len(D.findInactiveChannels()))
   print "Number of active channels   : {0}".format(len(D.getChannels()) - len(D.findInactiveChannels()))
   
-  activekeys = []
+  activekeys = sorted([c.split('_')[2] for c in D.getDataKeys()])
   for k in sorted(D.getDataKeys()):
-    if not len(D.channels) - len(D.findInactiveChannels()) == len(D.getChannelsByFlag('DP' + str(k))):
-      activekeys.append(k)
       print "Data are available for the gain", str(k)
 
   print "Statistics of channels by problem classes: "

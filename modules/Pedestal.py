@@ -15,18 +15,26 @@ class PedestalData(Data.Data):
   
   def getChannelFlags(self, channel):
     def PedestalComparison(key, deadlimits, badlimits):
+      self.dbh.execute("BEGIN TRANSACTION")
+      shortener = self.getChannelData
+      def getvalue(gain, meanorrms):
+        r = shortener(channel, runtype="pedestal", key="PED_" + ("MEAN", "RMS")[meanorrms == 'mean'] + gain)
+        for c in r:
+          if c != -1:
+            return c
       tmpflags = []
-      if data[key][0] <= deadlimits[0] or data[key][1] <= deadlimits[1]:
+      key_mean = getvalue(key, 'mean')
+      key_rms = getvalue(key, 'rms')
+      if key_mean <= deadlimits[0] or key_rms <= deadlimits[1]:
         tmpflags.append("DP" + key)
       else:
-        if data[key][1] >= badlimits[0] and data[key][1] < badlimits[1] and data[key][0] > deadlimits[0]:
+        if key_rms >= badlimits[0] and key_rms < badlimits[1] and key_mean > deadlimits[0]:
           tmpflags.append("LR" + key)
-        if data[key][1] > badlimits[1] and data[key][0] > deadlimits[0]:
+        if key_rms > badlimits[1] and key_mean > deadlimits[0]:
           tmpflags.append("VLR" + key)
-        if abs(data[key][0] - 200) >= 30 and data[key][0] > deadlimits[0]:
+        if abs(key_mean - 200) >= 30 and key_mean > deadlimits[0]:
           tmpflags.append("BP" + key)
       return tmpflags
-    data = self.channels[channel]["data"]
     flags = []
     if self.getOption("pedestallimits") != None:
       limits = self.getOption("pedestallimits")

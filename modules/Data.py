@@ -24,12 +24,15 @@ class Data(object):
     self.options = {}
     dbh = sqlite3.connect(database)
     cur = dbh.cursor()
-    cur.execute("create table flags (channel_id, flag)")
-    cur.execute("create table runs (run_num, run_type)")
-    cur.execute("create table all_channels (channel_id)")
-    cur.execute("create table data (run_num, channel_id, key, value)")
+    cur.execute("create table flags (channel_id INTEGER, flag TEXT)")
+    cur.execute("create table runs (run_num INTEGER, run_type TEXT)")
+    cur.execute("create table all_channels (channel_id INTEGER)")
+    cur.execute("create table data (run_num INTEGER, channel_id INTEGER, key TEXT, value REAL)")
+    cur.execute("PRAGMA synchronous=OFF")
+    cur.execute("PRAGMA temp_store=MEMORY")
     dbh.commit()
     self.dbh = dbh
+    self.cur = cur
 
   def setDesc(self, desc):
     """ 
@@ -50,13 +53,27 @@ class Data(object):
     """
       Returns list of inactive channels
     """
-    return [ c[0] for c in self.dbh.execute("select channel_id from all_channels where channel_id not in (select channel_id from data)").fetchall()]
+    return [ c[0] for c in self.dbh.execute("select channel_id from all_channels where channel_id not in (select distinct channel_id from data)").fetchall()]
   
   def getActiveChannels(self):
     """
       Returns list of active channels
     """ 
-    return [c[0] for c in self.dbh.execute("select channel_id from all_channels where channel_id in (select channel_id from data)").fetchall()]
+    return [c[0] for c in self.dbh.execute("select channel_id from all_channels where channel_id in (select distinct channel_id from data)").fetchall()]
+
+  def getChannelData(self, channel, **kwargs):
+    """
+      Return array with channel data
+      **kwargs keys -- key, run, runtype 
+    """
+    str = ""
+    if kwargs.has_key("run"):
+      str += " and run_num = {0} ".format(str(kwargs['run']))
+    if kwargs.has_key("key"):
+      str += " and key = '{0}' ".format(kwargs['key'])
+    if kwargs.has_key("runtype"):
+      str += " and run_num in (select run_num from runs where run_type = '{0}') ".format(kwargs['runtype'])
+    return self.cur.execute("select key, value, run_num from data where channel_id = {channel_id} {addstr}".format(channel_id = channel, addstr = str)).fetchall()
 
   def getNewChannel(self, data = {}):
     """
@@ -100,7 +117,7 @@ class Data(object):
       At the moment it chechs only first available channel
     """
     try:
-      return self.channels[self.getActiveChannels()[0]]["data"].keys()
+      return [ c[0] for c in self.dbh.execute("select distinct key from data").fetchall()]
     except:
       return []
 
@@ -239,27 +256,26 @@ class Data(object):
     """
       Call getChannelFlags for each active channel and set 'flags' value for channels
     """
+    cur = self.dbh.cursor()
     for c in self.getActiveChannels():
-      self.channels[c]["flags"] = self.getChannelFlags(c)
+      log.info("classifyChannels: {0}".format(str(c)))
+      cur.execute("BEGIN TRANSACTION")
+      for f in self.getChannelFlags(c):
+        cur.execute("insert into flags values ({0}, '{1}')".format(int(c), f))
+      self.dbh.commit()
     self.isClassified = True
 
   def getChannelsByFlag(self, flags):
     """
       Returns list of channels which has <flags> (string|list)
     """
-    def isChannelHasFlags(channel, flags):
-      if not isinstance(flags, list):
-        flags = [flags]
-      for f in flags:
-        if not f in self.channels[channel]["flags"]:
-          return False
-      return True
-    if not isinstance(flags, list):
-      flags = [flags]
     if not self.isClassified:
       self.classifyChannels()
-    t = [ c for c in self.getActiveChannels() if isChannelHasFlags(c, flags)]
-    return list(set(t)) 
+    if flags.__class__ == list:
+      str = "flag = " + " or flag = ".join([ "\"{0}\"".format(c) for c in flags])
+    else:
+      str = "flag = \"{0}\"".format(flags)
+    return [c[0] for c in self.cur.execute("select distinct channel_id from flags where {0}".format(str)).fetchall()]
 
   def Export(self, filename):
     dbout = sqlite3.connect(filename)
