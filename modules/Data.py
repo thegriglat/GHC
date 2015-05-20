@@ -272,9 +272,9 @@ class Data(object):
 def jsonExport(data, file = None):
   import json
   if file == None:
-    return json.dumps(data)
+    return json.dumps(data, indent=True)
   else:
-    json.dump(data, file)
+    json.dump(data, file, indent=True)
 
 def jsonLoad(jsonstr):
   import json

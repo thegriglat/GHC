@@ -65,7 +65,7 @@ if not args.cGHC:
 if args.joinjson:
   log.info("Writing merged data to file " + args.joinjson + ' ...')
   import json
-  json.dump(data, open(args.joinjson, 'w'))
+  Data.jsonExport(data, open(args.joinjson, 'w'))
   log.info("Finished.")
 
 
