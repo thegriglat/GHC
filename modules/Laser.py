@@ -23,7 +23,7 @@ class LaserData(Data.Data):
       sum = 0
       ach = self.getActiveChannels()
       for c in ach:
-        sum += self.channels[c]["data"][gain][0]
+        sum += self.getChannel(c)["data"][gain][0]
       self.average[gain] = sum / float(len(ach))
       return self.average[gain]
 
@@ -44,7 +44,7 @@ class LaserData(Data.Data):
       IOV_ID, channelid, gain12, rms12, APD_OVER_PN_MEAN, APD_OVER_PN_RMS, taskstatus = str.split()
     except:
       log.error( "  Cannot parse line\n  '{0}'\n  for 7 fields!")
-    if not self.channels.has_key(channelid):
+    if not self.getChannels().has_key(channelid):
       return False
     else:
       self.setChannelData(channelid, {"Laser": [float(gain12), float(rms12)], "APD/PN" : [float(APD_OVER_PN_MEAN), float(APD_OVER_PN_RMS)]})
@@ -65,7 +65,7 @@ class LaserData(Data.Data):
       result = dbh.execute("select LOGIC_ID, APD_MEAN, APD_RMS, APD_OVER_PN_MEAN, APD_OVER_PN_RMS \
         from {0} where IOV_ID=(select IOV_ID from MON_RUN_IOV where RUN_IOV_ID=(select IOV_ID from RUN_IOV where RUN_NUM={1}))".format(table, run))
       for row in result:
-        if self.channels.has_key(str(row[0])):
+        if self.getChannels().has_key(str(row[0])):
           values = {}
           data = self.channels[str(row[0])]["data"]
           idx = 1

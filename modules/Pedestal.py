@@ -46,7 +46,7 @@ class PedestalData(Data.Data):
       IOV_ID, channelid, gain1, rms1, gain6, rms6, gain12, rms12, taskstatus = str.split()
     except:
       log.error( "  Cannot parse line\n  '{0}'\n  for 9 fields!")
-    if not self.channels.has_key(channelid):
+    if not self.getChannels().has_key(channelid):
       return False
       log.debug("  Hmm. It seems channel {0} is not present in list of all channels. Continue ...".format(channelid))
     else:
@@ -65,7 +65,7 @@ class PedestalData(Data.Data):
       result = dbh.execute("select LOGIC_ID, PED_MEAN_G1, PED_RMS_G1, PED_MEAN_G6, PED_RMS_G6, PED_MEAN_G12, PED_RMS_G12 \
         from MON_PEDESTALS_DAT where IOV_ID=(select IOV_ID from MON_RUN_IOV where RUN_IOV_ID=(select IOV_ID from RUN_IOV where RUN_NUM={0}))".format(run))
       for row in result:
-        if self.channels.has_key(str(row[0])):
+        if self.getChannels().has_key(str(row[0])):
           values = {}
           data = self.channels[str(row[0])]["data"]
           idx = 1

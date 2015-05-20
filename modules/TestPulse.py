@@ -35,7 +35,7 @@ class TestPulseData(Data.Data):
       sum = 0
       ach = self.getActiveChannels()
       for c in ach:
-        sum += self.channels[c]["data"][gain][0]
+        sum += self.getChannel(c)["data"][gain][0]
       self.average[gain] = sum / float(len(ach))
       return self.average[gain]
 
@@ -45,7 +45,7 @@ class TestPulseData(Data.Data):
       IOV_ID, channelid, gain1, gain6, gain12, rms1, rms6, rms12, taskstatus = str.split()
     except:
       log.error( "  Cannot parse line\n  '{0}'\n  for 9 fields!")
-    if not self.channels.has_key(channelid):
+    if not self.getChannels().has_key(channelid):
       return False
     else:
       self.setChannelData(channelid, {"G1": [float(gain1), float(rms1)], "G6" : [float(gain6), float(rms6)], "G12" : [float(gain12), float(rms12)]})
@@ -63,7 +63,7 @@ class TestPulseData(Data.Data):
       result = dbh.execute("select LOGIC_ID, ADC_MEAN_G1, ADC_RMS_G1, ADC_MEAN_G6, ADC_RMS_G6, ADC_MEAN_G12, ADC_RMS_G12 \
         from MON_TEST_PULSE_DAT where IOV_ID=(select IOV_ID from MON_RUN_IOV where RUN_IOV_ID=(select IOV_ID from RUN_IOV where RUN_NUM={0}))".format(run))
       for row in result:
-        if self.channels.has_key(str(row[0])):
+        if self.getChannels().has_key(str(row[0])):
           values = {}
           data = self.channels[str(row[0])]["data"]
           idx = 1

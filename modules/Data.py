@@ -48,13 +48,13 @@ class Data(object):
     """
       Returns list of inactive channels
     """
-    return [ch for ch in self.channels.keys() if self.isInactive(ch)]
+    return [ch for ch in self.getChannels().keys() if self.isInactive(ch)]
   
   def isActive(self, channel):
     """
       Returns True|False if channel is active or not
     """
-    return [True, False][len(self.channels[channel]["data"].keys()) == 0]
+    return (True, False)[len(self.getChannel(channel)["data"].keys()) == 0]
 
   def isInactive(self, channel):
     """
@@ -66,7 +66,7 @@ class Data(object):
     """
       Returns list of active channels
     """ 
-    return [ a for a in self.channels.keys() if self.isActive(a)]
+    return [ a for a in self.getChannels().keys() if self.isActive(a)]
 
   def getNewChannel(self, data = {}):
     """
@@ -105,7 +105,7 @@ class Data(object):
   def getDataKeys(self):
     """
       Returns available data keys for the class.
-      At the moment it chechs only first available channel
+      At the moment it checks only first available channel
     """
     try:
       return self.channels[self.getActiveChannels()[0]]["data"].keys()
@@ -154,7 +154,7 @@ class Data(object):
     hist.SetXTitle("{0} (ADC counts)".format(("Mean", "RMS")[RMS]))
     for ch in activech:
       try:
-        hist.Fill(float(self.channels[ch]["data"][key][RMS]))
+        hist.Fill(float(self.getChannel(ch)["data"][key][RMS]))
       except:
         log.error( "  Cannot add value from channel {0} and key {1} {2}!".format(ch, key, ("", "(RMS)")[RMS]))
     return hist
@@ -224,7 +224,7 @@ class Data(object):
     hist.SetMaximum(lim[RMS][key][1])
     for c in self.getActiveChannels():
       try:
-        hist.SetBinContent(func(c)[1], func(c)[0], float(self.channels[c]["data"][key][RMS]))
+        hist.SetBinContent(func(c)[1], func(c)[0], float(self.getChannel(c)["data"][key][RMS]))
       except:
         log.error( "Cannot add bin content to histogram for channel", c)
     return hist
@@ -256,13 +256,13 @@ class Data(object):
       Returns list of channels which has <flags> (string|list)
     """
     def isChannelHasFlags(channel, flags):
-      if not isinstance(flags, list):
+      if not flags.__class__ == list:
         flags = [flags]
       for f in flags:
-        if not f in self.channels[channel]["flags"]:
+        if not f in self.getChannel(channel)["flags"]:
           return False
       return True
-    if not isinstance(flags, list):
+    if not flags.__class__ == list:
       flags = [flags]
     if not self.isClassified:
       self.classifyChannels()
