@@ -4,7 +4,6 @@ import sys
 import ROOT
 import log
 import sqlite3
-from Database import SqliteDB
 
 class Data(object):
   """
@@ -13,6 +12,9 @@ class Data(object):
   PEDESTAL_FLAGS = ["DP", "BP", "LR", "VLR" ]
   TESTPULSE_FLAGS = [ "DTP", "STP", "LTP" ]
   LASER_FLAGS = ["DLAMPL", "SLAMPL", "LLERRO"]
+
+  avgLaser = None
+  avgTestPulse = {}
 
   def __init__(self, database = ":memory:"):
     """
@@ -24,12 +26,9 @@ class Data(object):
     self.options = {}
     dbh = sqlite3.connect(database)
     cur = dbh.cursor()
-    cur.execute("create table flags (channel_id INTEGER, flag TEXT)")
-    cur.execute("create table runs (run_num INTEGER, run_type TEXT)")
-    cur.execute("create table all_channels (channel_id INTEGER)")
-    cur.execute("create table data (run_num INTEGER, channel_id INTEGER, key TEXT, value REAL)")
-    cur.execute("PRAGMA synchronous=OFF")
-    cur.execute("PRAGMA temp_store=MEMORY")
+    for l in open("dbschema.sql", 'r').readlines():
+      l = l.strip()
+      cur.execute (l)
     dbh.commit()
     self.dbh = dbh
     self.cur = cur
@@ -46,40 +45,23 @@ class Data(object):
     """
     return self.description
 
-  def getChannels(self):
+  def getAllChannels(self):
     return [c[0] for c in self.dbh.execute("select channel_id from all_channels").fetchall()]
 
-  def findInactiveChannels(self):
+  def numOfInactiveChannels(self):
     """
       Returns list of inactive channels
     """
-    return [ c[0] for c in self.dbh.execute("select channel_id from all_channels where channel_id not in (select distinct channel_id from data)").fetchall()]
+    return len(self.getAllChannels()) - len(self.getActiveChannels())
   
   def getActiveChannels(self):
     """
       Returns list of active channels
     """ 
-    return [c[0] for c in self.dbh.execute("select channel_id from all_channels where channel_id in (select distinct channel_id from data)").fetchall()]
-
-  def getChannelData(self, channel, **kwargs):
-    """
-      Return array with channel data
-      **kwargs keys -- key, run, runtype 
-    """
-    str = ""
-    if kwargs.has_key("run"):
-      str += " and run_num = {0} ".format(str(kwargs['run']))
-    if kwargs.has_key("key"):
-      str += " and key = '{0}' ".format(kwargs['key'])
-    if kwargs.has_key("runtype"):
-      str += " and run_num in (select run_num from runs where run_type = '{0}') ".format(kwargs['runtype'])
-    return self.cur.execute("select key, value, run_num from data where channel_id = {channel_id} {addstr}".format(channel_id = channel, addstr = str)).fetchall()
-
-  def getNewChannel(self, data = {}):
-    """
-      Returns hash-table which is dummy template for new channel
-    """
-    return {"data" : data, 'flags' : []}
+    return [c[0] for c in self.dbh.execute("select channel_id from data_pedestal_hvon  union \
+                                            select channel_id from data_pedestal_hvoff union \
+                                            select channel_id from data_testpulse      union \
+                                            select channel_id from data_laser").fetchall()]
 
   def readAllChannels(self, filename):
     """
@@ -91,33 +73,22 @@ class Data(object):
     cur = self.dbh.cursor()
     for line in fd.readlines():
       line = line.strip()
-      cur.execute("insert into all_channels values ({0})".format(int(line)))
+      ch = int(line)
+      cur.execute("insert into all_channels values ({channel}, '{location}', {sm}, {tt}, {xtal})".format(channel = ch, 
+      location = getChannelClass(ch), sm = getSM(ch), tt = getTT(ch), xtal = getXtal(ch)))
       n = n + 1
     self.dbh.commit()
     log.info( "Done. Processed {0} records.".format(n))
     return n
 
-  def setChannelData(self, channel, data):
-    """
-      Set channel data hash table
-    """
-    self.channels[channel]["data"] = data
-  
-  def readData(self, type,  source = None):
-    """
-      Void function for reading data from source.
-      This function should be overloaded in other classes
-    """
-    log.error( "Function 'readData' should be overloaded in other classes.")
-    pass
-  
   def getDataKeys(self):
     """
       Returns available data keys for the class.
       At the moment it chechs only first available channel
     """
+    sql = " union ".join(["select key from {0}".format(c) for c  in ['data_pedestal_hvon', 'data_testpulse', 'data_laser', 'data_pedestal_hvoff']])
     try:
-      return [ c[0] for c in self.dbh.execute("select distinct key from data").fetchall()]
+      return [ c[0] for c in self.dbh.execute(sql).fetchall()]
     except:
       return []
 
@@ -238,31 +209,116 @@ class Data(object):
         log.error( "Cannot add bin content to histogram for channel", c)
     return hist
 
-  def getChannelFlags(self, channel):
+  def getChannelData(self, channel, key, type):
+    try:
+      return  self.cur.execute("select value from {table} where channel_id = {channel} and key = '{key}'".format(table = "data_" + type, channel = channel, key = key)).fetchone()[0]
+    except:
+      return None
+
+  def getChannelFlags(self, channel, type):
     """
       Compare channel data with limits and return list of error flags
       Function getChannelFlags should be overloaded in other modules.
     """
-    print "Function getChannelFlags should be overloaded in other modules."
-    return []
+    if type  == "pedestal_hvon" or type == "pedestal_hvoff":
+      return self.getPedestalFlags(channel, type)
+    elif type == 'testpulse':
+      return self.getTestPulseFlags(channel)
+    elif type == 'laser':
+      return self.getLaserFlags(channel)
+    return None
 
-  def getChannel(self, channel):
-    """
-      Return channel by its number
-    """
-    return self.channels[channel]
+  def getPedestalFlags(self, channel, type = 'pedestal_hvon'):
+    def PedestalComparison(key, deadlimits, badlimits):
+      tmpflags = []
+      mean = self.getChannelData(channel, 'PED_MEAN_' + key, type)
+      rms = self.getChannelData(channel, 'PED_RMS_' + key, type)
+      if mean <= deadlimits[0] or rms <= deadlimits[1]:
+        tmpflags.append("DP" + key)
+      else:
+        if rms >= badlimits[0] and rms < badlimits[1] and mean > deadlimits[0]:
+          tmpflags.append("LR" + key)
+        if rms > badlimits[1] and mean > deadlimits[0]:
+          tmpflags.append("VLR" + key)
+        if abs(mean - 200) >= 30 and mean > deadlimits[0]:
+          tmpflags.append("BP" + key)
+      return tmpflags
+    flags = []
+    if self.cur.execute("select location from all_channels where channel_id = " + str(channel)).fetchone()[0] == "EB":
+      limits = {"G1" : ((1, 0.2), (1.1, 3)), "G6" : ((1, 0.4), (1.3, 4)), "G12" : ((1, 0.5), (2.1, 6))}
+    else:
+      limits = {"G1" : ((1, 0.2), (1.5, 4)), "G6" : ((1, 0.4), (2, 5)),   "G12" : ((1, 0.5), (3.2, 7))}
+    if type == "pedestal_hvon":
+      flags += PedestalComparison("G1", limits["G1"][0], limits["G1"][1])
+      flags += PedestalComparison("G6", limits["G6"][0], limits["G6"][1])
+      flags += PedestalComparison("G12", limits["G12"][0], limits["G12"][1])
+    if type == "pedestal_hvoff":
+      for key in ["G1", "G6", "G12"]:
+        sql = "select data_pedestal_hvon.channel_id  from data_pedestal_hvon, data_pedestal_hvoff \
+               where data_pedestal_hvon.channel_id = data_pedestal_hvoff.channel_id and \
+               data_pedestal_hvon.key = data_pedestal_hvoff.key and \
+               abs(data_pedestal_hvon.value - data_pedestal_hvoff.value) < 0.2 \
+               and data_pedestal_hvon.channel_id = {0} and data_pedestal_hvon.key = {1}".format(int(channel), 'PED_RMS_' + key)
+        if len(self.cur.execute(sql).fetchall()) >= 0:
+          flags.append("PV" + key)
+    return list(set(flags))
+
+  def getTestPulseFlags(self, channel):
+    def getavgtestpulse(key):
+      if self.avgTestPulse.has_key(key):
+        return self.avgTestPulse[key]
+      else:
+        self.avgTestPulse[key] = self.dbh.execute("select sum(value) from data_testpulse where key = '{key}'".format(key = 'ADC_MEAN_' + key)).fetchone()[0] / float( self.dbh.execute("select count(channel_id) from data_testpulse").fetchone()[0])
+        return self.avgTestPulse[key]
+    flags = []
+    for i in ('G1', 'G6', 'G12'):
+      mean = self.getChannelData(channel, 'ADC_MEAN_' + i, 'testpulse')
+      mean = self.getChannelData(channel, 'ADC_RMS_' + i, 'testpulse')
+      if mean <= 0:
+        flags.append("DTP" + i)
+      if mean / getavgtestpulse(i) <= 0.5:
+        flags.append("STP" + i)
+      if mean / getavgtestpulse(i) > 1.5:
+        flags.append("LTP" + i)
+    return list(set(flags))
+
+  def getLaserFlags(self, channel):
+    def getavglaser():
+      if not self.avgLaser is None:
+        return self.avgLaser
+      else:
+        self.avgLaser = self.dbh.execute("select sum(value) from data_laser where key = 'APD_MEAN'").fetchone()[0] / float( self.dbh.execute("select count(channel_id) from data_laser").fetchone()[0])
+        return self.avgLaser
+    flags = []
+    mean = self.getChannelData(channel, 'APD_MEAN', 'laser')
+    rms = self.getChannelData(channel, 'APD_RMS', 'laser')
+    if mean <= 0:
+      flags.append("DLAMPL")
+    if mean / getavglaser() < 0.1 and mean > 0:
+      flags.append("SLAMPL")
+    location =  self.cur.execute("select location from all_channels where channel_id = {channel}".format(channel = channel)).fetchone()[0]
+    if location == "EB":
+      LLERRO_b = 0.2
+    elif location == "EE":
+      LLERRO_b = 0.05
+    else:
+      log.error("Cannot define location on channel" + str(channel))
+    if mean > 0 and rms / float(mean) > LLERRO_b:
+      flags.append("LLERRO")
+    return list(set(flags))
+
 
   def classifyChannels(self):
     """
       Call getChannelFlags for each active channel and set 'flags' value for channels
     """
     cur = self.dbh.cursor()
-    for c in self.getActiveChannels():
-      log.info("classifyChannels: {0}".format(str(c)))
-      cur.execute("BEGIN TRANSACTION")
-      for f in self.getChannelFlags(c):
-        cur.execute("insert into flags values ({0}, '{1}')".format(int(c), f))
-      self.dbh.commit()
+    for t in ['pedestal_hvon','testpulse', 'laser', 'pedestal_hvoff']:
+      log.info("Classifying {0} channels ...".format(t))
+      for c in [ k[0] for k in self.dbh.execute("select channel_id from {table}".format(table = "data_" + t)).fetchall()]:
+        for f in self.getChannelFlags(c, t):
+          cur.execute("insert into flags values ({0}, '{1}')".format(int(c), f))
+        self.dbh.commit()
     self.isClassified = True
 
   def getChannelsByFlag(self, flags):
@@ -279,29 +335,74 @@ class Data(object):
 
   def Export(self, filename):
     dbout = sqlite3.connect(filename)
-    try:
-      DumpDB(self.dbh, dbout)
-    except:
-      log.error("Cannot dump memory database to file '" + filename + "'")
+    DumpDB(self.dbh, dbout)
     dbout.close()
 
   def Load(self, filename):
     self.dbh = sqlite3.connect(":memory:")
     dbin = sqlite3.connect(filename)
-    try:
-      DumpDB(dbin, self.dbh)
-    except:
-      log.error("Cannot load database from '" + filename+ "'")
- 
+    DumpDB(dbin, self.dbh)
+  
+  def readData(self, source, **kwargs):
+    """
+      Read pedestal values from database
+        connstr : connection string to database
+        runnum  : array of runs which contains data
+    """
+    if not kwargs.has_key("runs"):
+      log.error("readData function should be called with 'runs' parameter")
+    if not kwargs.has_key("type"):
+      log.error("readData function should be called with 'type' parameter")
+    if kwargs.has_key('lasertable'):
+      log.info("Table {0} will be user as source for Laser data".format(kwargs['lasertable']))
+    table = "data_" + kwargs['type']
+    log.info("Trying to connect to Oracle")
+    import cx_Oracle
+    ora = cx_Oracle.connect(source.split('oracle://')[1])
+    log.info("OK")
+    log.info("Exporting data from Oracle to inner DB ...")
+
+    for run in sorted(kwargs['runs']):
+      log.info("Process run " + str(run) + " ...")
+      if "pedestal" in table:
+        sql = "select LOGIC_ID, PED_MEAN_G1, PED_RMS_G1, PED_MEAN_G6, PED_RMS_G6, PED_MEAN_G12, PED_RMS_G12 \
+          from MON_PEDESTALS_DAT where IOV_ID=(select IOV_ID from MON_RUN_IOV where RUN_IOV_ID=(select IOV_ID from RUN_IOV where RUN_NUM={0}))".format(run)
+        fields = ['PED_MEAN_G1', 'PED_RMS_G1', 'PED_MEAN_G6', 'PED_RMS_G6', 'PED_MEAN_G12', 'PED_RMS_G12']
+      elif "testpulse" in table:
+        sql = "select LOGIC_ID, ADC_MEAN_G1, ADC_RMS_G1, ADC_MEAN_G6, ADC_RMS_G6, ADC_MEAN_G12, ADC_RMS_G12 \
+          from MON_TEST_PULSE_DAT where IOV_ID=(select IOV_ID from MON_RUN_IOV where RUN_IOV_ID=(select IOV_ID from RUN_IOV where RUN_NUM={0}))".format(run)
+        fields = ['ADC_MEAN_G1', 'ADC_RMS_G1', 'ADC_MEAN_G6', 'ADC_RMS_G6', 'ADC_MEAN_G12', 'ADC_RMS_G12']
+      elif "laser" in table:
+        sql = "select LOGIC_ID, APD_MEAN, APD_RMS, APD_OVER_PN_MEAN, APD_OVER_PN_RMS \
+          from {0} where IOV_ID=(select IOV_ID from MON_RUN_IOV where RUN_IOV_ID=(select IOV_ID from RUN_IOV where RUN_NUM={1}))".format(kwargs['lasertable'], run)
+        fields = ['APD_MEAN', 'APD_RMS', 'APD_OVER_PN_MEAN', 'APD_OVER_PN_RMS']
+      cur = self.dbh.cursor()
+      result = ora.cursor().execute(sql)
+      cur.execute("insert into runs values ({0}, '{1}', \"\")".format(int(run), kwargs['type']))
+      for row in result:
+        for k in xrange(len(fields)):
+          # we will insert only matter data
+          # merging ...
+          c =  cur.execute("select value from {table} where channel_id = {channel} and key = '{key}'".format(table = table, key = fields[k], channel = int(row[0]))).fetchall()
+          if len(c) == 0:
+            cur.execute("insert into {table} values ({channel}, '{key}', {data}) ".format(table = table, channel = int(row[0]), data = row[k + 1], key = fields[k]))
+          elif c[0][0] == -1 and row [k + 1] != -1:
+            log.debug ("Replace {key} values for channel {channel}: {old} -> {new}".format(key = fields[k], channel = row[0], old = c[0][0], new = row[k + 1]))
+            cur.execute("update {table} set value = {data} where channel_id = {channel} and key = '{key}' ".format(table = table, channel = int(row[0]), data = row[k + 1], key = fields[k]))
+      self.dbh.commit()
+    ora.close()
+
 def DumpDB(dbin, dbout):
   cout = dbout.cursor()
   for tablerow in dbin.execute('select * from sqlite_master').fetchall():
     tablename = tablerow[2]
     log.info ("Create table '" + tablename + "'")
+    if "sqlite" in tablerow[1]:
+      continue
     try:
       cout.execute(tablerow[4])
-    except:
-      log.error("Cannot create table {0} in DB {1}!".format(tablename, str(dbout)))
+    except Exception as e:
+      log.error("Cannot create table {0} in DB {1}!: {2}".format(tablename, str(dbout), str(e)))
     log.info ("Exporting data from table '" + tablename + "' ...")
     for row in dbin.execute('select * from ' + tablename).fetchall():
       tmprow = []
