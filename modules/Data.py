@@ -113,33 +113,37 @@ class Data(object):
     """
     return 0
 
-  def get1DHistogram(self, key, dimx = None, RMS = False, name = ""):
+  def get1DHistogram(self, **kwargs):
     """
       Return TH1F histogram.
       Parameters:
-        key  : data[key] which will be used
-        dimx : range of X axis. Default is ((150, 250), (0, 5))[RMS]
-        RMS  : use mean (False) or RMS (True) data. Default is False
-        name : title of histogram. Default is "{0} {1}, Gain {2}".format(self.description, ("mean", "RMS")[RMS], key)
+        key     : key of data to be used
+        dimx    : range of X axis. Default is ((150, 250), (0, 5))[RMS]
+        useRMS  : use mean (False) or RMS (True) data. Default is False
+        name    : title of histogram. Default is "{0} {1}, Gain {2}".format(self.description, ("mean", "RMS")[RMS], key)
+        type    : run type to use
+        part    : "EB" | "EE"
     """
-    if name == "":
-      if self.runtype == "pedestal" or self.runtype == "testpulse":
-        name = "{0} {1}, Gain {2} (ADC counts)".format(self.description, ("mean", "RMS")[RMS], key[1:])
-      elif self.runtype == "laser":
-        name = "Laser {0}".format(("Amplitude " + (" ", "RMS")[RMS] + "(ADC counts)", key + ' ' + ("ratio", "RMS")[RMS])[key == "APD/PN"])
-    activech = self.getActiveChannels()
-    if dimx == None:
-      dimx = ((150, 250), (0, 5))[RMS]
+    if not kwargs.has_key('name'):
+      if "pedestal" in kwargs['type'] or "testpulse" in kwargs["type"]:
+        name = "{0} {1}, {2} (ADC counts)".format(kwargs['type'], ("mean", "RMS")[kwargs['useRMS']], kwargs['key'])
+      elif kwargs['type'] == "laser":
+        name = "Laser {0}".format(("Amplitude " + (" ", "RMS")[kwargs['useRMS']] + "(ADC counts)", key + ' ' + ("ratio", "RMS")[kwargs['useRMS']])[key == "APD/PN"])
+    activech = [ c[0] for c in self.cur.execute("select channel_id from {tab} where key = '{key}'".format(tab = 'data_' + kwargs['type'], key = kwargs['key'])).fetchall() if getChannelClass(c[0]) == kwargs['part']]
+    if not kwargs.has_key('dimx'):
+      dimx = ((150, 250), (0, 5))[kwargs['useRMS']]
+    else:
+      dimx = kwargs['dimx']
     hist = ROOT.TH1F(name, name, 100, dimx[0], dimx[1]) 
-    hist.SetXTitle("{0} (ADC counts)".format(("Mean", "RMS")[RMS]))
+    hist.SetXTitle("{0} (ADC counts)".format(("Mean", "RMS")[kwargs['useRMS']]))
     for ch in activech:
       try:
-        hist.Fill(float(self.channels[ch]["data"][key][RMS]))
-      except:
-        log.error( "  Cannot add value from channel {0} and key {1} {2}!".format(ch, key, ("", "(RMS)")[RMS]))
+        hist.Fill(float(self.getChannelData(ch, kwargs['key'], kwargs['type'])))
+      except Exception as e:
+        log.error( "  Cannot add value from channel {0} and key {1} {2}!: {3}".format(ch, key, ("", "(RMS)")[kwargs['useRMS']], e))
     return hist
 
-  def get2DHistogram(self, key, RMS = False, plottype = "barrel", name = "", lim = None):
+  def get2DHistogram(self, **kwargs):
     """
       Returns TH2F histogram.
       Parameters:
@@ -166,31 +170,40 @@ class Data(object):
       x = channel / 1000
       x = [x, x + 100][side == 0]
       return (y, x)
-    if name == "":
-      if self.runtype == "pedestal" or self.runtype == "testpulse":
-        name = "{0} {1}, Gain {2} (ADC counts)".format(self.description, ("mean", "RMS")[RMS], key[1:])
-      elif self.runtype == "laser":
-        name = "Laser {0}".format(("Amplitude " + (" ", "RMS")[RMS] + "(ADC counts)", key + ' ' + ("ratio", "RMS")[RMS])[key == "APD/PN"])
-    if plottype == "endcap":
+    RMS = (False, kwargs['useRMS'])[kwargs.has_key('useRMS')]
+    lim = None
+    gain = kwargs['key'].split("_").pop()
+    if not "G" in gain:
+      # laser 
+      if kwargs['key'].split("_")[1] == "OVER":
+        gain = 'APD/PN'
+      else:
+        gain = 'Laser'
+    if not kwargs.has_key('name'):
+      if "pedestal" in kwargs['type']or kwargs['type'] == "testpulse":
+        name = "{0} {1}, Gain {2} (ADC counts)".format(kwargs['type'], ("mean", "RMS")[RMS], kwargs['key'])
+      elif kwargs['type'] == "laser":
+        name = "Laser {0}".format(("Amplitude " + (" ", "RMS")[RMS] + "(ADC counts)", kwargs['key'] + ' ' + ("ratio", "RMS")[RMS])[kwargs['key'] == "APD/PN"])
+    if kwargs['part'] == "EE":
       hist = ROOT.TH2F (name, name, 200, 0, 200, 100, 0, 100) 
-      if self.runtype == "pedestal":
+      if "pedestal" in kwargs['type']:
         lim = ({True: {"G1" : (0.3, 0.8), "G6" : (0.7, 1.5), "G12" : (1.2, 3.4)}, False : {"G1": (160, 240), "G6" : (160, 240), "G12" : (160, 240)}}, lim)[lim != None]
-      elif self.runtype == "testpulse":
+      elif kwargs['type'] == "testpulse":
         lim = ({True: {"G1" : (0, 12), "G6" : (0, 6), "G12" : (0, 6)}, False : {"G1": (2000, 3500), "G6" : (2000, 3000), "G12" : (2000, 3000)}}, lim)[lim != None]
-      elif self.runtype == "laser":
+      elif kwargs['type'] == "laser":
         lim = ({True: {"Laser" : (0, 60), 'APD/PN' : (0, 0.05)}, False: {"Laser" : (0, 2000), 'APD/PN' : (0, 2.5)}}, lim)[lim != None]
       hist.SetNdivisions(40, "X")
       hist.SetNdivisions(20, "Y")
       hist.SetXTitle("iX (iX + 100)")
       hist.SetYTitle("iY")
       func = getXY
-    elif plottype == "barrel":
+    elif kwargs['part'] == "EB":
       hist = ROOT.TH2F (name, name, 360, 0, 360, 170, -85, 85) 
-      if self.runtype == "pedestal":
+      if "pedestal" in kwargs['type']:
         lim = ({True: {"G1" : (0.3, 0.8), "G6" : (0.4, 1.1), "G12" : (0.8, 2.2)}, False : {"G1": (160, 240), "G6" : (160, 240), "G12" : (160, 240)}}, lim)[lim != None]
-      elif self.runtype == "testpulse":
+      elif kwargs['type'] == "testpulse":
         lim = ({True: {"G1" : (0, 10), "G6" : (0, 4), "G12" : (0, 3)}, False : {"G1": (1400, 3000), "G6" : (1400, 3000), "G12" : (1400, 3000)}}, lim)[lim != None]
-      elif self.runtype == "laser":
+      elif kwargs['type'] == "laser":
         lim = ({True: {"Laser" : (0, 50), 'APD/PN' : (0, 0.06)}, False: {"Laser" : (0, 2000), 'APD/PN' : (0, 3)}}, lim)[lim != None]
       hist.SetNdivisions(18, "X")
       hist.SetNdivisions(2, "Y")
@@ -200,11 +213,11 @@ class Data(object):
     else:
       log.error( "Unsupported plottype '{0}'".format(plottype))
       sys.exit(0)
-    hist.SetMinimum(lim[RMS][key][0])
-    hist.SetMaximum(lim[RMS][key][1])
-    for c in self.getActiveChannels():
+    hist.SetMinimum(lim[RMS][gain][0])
+    hist.SetMaximum(lim[RMS][gain][1])
+    for c in [ c[0] for c in self.cur.execute("select distinct channel_id from {tab} where key = '{key}'".format(tab = "data_" + kwargs['type'], key = kwargs['key'])) if getChannelClass(c[0]) == kwargs['part']]:
       try:
-        hist.SetBinContent(func(c)[1], func(c)[0], float(self.channels[c]["data"][key][RMS]))
+        hist.SetBinContent(func(c)[1], func(c)[0], float(self.getChannelData(c, kwargs['key'], kwargs['type'])))
       except:
         log.error( "Cannot add bin content to histogram for channel", c)
     return hist
