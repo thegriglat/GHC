@@ -20,7 +20,6 @@ class Data(object):
     """
       At the moment do nothing.
     """
-    self.isClassified = False
     self.runtype = None
     self.description = None
     self.options = {}
@@ -332,13 +331,13 @@ class Data(object):
         for f in self.getChannelFlags(c, t):
           cur.execute("insert into flags values ({0}, '{1}')".format(int(c), f))
         self.dbh.commit()
-    self.isClassified = True
+    self.dbh.execute("insert into options values ('isClassified', 1)")
 
   def getChannelsByFlag(self, flags):
     """
       Returns list of channels which has <flags> (string|list)
     """
-    if not self.isClassified:
+    if self.dbh.execute("select count(*) from options where name = 'isClassified'").fetchone()[0] == 0:
       self.classifyChannels()
     if flags.__class__ == list:
       str = "flag = " + " or flag = ".join([ "\"{0}\"".format(c) for c in flags])
