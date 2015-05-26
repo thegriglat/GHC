@@ -51,16 +51,23 @@ class Data(object):
     """
       Returns list of inactive channels
     """
-    return len(self.getAllChannels()) - len(self.getActiveChannels())
+    return len(self.getAllChannels()) - len(self.getActiveChannels(type))
   
-  def getActiveChannels(self):
+  def getActiveChannels(self, **kwargs):
     """
       Returns list of active channels
     """ 
-    return [c[0] for c in self.dbh.execute("select channel_id from data_pedestal_hvon  union \
-                                            select channel_id from data_pedestal_hvoff union \
-                                            select channel_id from data_testpulse      union \
-                                            select channel_id from data_laser").fetchall()]
+    types = ['pedestal_hvon', 'pedestal_hvoff', 'testpulse', 'laser']
+    if kwargs.has_key('type'):
+      if kwargs['type'].__class__ != list:
+        types = [kwargs['type']]
+      else:
+        types = kwargs['type']
+    if len(types) >= 2:
+      sql = " union ".join(["select channel_id from {0}".format(c) for c in ["data_" + i for i in types]])
+    else:
+      sql = "select distinct channel_id from {0}".format("data_" + types[0])
+    return [c[0] for c in self.dbh.execute(sql).fetchall()]
 
   def readAllChannels(self, filename):
     """
@@ -128,6 +135,8 @@ class Data(object):
         name = "{0} {1}, {2} (ADC counts)".format(kwargs['type'], ("mean", "RMS")[kwargs['useRMS']], kwargs['key'])
       elif kwargs['type'] == "laser":
         name = "Laser {0}".format(("Amplitude " + (" ", "RMS")[kwargs['useRMS']] + "(ADC counts)", key + ' ' + ("ratio", "RMS")[kwargs['useRMS']])[key == "APD/PN"])
+    else:
+      name = kwargs['name']
     activech = [ c[0] for c in self.cur.execute("select channel_id from {tab} where key = '{key}'".format(tab = 'data_' + kwargs['type'], key = kwargs['key'])).fetchall() if getChannelClass(c[0]) == kwargs['part']]
     if not kwargs.has_key('dimx'):
       dimx = ((150, 250), (0, 5))[kwargs['useRMS']]
