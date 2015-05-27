@@ -10,16 +10,15 @@ import log
 import Data
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-o', '--output', help="Results directory (default: RESULTS)", dest='output')
-parser.add_argument('-d', '--dump', help="Dump internal database as sqlite3 database", dest='dump')
-parser.add_argument('-ds', '--dumpsql', help="Dump internal database as SQL", dest='dumpsql')
 parser.add_argument('-c', '--dbstr', help="Connection string to DB (oracle://user/pass@db)", dest='dbstr')
-parser.add_argument('-pon', help="Pedestal HV ON runs", dest='pon_runs')
-parser.add_argument('-poff',help="Pedestal HV OFF runs)", dest='poff_runs')
+parser.add_argument('-pon', help="Pedestal HV ON  runs", dest='pon_runs')
+parser.add_argument('-poff',help="Pedestal HV OFF runs", dest='poff_runs')
 parser.add_argument('-tp',  help="Test Pulse runs", dest='tp_runs')
 parser.add_argument('-l',help="Laser runs", dest='l_runs')
-parser.add_argument('-lt', '--lasertable', help="Laser table", dest='lasertable', default = "MON_LASER_BLUE_DAT")
-
+parser.add_argument('-lt', '--lasertable', help="Laser table to use in Oracle DB", dest='lasertable', default = "MON_LASER_BLUE_DAT")
+parser.add_argument('-o', '--output', help="Results directory", dest='output')
+parser.add_argument('-d', '--dump', help="Dump internal database in sqlite3 database", dest='dump')
+parser.add_argument('-ds', '--dumpsql', help="Dump internal database in SQL", dest='dumpsql')
 args = parser.parse_args()
 
 if not args.output:
