@@ -30,7 +30,7 @@ To get more info about inner structure of modules run `pydoc modules/*`
 
 ### Data.py  
 
-The *Data.py* module provides basic data structure and functions for all scripts. Other modules such as *Pedestal.py*, *TestPulse.py* and *Laser.py* import *Data.py* module and override some functions that are specific to pedestal/test pulse/laser runs (for example, import from data base). Also it renders TH1F and TH2F ROOT histograms to files.
+The *Data.py* module provides basic data structure and functions for all scripts.
 
 ### log.py ###
 
@@ -39,11 +39,7 @@ This modules only print INFO or DEBUG messages.
 Scripts
 -------
 
-Each script has command line option parser, so -h option will give you some useful information. Most of scripts can export data in JSON format (`-j` or `-jo` options).
-
-    -o OUTPUT, --output OUTPUT is directory for output plots
-    -c DBSTR, --dbstr DBSTR is string used for connection for Oracle DB. It likes *oracle://user/pass@db*
-    -j JSON, --json JSON is file name of output JSON file
+Each script has command line option parser, so -h option will give you some useful information.
 
 ### ghc.py ###
 
@@ -79,6 +75,6 @@ How to use
 **for pedestal analysis of runs 238566 238569 238594 (GHC28)**
 
     python ghc.py -h
-    python ghc.py -ds GHC.dump.sql -o results2 -lt MON_LASER_IRED_DAT -c 'oracle://cms_ecal_r/3c4l_r34d3r@int2r_lb' -poff "238566 238569 238594" -pon "238566 238569 238594" -tp "238577 238574 238581" -l 238724
+    python ghc.py -ds GHC.dump.sql -o results2 -lt MON_LASER_IRED_DAT -c 'oracle://user/pass@db' -poff "238566 238569 238594" -pon "238566 238569 238594" -tp "238577 238574 238581" -l 238724
 
 You should see various output about channels.
