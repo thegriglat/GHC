@@ -338,6 +338,8 @@ class Data(object):
     """
       Call getChannelFlags for each active channel and set 'flags' value for channels
     """
+    if self.dbh.execute("select count(*) from options where name = 'isClassified'").fetchone()[0] != 0:
+      return
     cur = self.dbh.cursor()
     for t in ['pedestal_hvon','testpulse', 'laser']:
       for c in [ k[0] for k in self.dbh.execute("select channel_id from {table}".format(table = "data_" + t)).fetchall()]:
@@ -360,8 +362,7 @@ class Data(object):
     """
       Returns list of channels which has <flags> (string|list)
     """
-    if self.dbh.execute("select count(*) from options where name = 'isClassified'").fetchone()[0] == 0:
-      self.classifyChannels()
+    self.classifyChannels()
     if flags.__class__ == list:
       str = "flag = " + " or flag = ".join([ "\"{0}\"".format(c) for c in flags])
     else:
