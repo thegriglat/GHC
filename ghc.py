@@ -95,7 +95,7 @@ for d in ["EB", "EE"]:
       print "  {0:8s} : {1:5d}".format(i + k, num)
   print ""
 
-  pre = "^[BD]P|^[B]LR"
+  pre = "^[BD]P|^V?LR"
   tpre = "^[DSL]TP"
   lre = "^[DS]LAMPL|LLERRO"
   hvre = "^BV"

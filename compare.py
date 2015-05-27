@@ -34,13 +34,13 @@ def getGHCStats(g):
   print "  Active channels                         :", len(g.getActiveChannels())
   print "  Masked channels                         :", g.numOfInactiveChannels()
   print "  Total Problematic channels              :", g.dbh.execute("select count(distinct channel_id) from flags").fetchone()[0]
-  print "  Channels with design performance in G12 :", g.dbh.execute("select count(distinct channel_id) from flags where not channel_id in (select channel_id from flags where flag REGEXP '.*G12')").fetchone()[0]
+  print "  Channels with design performance in G12 :", len(g.getActiveChannels()) - g.dbh.execute("select count(distinct channel_id) from flags where flag REGEXP '([BD]P|V?LR)G12'").fetchone()[0]
   print "  Noisy (2 <= rms <= 6 ADC counts) in G12 :", len(g.getChannelsByFlag("LRG12"))
   print "  Very noisy (rms > 6 ADC counts) in G12  :", len(g.getChannelsByFlag("VLRG12"))
   print "  Pedestal rms ADC counts in G12          :", getRMS([c[0] for c in g.dbh.execute("select value from data_pedestal_hvon where key = 'PED_RMS_G12'").fetchall()])
   print "  Pedestal rms ADC counts in G6           :", getRMS([c[0] for c in g.dbh.execute("select value from data_pedestal_hvon where key = 'PED_RMS_G6'").fetchall()])
   print "  Pedestal rms ADC counts in G1           :", getRMS([c[0] for c in g.dbh.execute("select value from data_pedestal_hvon where key = 'PED_RMS_G1'").fetchall()])
-  print "  APD with bad or no connection to HV     :", len(g.getChannelsByFlag(["BVG1", "BVG6", "BVG12"]))
+  print "  APD with bad or no connection to HV     :", g.dbh.execute("select count(distinct channel_id) from flags where flag like 'BV%'").fetchone()[0]
   print "  Dead channels due to LVR board problems :", len(g.getChannelsByFlag("DLAMPL"))
 
 for f in data.keys():
