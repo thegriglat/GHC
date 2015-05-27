@@ -93,7 +93,34 @@ for d in ["EB", "EE"]:
       num = GHC.cur.execute("select count( distinct channel_id) from flags where flag = '{0}' and channel_id like '{1}%'".format(i + k, (2,1)[d == "EB"])).fetchone()[0]
       tpc += num
       print "  {0:8s} : {1:5d}".format(i + k, num)
-  print "Total problematic pedestal channels:", tpc
+  print ""
+
+  pre = "^[BD]P|^[B]LR"
+  tpre = "^[DSL]TP"
+  lre = "^[DS]LAMPL|LLERRO"
+  hvre = "^BV"
+  getchnum = lambda x: GHC.dbh.execute("select count(distinct channel_id) from flags where channel_id like '{0}' and flag REGEXP {1}".format(
+   ("1%", "2%")[d == "EE"], " and flag REGEXP ".join([ "'{0}'".format(i) for i in x])
+   )).fetchone()[0]
+  print "=== Summary Total Problematic Channels ==="
+  print "  Total problematic channels                  |           * |", tpc
+  print "  Pedestals problems                          |          PE |", getchnum([pre])
+  print "  Test Pulse problems                         |          TP |", getchnum([tpre])
+  print "  Laser problems                              |          LA |", getchnum([lre])
+  print "  High voltage problems                       |          HV |", getchnum([hvre])
+  print "  Pedestals + Test Pulse problems             |       PE+TP |", getchnum([pre, tpre])
+  print "  Pedestals + Laser problems                  |       PE+LA |", getchnum([pre, lre])
+  print "  Pedestals + High voltage problems           |       PE+HV |", getchnum([pre, hvre])
+  print "  Test Pulse + Laser problems                 |       TP+LA |", getchnum([tpre, lre])
+  print "  Test Pulse + High voltage problems          |       TP+HV |", getchnum([tpre, hvre])
+  print "  Laser + High voltage problems               |       LA+HV |", getchnum([lre, hvre])
+  print "  Pedestals + Test Pulse + Laser problems     |    PE+TP+LA |", getchnum([pre, tpre, lre])
+  print "  Pedestals + Test Pulse + HV problems        |    PE+TP+HV |", getchnum([pre, tpre, hvre])
+  print "  Pedestals + Laser + HV problems             |    PE+LA+HV |", getchnum([pre, lre, hvre])
+  print "  Test Pulse  + Laser + HV problems           |    TP+LA+HV |", getchnum([tpre, lre, hvre])
+  print "  Pedestal + Test Pulse + Laser + HV problems | PE+TP+LA+HV |", getchnum([pre, tpre, lre, hvre])
+
+
 
   print ""
 
@@ -130,8 +157,6 @@ for d in ("EB", "EE"):
       tpc += num
       print "  {0:8s} : {1:5d}".format(i + k, num)
   print "Total problematic test pulse channels:", tpc
-
-
 
 
 print "="*80 
