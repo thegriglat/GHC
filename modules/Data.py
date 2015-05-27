@@ -343,6 +343,7 @@ class Data(object):
         for f in self.getChannelFlags(c, t):
           cur.execute("insert into flags values ({0}, '{1}')".format(int(c), f))
     # pedestal HV OFF channels problems
+    log.info("Classifying pedestal HV OFF channels ...")
     for key in ["G1", "G6", "G12"]:
       sql = "select data_pedestal_hvon.channel_id  from data_pedestal_hvon, data_pedestal_hvoff \
              where data_pedestal_hvon.channel_id = data_pedestal_hvoff.channel_id and \
