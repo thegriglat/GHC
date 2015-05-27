@@ -53,7 +53,7 @@ class Data(object):
     """
       Returns list of inactive channels
     """
-    return len(self.getAllChannels()) - len(self.getActiveChannels(type))
+    return len(self.getAllChannels()) - len(self.getActiveChannels())
   
   def getActiveChannels(self, **kwargs):
     """
@@ -340,12 +340,10 @@ class Data(object):
     """
     cur = self.dbh.cursor()
     for t in ['pedestal_hvon','testpulse', 'laser']:
-      log.info("Classifying {0} channels ...".format(t))
       for c in [ k[0] for k in self.dbh.execute("select channel_id from {table}".format(table = "data_" + t)).fetchall()]:
         for f in self.getChannelFlags(c, t):
           cur.execute("insert or ignore into flags values ({0}, '{1}')".format(int(c), f))
     # pedestal HV OFF channels problems
-    log.info("Classifying pedestal HV OFF channels ...")
     for key in ["G1", "G6", "G12"]:
       sql = "select data_pedestal_hvon.channel_id  from data_pedestal_hvon, data_pedestal_hvoff \
              where data_pedestal_hvon.channel_id = data_pedestal_hvoff.channel_id and \
@@ -379,6 +377,8 @@ class Data(object):
     self.dbh = sqlite3.connect(":memory:")
     dbin = sqlite3.connect(filename)
     DumpDB(dbin, self.dbh)
+    self.dbh.create_function("REGEXP", 2, regexp)
+    self.cur = self.dbh.cursor()
   
   def readData(self, source, **kwargs):
     """
