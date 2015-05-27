@@ -15,7 +15,7 @@ class Data(object):
 
   avgLaser = None
   avgTestPulse = {}
-
+  
   def __init__(self, database = ":memory:"):
     """
       At the moment do nothing.
@@ -29,6 +29,7 @@ class Data(object):
       l = l.strip()
       cur.execute (l)
     dbh.commit()
+    dbh.create_function("REGEXP", 2, regexp)
     self.dbh = dbh
     self.cur = cur
 
@@ -599,3 +600,7 @@ def getChannelClass(channel):
     return "EB"
   else:
     return "EE"
+
+def regexp(expr, item):
+    reg = re.compile(expr)
+    return reg.search(item) is not None
