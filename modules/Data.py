@@ -341,7 +341,7 @@ class Data(object):
       log.info("Classifying {0} channels ...".format(t))
       for c in [ k[0] for k in self.dbh.execute("select channel_id from {table}".format(table = "data_" + t)).fetchall()]:
         for f in self.getChannelFlags(c, t):
-          cur.execute("insert into flags values ({0}, '{1}')".format(int(c), f))
+          cur.execute("insert or ignore into flags values ({0}, '{1}')".format(int(c), f))
     # pedestal HV OFF channels problems
     log.info("Classifying pedestal HV OFF channels ...")
     for key in ["G1", "G6", "G12"]:
@@ -352,7 +352,7 @@ class Data(object):
              and data_pedestal_hvon.key = '{0}'".format( 'PED_RMS_' + key)
       badchannels = [ c[0] for c in self.cur.execute(sql).fetchall() ]
       for c in list(set(badchannels)):
-        cur.execute("insert into flags values ({0}, '{1}')".format(int(c), 'BV' + key))
+        cur.execute("insert or ignore into flags values ({0}, '{1}')".format(int(c), 'BV' + key))
     self.dbh.execute("insert into options values ('isClassified', 1)")
     self.dbh.commit()
 
