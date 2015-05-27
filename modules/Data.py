@@ -139,7 +139,18 @@ class Data(object):
       name = kwargs['name']
     activech = [ c[0] for c in self.cur.execute("select channel_id from {tab} where key = '{key}'".format(tab = 'data_' + kwargs['type'], key = kwargs['key'])).fetchall() if getChannelClass(c[0]) == kwargs['part']]
     if not kwargs.has_key('dimx'):
-      dimx = ((150, 250), (0, 5))[kwargs['useRMS']]
+      if kwargs['type'] == "testpulse":
+        if kwargs['part'] == "EB":
+          dimx = ((1000,3000),(0,20))[kwargs['useRMS']]
+        else:
+          dimx = ((1000,4000),(0,20))[kwargs['useRMS']]
+      elif kwargs['type'] == "laser":
+        if "OVER" in kwargs['key']:
+          dimx = ((0,5),(0, 0.1))[kwargs['useRMS']]
+        else:
+          dimx = ((0,6000),(0,5))[kwargs['useRMS']]
+      else:
+        dimx = ((150, 250), (0, 5))[kwargs['useRMS']]
     else:
       dimx = kwargs['dimx']
     hist = ROOT.TH1F(name, name, 100, dimx[0], dimx[1]) 
