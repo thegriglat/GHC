@@ -397,7 +397,7 @@ class Data(object):
     log.info("OK")
     log.info("Exporting data from Oracle to inner DB ...")
 
-    for run in sorted(kwargs['runs']):
+    for run in kwargs['runs']:
       log.info("Process run " + str(run) + " ...")
       if "pedestal" in table:
         sql = "select LOGIC_ID, PED_MEAN_G1, PED_RMS_G1, PED_MEAN_G6, PED_RMS_G6, PED_MEAN_G12, PED_RMS_G12 \
