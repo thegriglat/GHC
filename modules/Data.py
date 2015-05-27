@@ -358,13 +358,14 @@ class Data(object):
     self.dbh.execute("insert into options values ('isClassified', 1)")
     self.dbh.commit()
 
-  def getChannelsByFlag(self, flags):
+  def getChannelsByFlag(self, flags, exp = "or"):
     """
       Returns list of channels which has <flags> (string|list)
+      exp = 'or' | 'and'
     """
     self.classifyChannels()
     if flags.__class__ == list:
-      str = "flag = " + " or flag = ".join([ "\"{0}\"".format(c) for c in flags])
+      str = "flag = " + (" {0} flag = ".format(exp)).join([ "\"{0}\"".format(c) for c in flags])
     else:
       str = "flag = \"{0}\"".format(flags)
     return [c[0] for c in self.cur.execute("select distinct channel_id from flags where {0}".format(str)).fetchall()]
