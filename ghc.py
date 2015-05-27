@@ -153,36 +153,29 @@ for d in ("EB", "EE"):
     for i in ("G1", "G6", "G12"):
       ### 1D plots
       h = GHC.get1DHistogram(key = "PED_{0}_".format(('MEAN', 'RMS')[rms]) + i, useRMS = rms, type="pedestal_hvon", part = d, name = "Pedestal {0}, gain {1} ({2})".format(('mean', 'RMS')[rms], i, "HV ON"))
-      Data.saveHistogram(h, outputdir + "/pedestals_hvon/{0}_{1}_{2}.1D.pdf".format(i, ("MEAN", "RMS")[rms], d), d)
+      Data.saveHistogram(h, outputdir + "/pedestals_hvon/{0}_{1}_{2}.1D.png".format(i, ("MEAN", "RMS")[rms], d), d)
 
       h = GHC.get1DHistogram(key = "PED_{0}_".format(('MEAN', 'RMS')[rms]) + i, useRMS = rms, type="pedestal_hvoff", part = d ,name = "Pedestal {0}, gain {1} ({2})".format(('mean', 'RMS')[rms], i, "pedestal_hvoff"))
-      Data.saveHistogram(h, outputdir + "/pedestals_hvoff/{0}_{1}_{2}.1D.pdf".format(i, ("MEAN", "RMS")[rms], d), d)
+      Data.saveHistogram(h, outputdir + "/pedestals_hvoff/{0}_{1}_{2}.1D.png".format(i, ("MEAN", "RMS")[rms], d), d)
     
       h = GHC.get1DHistogram(key = "ADC_{0}_".format(('MEAN', 'RMS')[rms]) + i, useRMS = rms, type="testpulse", part = d, name = "Test Pulse {0}, gain {1}".format(('mean', 'RMS')[rms], i))
-      Data.saveHistogram(h, outputdir + "/testpulse/{0}_{1}_{2}.1D.pdf".format(i, ("MEAN", "RMS")[rms], d), d)
+      Data.saveHistogram(h, outputdir + "/testpulse/{0}_{1}_{2}.1D.png".format(i, ("MEAN", "RMS")[rms], d), d)
       
       ### 2D plots
       h = GHC.get2DHistogram(key = "PED_{0}_".format(('MEAN', 'RMS')[rms]) + i, useRMS = rms, type="pedestal_hvon", part = d, name = "Pedestal {0}, gain {1} ({2})".format(('mean', 'RMS')[rms], i, "HV ON"))
-      Data.saveHistogram(h, outputdir + "/pedestals_hvon/{0}_{1}_{2}.2D.pdf".format(i, ("MEAN", "RMS")[rms], d), d)
+      Data.saveHistogram(h, outputdir + "/pedestals_hvon/{0}_{1}_{2}.2D.png".format(i, ("MEAN", "RMS")[rms], d), d)
       h = GHC.get2DHistogram(key = "PED_{0}_".format(('MEAN', 'RMS')[rms]) + i, useRMS = rms, type="pedestal_hvoff", part = d, name = "Pedestal {0}, gain {1} ({2})".format(('mean', 'RMS')[rms], i, "pedestal_hvoff"))
-      Data.saveHistogram(h, outputdir + "/pedestals_hvoff/{0}_{1}_{2}.2D.pdf".format(i, ("MEAN", "RMS")[rms], d), d)
+      Data.saveHistogram(h, outputdir + "/pedestals_hvoff/{0}_{1}_{2}.2D.png".format(i, ("MEAN", "RMS")[rms], d), d)
       h = GHC.get2DHistogram(key = "ADC_{0}_".format(('MEAN', 'RMS')[rms]) + i, useRMS = rms, type="testpulse", part = d, name = "Test Pulse {0}, gain {1}".format(('mean', 'RMS')[rms], i))
-      Data.saveHistogram(h, outputdir + "/testpulse/{0}_{1}_{2}.2D.pdf".format(i, ("MEAN", "RMS")[rms], d), d)
+      Data.saveHistogram(h, outputdir + "/testpulse/{0}_{1}_{2}.2D.png".format(i, ("MEAN", "RMS")[rms], d), d)
 
   ### laser plots
     h = GHC.get1DHistogram(key = "APD_{0}".format(('MEAN', 'RMS')[rms]), useRMS = rms, type="laser", part = d, name = "Laser {0}, ({1})".format(('mean', 'RMS')[rms] , args.lasertable))
-    Data.saveHistogram(h, outputdir + "/laser/Laser_{0}_{1}.1D.pdf".format(("MEAN", "RMS")[rms], d), d)
+    Data.saveHistogram(h, outputdir + "/laser/Laser_{0}_{1}.1D.png".format(("MEAN", "RMS")[rms], d), d)
     h = GHC.get1DHistogram(key = "APD_OVER_PN_{0}".format(('MEAN', 'RMS')[rms]), useRMS = rms, type="laser", part = d, name = "APD/PN {0}, ({1})".format(('mean', 'RMS')[rms], args.lasertable))
-    Data.saveHistogram(h, outputdir + "/laser/APDPN_{0}_{1}.1D.pdf".format(("MEAN", "RMS")[rms], d), d)
+    Data.saveHistogram(h, outputdir + "/laser/APDPN_{0}_{1}.1D.png".format(("MEAN", "RMS")[rms], d), d)
     h = GHC.get2DHistogram(key = "APD_{0}".format(('MEAN', 'RMS')[rms]), useRMS = rms, type="laser", part = d, name = "Laser {0}, ({1})".format(('mean', 'RMS')[rms] , args.lasertable))
-    Data.saveHistogram(h, outputdir + "/laser/Laser_{0}_{1}.2D.pdf".format(("MEAN", "RMS")[rms], d), d)
-    h = GHC.get1DHistogram(key = "APD_OVER_PN_{0}".format(('MEAN', 'RMS')[rms]), useRMS = rms, type="laser", part = d, name = "APD/PN {0}, ({1})".format(('mean', 'RMS')[rms] , args.lasertable))
-    Data.saveHistogram(h, outputdir + "/laser/APDPN_{0}_{1}.2D.pdf".format(("MEAN", "RMS")[rms], d), d)
-
-      
-
-
-
-#h = GHC.get2DHistogram(type="pedestal_hvon", key = "PED_MEAN_G1", useRMS=False, part = "EE")
-#Data.saveHistogram(h, "{0}{1}_EB.2D.pdf".format("G1","MEAN"), plottype='endcap') 
+    Data.saveHistogram(h, outputdir + "/laser/Laser_{0}_{1}.2D.png".format(("MEAN", "RMS")[rms], d), d)
+    h = GHC.get2DHistogram(key = "APD_OVER_PN_{0}".format(('MEAN', 'RMS')[rms]), useRMS = rms, type="laser", part = d, name = "APD/PN {0}, ({1})".format(('mean', 'RMS')[rms] , args.lasertable))
+    Data.saveHistogram(h, outputdir + "/laser/APDPN_{0}_{1}.2D.png".format(("MEAN", "RMS")[rms], d), d)
 
