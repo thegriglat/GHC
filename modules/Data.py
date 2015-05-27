@@ -180,7 +180,7 @@ class Data(object):
       return (y, x)
     RMS = (False, kwargs['useRMS'])[kwargs.has_key('useRMS')]
     lim = None
-    gain = kwargs['key'].split("_").pop()
+    gain = kwargs['key'].split("_")[-1:][0]
     if not "G" in gain:
       # laser 
       if kwargs['key'].split("_")[1] == "OVER":
@@ -188,10 +188,12 @@ class Data(object):
       else:
         gain = 'Laser'
     if not kwargs.has_key('name'):
-      if "pedestal" in kwargs['type']or kwargs['type'] == "testpulse":
+      if "pedestal" in kwargs['type'] or kwargs['type'] == "testpulse":
         name = "{0} {1}, Gain {2} (ADC counts)".format(kwargs['type'], ("mean", "RMS")[RMS], kwargs['key'])
       elif kwargs['type'] == "laser":
         name = "Laser {0}".format(("Amplitude " + (" ", "RMS")[RMS] + "(ADC counts)", kwargs['key'] + ' ' + ("ratio", "RMS")[RMS])[kwargs['key'] == "APD/PN"])
+    else:
+      name = kwargs['name']
     if kwargs['part'] == "EE":
       hist = ROOT.TH2F (name, name, 200, 0, 200, 100, 0, 100) 
       if "pedestal" in kwargs['type']:
@@ -241,19 +243,19 @@ class Data(object):
       Compare channel data with limits and return list of error flags
       Function getChannelFlags should be overloaded in other modules.
     """
-    if type  == "pedestal_hvon" or type == "pedestal_hvoff":
-      return self.getPedestalFlags(channel, type)
+    if type == "pedestal_hvon":
+      return self.getPedestalFlags(channel)
     elif type == 'testpulse':
       return self.getTestPulseFlags(channel)
     elif type == 'laser':
       return self.getLaserFlags(channel)
     return None
 
-  def getPedestalFlags(self, channel, type = 'pedestal_hvon'):
+  def getPedestalFlags(self, channel):
     def PedestalComparison(key, deadlimits, badlimits):
       tmpflags = []
-      mean = self.getChannelData(channel, 'PED_MEAN_' + key, type)
-      rms = self.getChannelData(channel, 'PED_RMS_' + key, type)
+      mean = self.getChannelData(channel, 'PED_MEAN_' + key, 'pedestal_hvon')
+      rms = self.getChannelData(channel, 'PED_RMS_' + key, 'pedestal_hvon')
       if mean <= deadlimits[0] or rms <= deadlimits[1]:
         tmpflags.append("DP" + key)
       else:
@@ -269,19 +271,9 @@ class Data(object):
       limits = {"G1" : ((1, 0.2), (1.1, 3)), "G6" : ((1, 0.4), (1.3, 4)), "G12" : ((1, 0.5), (2.1, 6))}
     else:
       limits = {"G1" : ((1, 0.2), (1.5, 4)), "G6" : ((1, 0.4), (2, 5)),   "G12" : ((1, 0.5), (3.2, 7))}
-    if type == "pedestal_hvon":
-      flags += PedestalComparison("G1", limits["G1"][0], limits["G1"][1])
-      flags += PedestalComparison("G6", limits["G6"][0], limits["G6"][1])
-      flags += PedestalComparison("G12", limits["G12"][0], limits["G12"][1])
-    if type == "pedestal_hvoff":
-      for key in ["G1", "G6", "G12"]:
-        sql = "select data_pedestal_hvon.channel_id  from data_pedestal_hvon, data_pedestal_hvoff \
-               where data_pedestal_hvon.channel_id = data_pedestal_hvoff.channel_id and \
-               data_pedestal_hvon.key = data_pedestal_hvoff.key and \
-               abs(data_pedestal_hvon.value - data_pedestal_hvoff.value) < 0.2 \
-               and data_pedestal_hvon.channel_id = {0} and data_pedestal_hvon.key = {1}".format(int(channel), 'PED_RMS_' + key)
-        if len(self.cur.execute(sql).fetchall()) >= 0:
-          flags.append("PV" + key)
+    flags += PedestalComparison("G1", limits["G1"][0], limits["G1"][1])
+    flags += PedestalComparison("G6", limits["G6"][0], limits["G6"][1])
+    flags += PedestalComparison("G12", limits["G12"][0], limits["G12"][1])
     return list(set(flags))
 
   def getTestPulseFlags(self, channel):
@@ -334,13 +326,23 @@ class Data(object):
       Call getChannelFlags for each active channel and set 'flags' value for channels
     """
     cur = self.dbh.cursor()
-    for t in ['pedestal_hvon','testpulse', 'laser', 'pedestal_hvoff']:
+    for t in ['pedestal_hvon','testpulse', 'laser']:
       log.info("Classifying {0} channels ...".format(t))
       for c in [ k[0] for k in self.dbh.execute("select channel_id from {table}".format(table = "data_" + t)).fetchall()]:
         for f in self.getChannelFlags(c, t):
           cur.execute("insert into flags values ({0}, '{1}')".format(int(c), f))
-        self.dbh.commit()
+    # pedestal HV OFF channels problems
+    for key in ["G1", "G6", "G12"]:
+      sql = "select data_pedestal_hvon.channel_id  from data_pedestal_hvon, data_pedestal_hvoff \
+             where data_pedestal_hvon.channel_id = data_pedestal_hvoff.channel_id and \
+             data_pedestal_hvon.key = data_pedestal_hvoff.key and \
+             abs(data_pedestal_hvon.value - data_pedestal_hvoff.value) < 0.2 \
+             and data_pedestal_hvon.key = '{0}'".format( 'PED_RMS_' + key)
+      badchannels = [ c[0] for c in self.cur.execute(sql).fetchall() ]
+      for c in list(set(badchannels)):
+        cur.execute("insert into flags values ({0}, '{1}')".format(int(c), 'BV' + key))
     self.dbh.execute("insert into options values ('isClassified', 1)")
+    self.dbh.commit()
 
   def getChannelsByFlag(self, flags):
     """
@@ -436,7 +438,7 @@ def DumpDB(dbin, dbout):
     dbout.commit()
     log.info (tablename + " : Done.")
 
-def saveHistogram(histogram, filename, plottype = "barrel"):
+def saveHistogram(histogram, filename, plottype):
   """
     Save <histogram> into filename according to <plottype>
   """
@@ -518,9 +520,9 @@ def saveHistogram(histogram, filename, plottype = "barrel"):
       c.SetGridy(True)
       ROOT.gStyle.SetOptStat("e")
       ROOT.gStyle.SetTickLength(0.01, "xy")
-      if plottype == "barrel":
+      if plottype == "EB":
         drawEBNumbers()
-      elif plottype == "endcap":
+      elif plottype == "EE":
         c.SetCanvasSize(1000, 500)
         lines = []
         for p in getEELines():
