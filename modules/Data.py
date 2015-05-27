@@ -426,7 +426,16 @@ class Data(object):
       self.dbh.commit()
     ora.close()
 
+def DumpSQL(db, filename):
+  f = open(filename, 'w')
+  log.info("Dumping database to '{0}' in SQL format.".format(filename))
+  for line in db.iterdump():
+    f.write('%s\n' % line)
+  log.info("Finished.")
+
 def DumpDB(dbin, dbout):
+  dbin.text_factory = sqlite3.OptimizedUnicode
+  dbout.text_factory = sqlite3.OptimizedUnicode
   cout = dbout.cursor()
   for tablerow in dbin.execute('select * from sqlite_master').fetchall():
     tablename = tablerow[2]
@@ -439,13 +448,7 @@ def DumpDB(dbin, dbout):
       log.error("Cannot create table {0} in DB {1}!: {2}".format(tablename, str(dbout), str(e)))
     log.info ("Exporting data from table '" + tablename + "' ...")
     for row in dbin.execute('select * from ' + tablename).fetchall():
-      tmprow = []
-      for i in row:
-        if i.__class__ == unicode:
-          tmprow.append(str(i))
-        else:
-          tmprow.append(i)
-      cout.execute ('insert into ' + tablename + ' values ' + str(tmprow).replace("[",'(').replace(']',')'))
+      cout.execute ('insert into ' + tablename + ' values ' + str(row))
     dbout.commit()
     log.info (tablename + " : Done.")
 

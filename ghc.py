@@ -11,7 +11,8 @@ import Data
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-o', '--output', help="Results directory (default: RESULTS)", dest='output')
-parser.add_argument('-d', '--dbdump', help="Dump internal database", dest='dbdump')
+parser.add_argument('-d', '--dump', help="Dump internal database as sqlite3 database", dest='dump')
+parser.add_argument('-ds', '--dumpsql', help="Dump internal database as SQL", dest='dumpsql')
 parser.add_argument('-c', '--dbstr', help="Connection string to DB (oracle://user/pass@db)", dest='dbstr')
 parser.add_argument('-pon', help="Pedestal HV ON runs", dest='pon_runs')
 parser.add_argument('-poff',help="Pedestal HV OFF runs)", dest='poff_runs')
@@ -51,8 +52,10 @@ if args.l_runs:
 
 GHC.classifyChannels()
 
-if args.dbdump != None:
+if args.dump != None:
   GHC.Export(args.dbdump)
+if args.dumpsql != None:
+  GHC.DumpSQL(args.dbdump)
 
 print " ========================="
 print " === PEDESTAL ANALYSIS ==="
