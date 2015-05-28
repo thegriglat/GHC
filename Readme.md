@@ -19,6 +19,7 @@ These modules are used by GHC python scripts which do analysis and make plots. T
 Also there are some additional files that helps to use GHC:
 
   * tnsnames.ora
+  * dbschema.sql
   * setup.sh
   * utils/check_db.sh
   * utils/export_from_db.sh
@@ -34,7 +35,7 @@ The *Data.py* module provides basic data structure and functions for all scripts
 
 ### log.py ###
 
-This modules only print INFO or DEBUG messages.
+This modules print INFO or DEBUG messages and raise RuntimeError if it is needed.
 
 Scripts
 -------
@@ -43,7 +44,8 @@ Each script has command line option parser, so -h option will give you some usef
 
 ### ghc.py ###
 
-This is main script which uses Data module and provide userful output 
+This is main script which uses Data module and provide userful output.
+ 
 The following rules are used for assign some flags to channels:
 
 <pre>
@@ -72,9 +74,9 @@ How to use
 
     source setup.sh
 
-**for pedestal analysis of runs 238566 238569 238594 (GHC28)**
+**Example of analyse GHC28**
 
     python ghc.py -h
-    python ghc.py -ds GHC.dump.sql -o results2 -lt MON_LASER_IRED_DAT -c 'oracle://user/pass@db' -poff "238566 238569 238594" -pon "238566 238569 238594" -tp "238577 238574 238581" -l 238724
+    python ghc.py -ds GHC.dump.sql -d GHC.sqlite3 -o results2 -lt MON_LASER_IRED_DAT -c 'oracle://user/pass@db' -poff "238566 238569 238594" -pon "238566 238569 238594" -tp "238577 238574 238581" -l 238724
 
 You should see various output about channels.
