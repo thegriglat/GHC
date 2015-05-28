@@ -106,18 +106,22 @@ for d in ["EB", "EE"]:
   print "  Pedestals problems                          |          PE |", getchnum([pre])
   print "  Test Pulse problems                         |          TP |", getchnum([tpre])
   print "  Laser problems                              |          LA |", getchnum([lre])
-  print "  High voltage problems                       |          HV |", getchnum([hvre])
+  if d != "EE":
+    print "  High voltage problems                       |          HV |", getchnum([hvre])
   print "  Pedestals + Test Pulse problems             |       PE+TP |", getchnum([pre, tpre])
   print "  Pedestals + Laser problems                  |       PE+LA |", getchnum([pre, lre])
-  print "  Pedestals + High voltage problems           |       PE+HV |", getchnum([pre, hvre])
+  if d != "EE":
+    print "  Pedestals + High voltage problems           |       PE+HV |", getchnum([pre, hvre])
   print "  Test Pulse + Laser problems                 |       TP+LA |", getchnum([tpre, lre])
-  print "  Test Pulse + High voltage problems          |       TP+HV |", getchnum([tpre, hvre])
-  print "  Laser + High voltage problems               |       LA+HV |", getchnum([lre, hvre])
+  if d != "EE":
+    print "  Test Pulse + High voltage problems          |       TP+HV |", getchnum([tpre, hvre])
+    print "  Laser + High voltage problems               |       LA+HV |", getchnum([lre, hvre])
   print "  Pedestals + Test Pulse + Laser problems     |    PE+TP+LA |", getchnum([pre, tpre, lre])
-  print "  Pedestals + Test Pulse + HV problems        |    PE+TP+HV |", getchnum([pre, tpre, hvre])
-  print "  Pedestals + Laser + HV problems             |    PE+LA+HV |", getchnum([pre, lre, hvre])
-  print "  Test Pulse  + Laser + HV problems           |    TP+LA+HV |", getchnum([tpre, lre, hvre])
-  print "  Pedestal + Test Pulse + Laser + HV problems | PE+TP+LA+HV |", getchnum([pre, tpre, lre, hvre])
+  if d != "EE":
+    print "  Pedestals + Test Pulse + HV problems        |    PE+TP+HV |", getchnum([pre, tpre, hvre])
+    print "  Pedestals + Laser + HV problems             |    PE+LA+HV |", getchnum([pre, lre, hvre])
+    print "  Test Pulse  + Laser + HV problems           |    TP+LA+HV |", getchnum([tpre, lre, hvre])
+    print "  Pedestal + Test Pulse + Laser + HV problems | PE+TP+LA+HV |", getchnum([pre, tpre, lre, hvre])
 
 
 
