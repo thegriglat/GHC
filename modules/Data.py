@@ -32,7 +32,7 @@ class Data(object):
     """
       Return list of all channels
     """
-    return [c[0] for c in self.dbh.execute("select channel_id from all_channels").fetchall()]
+    return [c[0] for c in self.dbh.execute("select channel_id from all_channels")]
 
   def numOfInactiveChannels(self):
     """
@@ -54,7 +54,7 @@ class Data(object):
       sql = " union ".join(["select channel_id from {0}".format(c) for c in ["data_" + i for i in types]])
     else:
       sql = "select distinct channel_id from {0}".format("data_" + types[0])
-    return [c[0] for c in self.dbh.execute(sql).fetchall()]
+    return [c[0] for c in self.dbh.execute(sql)]
 
   def readAllChannels(self, filename):
     """
@@ -80,7 +80,7 @@ class Data(object):
     """
     sql = " union ".join(["select key from {0}".format(c) for c  in ['data_pedestal_hvon', 'data_testpulse', 'data_laser', 'data_pedestal_hvoff']])
     try:
-      return [ c[0] for c in self.dbh.execute(sql).fetchall()]
+      return [ c[0] for c in self.dbh.execute(sql)]
     except:
       return []
 
@@ -118,7 +118,7 @@ class Data(object):
         name = "Laser {0}".format(("Amplitude " + (" ", "RMS")[kwargs['useRMS']] + "(ADC counts)", key + ' ' + ("ratio", "RMS")[kwargs['useRMS']])[key == "APD/PN"])
     else:
       name = kwargs['name']
-    activech = [ c[0] for c in self.cur.execute("select channel_id from {tab} where key = '{key}'".format(tab = 'data_' + kwargs['type'], key = kwargs['key'])).fetchall() if getChannelClass(c[0]) == kwargs['part']]
+    activech = [ c[0] for c in self.cur.execute("select channel_id from {tab} where key = '{key}'".format(tab = 'data_' + kwargs['type'], key = kwargs['key'])) if getChannelClass(c[0]) == kwargs['part']]
     if not kwargs.has_key('dimx'):
       if kwargs['type'] == "testpulse":
         if kwargs['part'] == "EB":
@@ -335,7 +335,7 @@ class Data(object):
       return
     cur = self.dbh.cursor()
     for t in ['pedestal_hvon','testpulse', 'laser']:
-      for c in [ k[0] for k in self.dbh.execute("select channel_id from {table}".format(table = "data_" + t)).fetchall()]:
+      for c in [ k[0] for k in self.dbh.execute("select channel_id from {table}".format(table = "data_" + t))]:
         for f in self.getChannelFlags(c, t):
           cur.execute("insert or ignore into flags values ({0}, '{1}')".format(int(c), f))
     # pedestal HV OFF channels problems
@@ -345,7 +345,7 @@ class Data(object):
              data_pedestal_hvon.key = data_pedestal_hvoff.key and \
              abs(data_pedestal_hvon.value - data_pedestal_hvoff.value) < 0.2 \
              and data_pedestal_hvon.key = '{0}'".format( 'PED_RMS_' + key)
-      badchannels = [ c[0] for c in self.cur.execute(sql).fetchall() ]
+      badchannels = [ c[0] for c in self.cur.execute(sql)]
       for c in list(set(badchannels)):
         cur.execute("insert or ignore into flags values ({0}, '{1}')".format(int(c), 'BV' + key))
     self.setOption('isClassified', 1)
@@ -361,7 +361,7 @@ class Data(object):
       str = "flag = " + (" {0} flag = ".format(exp)).join([ "\"{0}\"".format(c) for c in flags])
     else:
       str = "flag = \"{0}\"".format(flags)
-    return [c[0] for c in self.cur.execute("select distinct channel_id from flags where {0}".format(str)).fetchall()]
+    return [c[0] for c in self.cur.execute("select distinct channel_id from flags where {0}".format(str))]
 
   def Export(self, filename):
     """
@@ -442,6 +442,7 @@ def DumpSQL(db, filename):
     f.write('%s\n' % line)
   log.info("Finished.")
 
+
 def DumpDB(dbin, dbout):
   """
     Copy dbin to dbout (both are sqlite3 connection pointers)
@@ -449,7 +450,7 @@ def DumpDB(dbin, dbout):
   dbin.text_factory = sqlite3.OptimizedUnicode
   dbout.text_factory = sqlite3.OptimizedUnicode
   cout = dbout.cursor()
-  for tablerow in dbin.execute('select * from sqlite_master').fetchall():
+  for tablerow in dbin.execute('select * from sqlite_master'):
     tablename = tablerow[2]
     log.info ("Create table '" + tablename + "'")
     if "sqlite" in tablerow[1]:
@@ -459,7 +460,7 @@ def DumpDB(dbin, dbout):
     except Exception as e:
       log.error("Cannot create table {0} in DB {1}!: {2}".format(tablename, str(dbout), str(e)))
     log.info ("Exporting data from table '" + tablename + "' ...")
-    for row in dbin.execute('select * from ' + tablename).fetchall():
+    for row in dbin.execute('select * from ' + tablename):
       cout.execute ('insert into ' + tablename + ' values ' + str(row))
     dbout.commit()
     log.info (tablename + " : Done.")

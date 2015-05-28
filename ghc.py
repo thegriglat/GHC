@@ -56,7 +56,6 @@ if args.dump != None:
 if args.dumpsql != None:
   Data.DumpSQL(GHC.dbh, args.dumpsql)
 
-
 print "="*80
 print header("PEDESTAL ANALYSIS")
 print "="*80
