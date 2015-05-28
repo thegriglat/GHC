@@ -26,7 +26,7 @@ Also there are some additional files that helps to use GHC:
 Modules
 -------
 
-To get more info about inner structure of modules run `pydoc modules/*`
+To get more info about inner structure of modules run `PYTHONPATH=modules pydoc modules/*.py`
 
 ### Data.py  
 

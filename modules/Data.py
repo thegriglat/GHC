@@ -10,20 +10,14 @@ class Data(object):
   """
     Basic class for Data obtained from detector
   """
-  PEDESTAL_FLAGS = ["DP", "BP", "LR", "VLR" ]
+  PEDESTAL_FLAGS = ["DP", "BP", "LR", "VLR", "BV"]
   TESTPULSE_FLAGS = [ "DTP", "STP", "LTP" ]
   LASER_FLAGS = ["DLAMPL", "SLAMPL", "LLERRO"]
 
-  avgLaser = None
-  avgTestPulse = {}
-  
   def __init__(self, database = ":memory:"):
     """
-      At the moment do nothing.
+      Initalize (in-memory) sqlite3 database.
     """
-    self.runtype = None
-    self.description = None
-    self.options = {}
     dbh = sqlite3.connect(database)
     cur = dbh.cursor()
     for l in open("dbschema.sql", 'r').readlines():
@@ -34,24 +28,15 @@ class Data(object):
     self.dbh = dbh
     self.cur = cur
 
-  def setDesc(self, desc):
-    """ 
-      Set description for object
-    """
-    self.description = desc
-
-  def getDesc(self):
-    """
-      Returns description of object
-    """
-    return self.description
-
   def getAllChannels(self):
+    """
+      Return list of all channels
+    """
     return [c[0] for c in self.dbh.execute("select channel_id from all_channels").fetchall()]
 
   def numOfInactiveChannels(self):
     """
-      Returns list of inactive channels
+      Returns number of inactive channels
     """
     return len(self.getAllChannels()) - len(self.getActiveChannels())
   
@@ -73,7 +58,7 @@ class Data(object):
 
   def readAllChannels(self, filename):
     """
-      Reads all channels into self.channels
+      Reads all channels
     """
     fd = open(filename, 'r')
     log.info( "Getting list of all channels ...")
@@ -91,8 +76,7 @@ class Data(object):
 
   def getDataKeys(self):
     """
-      Returns available data keys for the class.
-      At the moment it chechs only first available channel
+      Returns available data keys.
     """
     sql = " union ".join(["select key from {0}".format(c) for c  in ['data_pedestal_hvon', 'data_testpulse', 'data_laser', 'data_pedestal_hvoff']])
     try:
@@ -102,24 +86,19 @@ class Data(object):
 
   def setOption(self, option, value):
     """
-      Set self.options[option] to value
+      Set option's value
     """
-    self.options[option] = value
+    self.dbh.execute("insert or replace into options values ('{0}', {1})".format(option, value))
 
   def getOption(self, option):
     """
-      Returns self.options[option]
+      Returns option's value
     """
-    if self.options.has_key(option):
-      return self.options[option]
-    else:
+    r = self.dbh.execute("select value from options where name = '{0}'".format(option)).fetchone()
+    if r is None:
       return None
-
-  def DBread(self, source):
-    """
-      At the moment do nothing
-    """
-    return 0
+    else:
+      return r[0]
 
   def get1DHistogram(self, **kwargs):
     """
@@ -127,8 +106,8 @@ class Data(object):
       Parameters:
         key     : key of data to be used
         dimx    : range of X axis. Default is ((150, 250), (0, 5))[RMS]
-        useRMS  : use mean (False) or RMS (True) data. Default is False
-        name    : title of histogram. Default is "{0} {1}, Gain {2}".format(self.description, ("mean", "RMS")[RMS], key)
+        useRMS  : use mean (False) or RMS (True) data.
+        name    : title of histogram.
         type    : run type to use
         part    : "EB" | "EE"
     """
@@ -169,9 +148,10 @@ class Data(object):
       Returns TH2F histogram.
       Parameters:
         key      : data[key] which will be used
-        RMS      : use mean (False) or RMS (True) data. Default is False
-        plottype : "barrel"|"endcap"
-        name     : title of histogram. Default is "{0} {1}, Gain {2}".format(self.description, ("mean", "RMS")[RMS], key)
+        useRMS   : use mean (False) or RMS (True) data.
+        type     : run type
+        part     : "EB"|"EE"
+        name     : title of histogram.
         lim      : hash table which determines X,Y axis range 
     """
     def getEtaPhi(channel):
@@ -246,6 +226,9 @@ class Data(object):
     return hist
 
   def getChannelData(self, channel, key, type):
+    """
+      Returns channel's value for channels, key, type
+    """
     try:
       return  self.cur.execute("select value from {table} where channel_id = {channel} and key = '{key}'".format(table = "data_" + type, channel = channel, key = key)).fetchone()[0]
     except:
@@ -254,7 +237,6 @@ class Data(object):
   def getChannelFlags(self, channel, type):
     """
       Compare channel data with limits and return list of error flags
-      Function getChannelFlags should be overloaded in other modules.
     """
     if type == "pedestal_hvon":
       return self.getPedestalFlags(channel)
@@ -265,6 +247,9 @@ class Data(object):
     return None
 
   def getPedestalFlags(self, channel):
+    """
+      Returns flags for pedestal channels
+    """
     def PedestalComparison(key, deadlimits, badlimits):
       tmpflags = []
       mean = self.getChannelData(channel, 'PED_MEAN_' + key, 'pedestal_hvon')
@@ -290,12 +275,16 @@ class Data(object):
     return list(set(flags))
 
   def getTestPulseFlags(self, channel):
+    """
+      Return flags for test pulse channels
+    """
     def getavgtestpulse(key):
-      if self.avgTestPulse.has_key(key):
-        return self.avgTestPulse[key]
+      if self.getOption('avgTestPulse_' + key) != None:
+        return self.getOption('avgTestPulse_' + key)
       else:
-        self.avgTestPulse[key] = self.dbh.execute("select sum(value) from data_testpulse where key = '{key}'".format(key = 'ADC_MEAN_' + key)).fetchone()[0] / float( self.dbh.execute("select count(channel_id) from data_testpulse").fetchone()[0])
-        return self.avgTestPulse[key]
+        avgTestPulsekey = self.dbh.execute("select sum(value) from data_testpulse where key = '{key}'".format(key = 'ADC_MEAN_' + key)).fetchone()[0] / float( self.dbh.execute("select count(channel_id) from data_testpulse").fetchone()[0])
+        self.setOption('avgTestPulse_' + key, avgTestPulsekey)
+        return avgTestPulsekey
     flags = []
     for i in ('G1', 'G6', 'G12'):
       mean = self.getChannelData(channel, 'ADC_MEAN_' + i, 'testpulse')
@@ -309,12 +298,16 @@ class Data(object):
     return list(set(flags))
 
   def getLaserFlags(self, channel):
+    """
+      Return flags for laser channels
+    """
     def getavglaser():
-      if not self.avgLaser is None:
-        return self.avgLaser
+      if not self.getOption('avgLaser') is None:
+        return self.getOption('avgLaser')
       else:
-        self.avgLaser = self.dbh.execute("select sum(value) from data_laser where key = 'APD_MEAN'").fetchone()[0] / float( self.dbh.execute("select count(channel_id) from data_laser").fetchone()[0])
-        return self.avgLaser
+        avgLaser = self.dbh.execute("select sum(value) from data_laser where key = 'APD_MEAN'").fetchone()[0] / float( self.dbh.execute("select count(channel_id) from data_laser").fetchone()[0])
+        self.setOption('avgLaser', avgLaser)
+        return avgLaser
     flags = []
     mean = self.getChannelData(channel, 'APD_MEAN', 'laser')
     rms = self.getChannelData(channel, 'APD_RMS', 'laser')
@@ -338,7 +331,7 @@ class Data(object):
     """
       Call getChannelFlags for each active channel and set 'flags' value for channels
     """
-    if self.dbh.execute("select count(*) from options where name = 'isClassified'").fetchone()[0] != 0:
+    if self.getOption('isClassified') == 1:
       return
     cur = self.dbh.cursor()
     for t in ['pedestal_hvon','testpulse', 'laser']:
@@ -355,7 +348,7 @@ class Data(object):
       badchannels = [ c[0] for c in self.cur.execute(sql).fetchall() ]
       for c in list(set(badchannels)):
         cur.execute("insert or ignore into flags values ({0}, '{1}')".format(int(c), 'BV' + key))
-    self.dbh.execute("insert into options values ('isClassified', 1)")
+    self.setOption('isClassified', 1)
     self.dbh.commit()
 
   def getChannelsByFlag(self, flags, exp = "or"):
@@ -371,11 +364,17 @@ class Data(object):
     return [c[0] for c in self.cur.execute("select distinct channel_id from flags where {0}".format(str)).fetchall()]
 
   def Export(self, filename):
+    """
+      Exports internal database to file 'filename' as sqlite3 DB
+    """
     dbout = sqlite3.connect(filename)
     DumpDB(self.dbh, dbout)
     dbout.close()
 
   def Load(self, filename):
+    """
+      Load database from sqlite DB located in 'filename'
+    """
     self.dbh = sqlite3.connect(":memory:")
     dbin = sqlite3.connect(filename)
     DumpDB(dbin, self.dbh)
@@ -385,8 +384,10 @@ class Data(object):
   def readData(self, source, **kwargs):
     """
       Read pedestal values from database
-        connstr : connection string to database
-        runnum  : array of runs which contains data
+        source    : connection string to database
+        runs       : array of runs which contains data
+        type       : run type
+        lasertable : table of laser's data
     """
     if not kwargs.has_key("runs"):
       log.error("readData function should be called with 'runs' parameter")
@@ -432,6 +433,9 @@ class Data(object):
     ora.close()
 
 def DumpSQL(db, filename):
+  """
+    Dumps database as sql
+  """
   f = open(filename, 'w')
   log.info("Dumping database to '{0}' in SQL format.".format(filename))
   for line in db.iterdump():
@@ -439,6 +443,9 @@ def DumpSQL(db, filename):
   log.info("Finished.")
 
 def DumpDB(dbin, dbout):
+  """
+    Copy dbin to dbout (both are sqlite3 connection pointers)
+  """
   dbin.text_factory = sqlite3.OptimizedUnicode
   dbout.text_factory = sqlite3.OptimizedUnicode
   cout = dbout.cursor()
@@ -460,6 +467,7 @@ def DumpDB(dbin, dbout):
 def saveHistogram(histogram, filename, plottype):
   """
     Save <histogram> into filename according to <plottype>
+    plottype = 'EE' | 'EB'
   """
   def drawEBNumbers():
     l = ROOT.TLatex()
@@ -597,7 +605,7 @@ def getSM(channel):
 
 def getChannelClass(channel):
   """
-    Returns EB|EE depending on detector place of channel
+    Returns EB|EE detector place of channel
   """
   if str(channel)[0] == "1":
     return "EB"
@@ -605,5 +613,8 @@ def getChannelClass(channel):
     return "EE"
 
 def regexp(expr, item):
-    reg = re.compile(expr)
-    return reg.search(item) is not None
+  """
+    Function for REGEXP sqlite3 operator
+  """  
+  reg = re.compile(expr)
+  return reg.search(item) is not None
