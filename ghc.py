@@ -155,7 +155,7 @@ for d in ("EB", "EE"):
   getchnum = lambda x: GHC.dbh.execute("select count(distinct channel_id) from flags where channel_id like '{0}' and flag REGEXP {1}".format(
    ("1%", "2%")[d == "EE"], " and flag REGEXP ".join([ "'{0}'".format(i) for i in x])
    )).fetchone()[0]
-  print "=== Summary Total Problematic Channels ==="
+  print "=== Summary Total Problematic Channels for {0} ===".format(d)
   print "  Total problematic channels                  |           * |", tpc
   print "  Pedestals problems                          |          PE |", getchnum([pre])
   print "  Test Pulse problems                         |          TP |", getchnum([tpre])
