@@ -234,18 +234,6 @@ class Data(object):
     except:
       return None
 
-  def getChannelFlags(self, channel, type):
-    """
-      Compare channel data with limits and return list of error flags
-    """
-    if type == "pedestal_hvon":
-      return self.getPedestalFlags(channel)
-    elif type == 'testpulse':
-      return self.getTestPulseFlags(channel)
-    elif type == 'laser':
-      return self.getLaserFlags(channel)
-    return None
-
   def getPedestalFlags(self, channel):
     """
       Returns flags for pedestal channels
@@ -274,80 +262,66 @@ class Data(object):
     flags += PedestalComparison("G12", limits["G12"][0], limits["G12"][1])
     return list(set(flags))
 
-  def getTestPulseFlags(self, channel):
-    """
-      Return flags for test pulse channels
-    """
-    def getavgtestpulse(key):
-      if self.getOption('avgTestPulse_' + key) != None:
-        return self.getOption('avgTestPulse_' + key)
-      else:
-        avgTestPulsekey = self.dbh.execute("select sum(value) from data_testpulse where key = '{key}'".format(key = 'ADC_MEAN_' + key)).fetchone()[0] / float( self.dbh.execute("select count(channel_id) from data_testpulse").fetchone()[0])
-        self.setOption('avgTestPulse_' + key, avgTestPulsekey)
-        return avgTestPulsekey
-    flags = []
-    for i in ('G1', 'G6', 'G12'):
-      mean = self.getChannelData(channel, 'ADC_MEAN_' + i, 'testpulse')
-      mean = self.getChannelData(channel, 'ADC_RMS_' + i, 'testpulse')
-      if mean <= 0:
-        flags.append("DTP" + i)
-      if mean / getavgtestpulse(i) <= 0.5:
-        flags.append("STP" + i)
-      if mean / getavgtestpulse(i) > 1.5:
-        flags.append("LTP" + i)
-    return list(set(flags))
-
-  def getLaserFlags(self, channel):
-    """
-      Return flags for laser channels
-    """
-    def getavglaser():
-      if not self.getOption('avgLaser') is None:
-        return self.getOption('avgLaser')
-      else:
-        avgLaser = self.dbh.execute("select sum(value) from data_laser where key = 'APD_MEAN'").fetchone()[0] / float( self.dbh.execute("select count(channel_id) from data_laser").fetchone()[0])
-        self.setOption('avgLaser', avgLaser)
-        return avgLaser
-    flags = []
-    mean = self.getChannelData(channel, 'APD_MEAN', 'laser')
-    rms = self.getChannelData(channel, 'APD_RMS', 'laser')
-    if mean <= 0:
-      flags.append("DLAMPL")
-    if mean / getavglaser() < 0.1 and mean > 0:
-      flags.append("SLAMPL")
-    location =  self.cur.execute("select location from all_channels where channel_id = {channel}".format(channel = channel)).fetchone()[0]
-    if location == "EB":
-      LLERRO_b = 0.2
-    elif location == "EE":
-      LLERRO_b = 0.05
-    else:
-      log.error("Cannot define location on channel" + str(channel))
-    if mean > 0 and rms / float(mean) > LLERRO_b:
-      flags.append("LLERRO")
-    return list(set(flags))
-
-
   def classifyChannels(self):
     """
-      Call getChannelFlags for each active channel and set 'flags' value for channels
+      Call getPedestalFlags for pedestals or execute sql quiery for compare test pulse,
+      laser or pedestal HV OFF channels
     """
     if self.getOption('isClassified') == 1:
       return
+    def testpulse():
+      for key in ("G1", "G6", "G12"):
+        avg = self.dbh.execute("select avg(value) from data_testpulse where key = 'ADC_MEAN_{0}'".format(key)).fetchone()[0] 
+        sql = "insert or ignore into flags select channel_id, '{0}' from data_testpulse where key = '{1}' and value <= 0".format('DTP' + key, 'ADC_MEAN_' + key)
+        self.dbh.execute(sql)
+        sql = "insert or ignore into flags select channel_id, '{0}' from data_testpulse where key = '{1}' and value <= 0.5 * {2}".format('STP' + key, 'ADC_MEAN_' + key, avg)
+        self.dbh.execute(sql)
+        sql = "insert or ignore into flags select channel_id, '{0}' from data_testpulse where key = '{1}' and value > 1.5 * {2}".format('STP' + key, 'ADC_MEAN_' + key, avg)
+        self.dbh.execute(sql)
+    def ped_hvoff():
+      # pedestal HV OFF channels problems
+      for key in ["G1", "G6", "G12"]:
+        sql = "insert or ignore into flags select data_pedestal_hvon.channel_id, '{0}' from data_pedestal_hvon, data_pedestal_hvoff \
+               where data_pedestal_hvon.channel_id = data_pedestal_hvoff.channel_id and \
+               data_pedestal_hvon.key = data_pedestal_hvoff.key and \
+               abs(data_pedestal_hvon.value - data_pedestal_hvoff.value) < 0.2 \
+               and data_pedestal_hvon.key = '{1}'".format('BV' + key, 'PED_RMS_' + key)
+        self.dbh.execute(sql)
+    def laser():
+      # get avg
+      avg = self.dbh.execute("select avg(value) from data_laser where key = 'APD_MEAN'").fetchone()[0] 
+      sql = "insert or ignore into flags select channel_id, 'DLAMPL' from data_laser where key = 'APD_MEAN' and value <= 0"
+      self.dbh.execute(sql)
+      sql = "insert or ignore into flags select channel_id, 'SLAMPL' from data_laser where key = 'APD_MEAN' and value < {0} * 0.1 and value > 0".format(avg)
+      self.dbh.execute(sql)
+      sql = "insert or ignore into flags select dl1.channel_id, 'LLERRO' from data_laser as dl1 \
+                                          inner join data_laser as dl2 \
+                                        inner join all_channels as ac \
+             on \
+             dl1.channel_id=dl2.channel_id and \
+             dl1.channel_id == ac.channel_id \
+             where \
+             dl1.key = 'APD_MEAN' and dl2.key = 'APD_RMS' and dl2.value / dl1.value > \
+             case ac.location \
+              when 'EB' then 0.2  \
+              when 'EE' then 0.05 \
+             end"
+      self.dbh.execute(sql)
     cur = self.dbh.cursor()
-    for t in ['pedestal_hvon','testpulse', 'laser']:
-      for c in [ k[0] for k in self.dbh.execute("select channel_id from {table}".format(table = "data_" + t))]:
-        for f in self.getChannelFlags(c, t):
-          cur.execute("insert or ignore into flags values ({0}, '{1}')".format(int(c), f))
-    # pedestal HV OFF channels problems
-    for key in ["G1", "G6", "G12"]:
-      sql = "select data_pedestal_hvon.channel_id  from data_pedestal_hvon, data_pedestal_hvoff \
-             where data_pedestal_hvon.channel_id = data_pedestal_hvoff.channel_id and \
-             data_pedestal_hvon.key = data_pedestal_hvoff.key and \
-             abs(data_pedestal_hvon.value - data_pedestal_hvoff.value) < 0.2 \
-             and data_pedestal_hvon.key = '{0}'".format( 'PED_RMS_' + key)
-      badchannels = [ c[0] for c in self.cur.execute(sql)]
-      for c in list(set(badchannels)):
-        cur.execute("insert or ignore into flags values ({0}, '{1}')".format(int(c), 'BV' + key))
+    log.info ("Classify Pedestal HV ON data ...")
+    for c in [ k[0] for k in self.dbh.execute("select channel_id from data_pedestal_hvon")]:
+      for f in self.getPedestalFlags(c):
+        cur.execute("insert or ignore into flags values ({0}, '{1}')".format(int(c), f))
+    log.info ("Finished.")
+    log.info ("Classify Test Pulse data ...")
+    testpulse()
+    log.info ("Finished.")
+    log.info ("Classify Laser data ...")
+    laser()
+    log.info ("Finished.")
+    log.info ("Classify Pedestal HV OFF data ...")
+    ped_hvoff()
+    log.info ("Finished.")
     self.setOption('isClassified', 1)
     self.dbh.commit()
 
