@@ -276,7 +276,7 @@ class Data(object):
         self.dbh.execute(sql)
         sql = "insert or ignore into flags select channel_id, '{0}' from data_testpulse where key = '{1}' and value <= 0.5 * {2}".format('STP' + key, 'ADC_MEAN_' + key, avg)
         self.dbh.execute(sql)
-        sql = "insert or ignore into flags select channel_id, '{0}' from data_testpulse where key = '{1}' and value > 1.5 * {2}".format('STP' + key, 'ADC_MEAN_' + key, avg)
+        sql = "insert or ignore into flags select channel_id, '{0}' from data_testpulse where key = '{1}' and value > 1.5 * {2}".format('LTP' + key, 'ADC_MEAN_' + key, avg)
         self.dbh.execute(sql)
     def ped_hvoff():
       # pedestal HV OFF channels problems
@@ -298,8 +298,8 @@ class Data(object):
                                           inner join data_laser as dl2 \
                                         inner join all_channels as ac \
              on \
-             dl1.channel_id=dl2.channel_id and \
-             dl1.channel_id == ac.channel_id \
+             dl1.channel_id = dl2.channel_id and \
+             dl1.channel_id = ac.channel_id \
              where \
              dl1.key = 'APD_MEAN' and dl2.key = 'APD_RMS' and dl2.value / dl1.value > \
              case ac.location \
