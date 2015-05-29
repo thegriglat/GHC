@@ -145,7 +145,7 @@ for d in ("EB", "EE"):
 
   print "-"*80
   shorter = lambda x: len([ c for c in GHC.getChannelsByFlag(x) if Data.getChannelClass(c) == d]) 
-  for k in ("G1", "G2", "G12"):
+  for k in ("G1", "G6", "G12"):
     print "{0:45s} | {1:5d} | {2:12s}".format("Dead TP channels", shorter("DTP" + k), "DTP" + k)
     print "{0:45s} | {1:5d} | {2:12s}".format("Low TP amplitude", shorter("STP" + k), "STP" + k)
     print "{0:45s} | {1:5d} | {2:12s}".format("Large TP amplitude", shorter("LTP" + k), "LTP" + k)
