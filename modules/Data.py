@@ -271,13 +271,14 @@ class Data(object):
       return
     def testpulse():
       for key in ("G1", "G6", "G12"):
-        avg = self.dbh.execute("select avg(value) from data_testpulse where key = 'ADC_MEAN_{0}'".format(key)).fetchone()[0] 
         sql = "insert or ignore into flags select channel_id, '{0}' from data_testpulse where key = '{1}' and value <= 0".format('DTP' + key, 'ADC_MEAN_' + key)
         self.dbh.execute(sql)
-        sql = "insert or ignore into flags select channel_id, '{0}' from data_testpulse where key = '{1}' and value <= 0.5 * {2}".format('STP' + key, 'ADC_MEAN_' + key, avg)
-        self.dbh.execute(sql)
-        sql = "insert or ignore into flags select channel_id, '{0}' from data_testpulse where key = '{1}' and value > 1.5 * {2}".format('LTP' + key, 'ADC_MEAN_' + key, avg)
-        self.dbh.execute(sql)
+        for l in (1, 2):
+          avg = self.dbh.execute("select avg(value) from data_testpulse where key = 'ADC_MEAN_{0}' and channel_id like '{1}%'".format(key, l)).fetchone()[0] 
+          sql = "insert or ignore into flags select channel_id, '{0}' from data_testpulse where key = '{1}' and value <= 0.5 * {2} and channel_id like '{3}%'".format('STP' + key, 'ADC_MEAN_' + key, avg, l)
+          self.dbh.execute(sql)
+          sql = "insert or ignore into flags select channel_id, '{0}' from data_testpulse where key = '{1}' and value > 1.5 * {2} and channel_id like '{3}%'".format('LTP' + key, 'ADC_MEAN_' + key, avg, l)
+          self.dbh.execute(sql)
     def ped_hvoff():
       # pedestal HV OFF channels problems
       for key in ["G1", "G6", "G12"]:
@@ -288,25 +289,25 @@ class Data(object):
                and data_pedestal_hvon.key = '{1}'".format('BV' + key, 'PED_RMS_' + key)
         self.dbh.execute(sql)
     def laser():
-      # get avg
-      avg = self.dbh.execute("select avg(value) from data_laser where key = 'APD_MEAN'").fetchone()[0] 
       sql = "insert or ignore into flags select channel_id, 'DLAMPL' from data_laser where key = 'APD_MEAN' and value <= 0"
       self.dbh.execute(sql)
-      sql = "insert or ignore into flags select channel_id, 'SLAMPL' from data_laser where key = 'APD_MEAN' and value < {0} * 0.1 and value > 0".format(avg)
-      self.dbh.execute(sql)
-      sql = "insert or ignore into flags select dl1.channel_id, 'LLERRO' from data_laser as dl1 \
+      for l in (1, 2):
+        avg = self.dbh.execute("select avg(value) from data_laser where key = 'APD_MEAN' and channel_id like '{0}%'".format(l)).fetchone()[0] 
+        sql = "insert or ignore into flags select channel_id, 'SLAMPL' from data_laser where key = 'APD_MEAN' and value < {0} * 0.1 and value > 0 and channel_id like '{1}%'".format(avg, l)
+        self.dbh.execute(sql)
+        sql = "insert or ignore into flags select dl1.channel_id, 'LLERRO' from data_laser as dl1 \
                                           inner join data_laser as dl2 \
                                         inner join all_channels as ac \
              on \
              dl1.channel_id = dl2.channel_id and \
              dl1.channel_id = ac.channel_id \
              where \
-             dl1.key = 'APD_MEAN' and dl2.key = 'APD_RMS' and dl2.value / dl1.value > \
+             dl1.key = 'APD_MEAN' and dl2.key = 'APD_RMS' and dl1.value > 0 and dl2.value / dl1.value > \
              case ac.location \
               when 'EB' then 0.2  \
               when 'EE' then 0.05 \
              end"
-      self.dbh.execute(sql)
+        self.dbh.execute(sql)
     cur = self.dbh.cursor()
     log.info ("Classify Pedestal HV ON data ...")
     for c in [ k[0] for k in self.dbh.execute("select channel_id from data_pedestal_hvon")]:
