@@ -351,7 +351,7 @@ class Data(object):
     self.setOption('isClassified', 1)
     self.dbh.commit()
 
-  def getChannelsByFlag(self, flags, exp = "or"):
+  def getChannelsByFlag(self, flags, exp = "and"):
     """
       Returns list of channels which has <flags> (string|list)
       exp = 'or' | 'and'
