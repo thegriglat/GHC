@@ -275,7 +275,7 @@ class Data(object):
         self.dbh.execute(sql)
         for l in (1, 2):
           avg = self.dbh.execute("select avg(value) from data_testpulse where key = 'ADC_MEAN_{0}' and channel_id like '{1}%'".format(key, l)).fetchone()[0] 
-          sql = "insert or ignore into flags select channel_id, '{0}' from data_testpulse where key = '{1}' and value <= 0.5 * {2} and channel_id like '{3}%'".format('STP' + key, 'ADC_MEAN_' + key, avg, l)
+          sql = "insert or ignore into flags select channel_id, '{0}' from data_testpulse where key = '{1}' and value > 0 and value <= 0.5 * {2} and channel_id like '{3}%'".format('STP' + key, 'ADC_MEAN_' + key, avg, l)
           self.dbh.execute(sql)
           sql = "insert or ignore into flags select channel_id, '{0}' from data_testpulse where key = '{1}' and value > 1.5 * {2} and channel_id like '{3}%'".format('LTP' + key, 'ADC_MEAN_' + key, avg, l)
           self.dbh.execute(sql)
