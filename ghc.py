@@ -65,33 +65,32 @@ for d in ["EB", "EE"]:
   print header("PEDESTAL {0} ANALYSIS".format(d))
   print ""
   act = len ([ c for c in GHC.getActiveChannels(type=['pedestal_hvon', 'pedestal_hvoff']) if  Data.getChannelClass(c) == d])
-  print "Number of inactive channels : {0}".format((61200,14648)[d == "EE"] - act)
-  print "Number of active channels   : {0}".format(act)
-
-  print "Statistics of channels by problem classes: "
-  print "{classn:45s} | {empty:5s} | {tags:12s}".format(classn = "Classes of pedestal problematic channels", empty="", tags="Short name")
+  print "| Number of inactive channels : {0}".format((61200,14648)[d == "EE"] - act)
+  print "| Number of active channels   : {0}\n".format(act)
+  print "| Statistics of channels by problem classes: "
+  print "| {classn:43s} | {empty:5s} | {tags:23s}|".format(classn = "Classes of pedestal problematic channels", empty="", tags="Short name")
 
   print "-"*80
   shorter = lambda x: len([ c for c in GHC.getChannelsByFlag(x) if Data.getChannelClass(c) == d]) 
   for k in ["G1", "G6", "G12"]:
-    print "{0:45s} | {1:5d} | {2:12s}".format("Dead pedestal channels", shorter("DP" + k), "DP" + k)
-    print "{0:45s} | {1:5d} | {2:12s}".format("Pedestal mean outside [170,230]", shorter("BP" + k), "BP" + k)
-    print "{0:45s} | {1:5d} | {2:12s}".format("Large RMS (noisy channels)", shorter("LR" + k), "LR" + k)
-    print "{0:45s} | {1:5d} | {2:12s}".format("Very large RMS (very noisy channels)", shorter("VLR" + k), "VLR" + k)
-    print "{0:45s} | {1:5d} | {2:12s}".format("Bad pedestal and noisy channels", shorter(["BP" + k, "LR" + k]), "BP" + k +"+LR" + k)
-    print "{0:45s} | {1:5d} | {2:12s}".format("Bad pedestal and very noisy", shorter(["BP" + k,"VLR" + k]), "BP" + k + "+VLR" + k)
+    print "| {0:43s} | {1:5d} | {2:23s}|".format("Dead pedestal channels", shorter("DP" + k), "DP" + k)
+    print "| {0:43s} | {1:5d} | {2:23s}|".format("Pedestal mean outside [170,230]", shorter("BP" + k), "BP" + k)
+    print "| {0:43s} | {1:5d} | {2:23s}|".format("Large RMS (noisy channels)", shorter("LR" + k), "LR" + k)
+    print "| {0:43s} | {1:5d} | {2:23s}|".format("Very large RMS (very noisy channels)", shorter("VLR" + k), "VLR" + k)
+    print "| {0:43s} | {1:5d} | {2:23s}|".format("Bad pedestal and noisy channels", shorter(["BP" + k, "LR" + k]), "BP" + k +"+LR" + k)
+    print "| {0:43s} | {1:5d} | {2:23s}|".format("Bad pedestal and very noisy", shorter(["BP" + k,"VLR" + k]), "BP" + k + "+VLR" + k)
     print "-"*80
   del shorter
 
   print ""
 
   tpc = 0
-  print "Get statistics by FLAGS:"
+  print " Get statistics by FLAGS:"
   for k in ["G1", "G6", "G12"]:
     for i in GHC.PEDESTAL_FLAGS:
       num = GHC.cur.execute("select count( distinct channel_id) from flags where flag = '{0}' and channel_id like '{1}%'".format(i + k, (2,1)[d == "EB"])).fetchone()[0]
       tpc += num
-      print "  {0:8s} : {1:5d}".format(i + k, num)
+      print "   {0:8s} : {1:5d}".format(i + k, num)
   print ""
 
 
@@ -104,29 +103,28 @@ for d in ("EB", "EE"):
   print header("TEST PULSE {0} ANALYSIS".format(d))
   print ""
   act = len ([ c for c in GHC.getActiveChannels(type = 'testpulse') if  Data.getChannelClass(c) == d])
-  print "Number of inactive channels : {0}".format((61200,14648)[d == "EE"] - act)
-  print "Number of active channels   : {0}".format(act)
-
-  print "Statistics of channels by problem classes: "
-  print "{classn:45s} | {empty:5s} | {tags:12s}".format(classn = "Classes of Test Pulse problematic channels", empty="", tags="Short name")
+  print "| Number of inactive channels : {0}".format((61200,14648)[d == "EE"] - act)
+  print "| Number of active channels   : {0}\n".format(act)
+  print "| Statistics of channels by problem classes: "
+  print "| {classn:43s} | {empty:5s} | {tags:23s}|".format(classn = "Classes of Test Pulse problematic channels", empty="", tags="Short name")
 
   print "-"*80
   shorter = lambda x: len([ c for c in GHC.getChannelsByFlag(x) if Data.getChannelClass(c) == d]) 
   for k in ("G1", "G6", "G12"):
-    print "{0:45s} | {1:5d} | {2:12s}".format("Dead TP channels", shorter("DTP" + k), "DTP" + k)
-    print "{0:45s} | {1:5d} | {2:12s}".format("Low TP amplitude", shorter("STP" + k), "STP" + k)
-    print "{0:45s} | {1:5d} | {2:12s}".format("Large TP amplitude", shorter("LTP" + k), "LTP" + k)
+    print "| {0:43s} | {1:5d} | {2:23s}|".format("Dead TP channels", shorter("DTP" + k), "DTP" + k)
+    print "| {0:43s} | {1:5d} | {2:23s}|".format("Low TP amplitude", shorter("STP" + k), "STP" + k)
+    print "| {0:43s} | {1:5d} | {2:23s}|".format("Large TP amplitude", shorter("LTP" + k), "LTP" + k)
     print "-"*80
   del shorter
 
   tpc = 0
-  print "Get statistics by FLAGS:"
+  print " Get statistics by FLAGS:"
   for k in ("G1", "G6", "G12"):
     for i in GHC.TESTPULSE_FLAGS:
       num = GHC.cur.execute("select count( distinct channel_id) from flags where flag = '{0}' and channel_id like '{1}%'".format(i + k, (2,1)[d == "EB"])).fetchone()[0]
       tpc += num
-      print "  {0:8s} : {1:5d}".format(i + k, num)
-  print "Total problematic test pulse channels:", tpc
+      print "   {0:8s} : {1:5d}".format(i + k, num)
+  print " Total problematic test pulse channels:", tpc
 
 
 print "="*80 
@@ -139,13 +137,13 @@ for d in ("EB", "EE"):
   print ""
 
   act = len ([ c for c in GHC.getActiveChannels(type = 'laser') if  Data.getChannelClass(c) == d])
-  print "Number of inactive channels : {0}".format((61200,14648)[d == "EE"] - act)
-  print "Number of active channels   : {0}".format(act)
+  print "| Number of inactive channels : {0}".format((61200,14648)[d == "EE"] - act)
+  print "| Number of active channels   : {0}".format(act)
 
-  print "Getting info per error key :"
+  print " Getting info per error key :"
   shorter = lambda x: len([ c for c in GHC.getChannelsByFlag(x) if Data.getChannelClass(c) == d]) 
   for i in GHC.LASER_FLAGS:
-    print "{0:15s} : {1:5d}".format(i, shorter(i))
+    print "   {0:15s} : {1:5d}".format(i, shorter(i))
 
 for d in ("EB", "EE"):
   pre = "^[BD]P|^V?LR"
@@ -156,27 +154,27 @@ for d in ("EB", "EE"):
    ("1%", "2%")[d == "EE"], " and flag REGEXP ".join([ "'{0}'".format(i) for i in x])
    )).fetchone()[0]
   print ""
-  print "=== Summary Total Problematic Channels for {0} ===".format(d)
-  print "  Total problematic channels                  |           * |", tpc
-  print "  Pedestals problems                          |          PE |", getchnum([pre])
-  print "  Test Pulse problems                         |          TP |", getchnum([tpre])
-  print "  Laser problems                              |          LA |", getchnum([lre])
+  header("Summary Total Problematic Channels for {0}".format(d))
+  print "|  Total problematic channels                  |           * |", tpc
+  print "|  Pedestals problems                          |          PE |", getchnum([pre])
+  print "|  Test Pulse problems                         |          TP |", getchnum([tpre])
+  print "|  Laser problems                              |          LA |", getchnum([lre])
   if d != "EE":
-    print "  High voltage problems                       |          HV |", getchnum([hvre])
-  print "  Pedestals + Test Pulse problems             |       PE+TP |", getchnum([pre, tpre])
-  print "  Pedestals + Laser problems                  |       PE+LA |", getchnum([pre, lre])
+    print "|  High voltage problems                       |          HV |", getchnum([hvre])
+  print "|  Pedestals + Test Pulse problems             |       PE+TP |", getchnum([pre, tpre])
+  print "|  Pedestals + Laser problems                  |       PE+LA |", getchnum([pre, lre])
   if d != "EE":
-    print "  Pedestals + High voltage problems           |       PE+HV |", getchnum([pre, hvre])
-  print "  Test Pulse + Laser problems                 |       TP+LA |", getchnum([tpre, lre])
+    print "|  Pedestals + High voltage problems           |       PE+HV |", getchnum([pre, hvre])
+  print "|  Test Pulse + Laser problems                 |       TP+LA |", getchnum([tpre, lre])
   if d != "EE":
-    print "  Test Pulse + High voltage problems          |       TP+HV |", getchnum([tpre, hvre])
-    print "  Laser + High voltage problems               |       LA+HV |", getchnum([lre, hvre])
-  print "  Pedestals + Test Pulse + Laser problems     |    PE+TP+LA |", getchnum([pre, tpre, lre])
+    print "|  Test Pulse + High voltage problems          |       TP+HV |", getchnum([tpre, hvre])
+    print "|  Laser + High voltage problems               |       LA+HV |", getchnum([lre, hvre])
+  print "|  Pedestals + Test Pulse + Laser problems     |    PE+TP+LA |", getchnum([pre, tpre, lre])
   if d != "EE":
-    print "  Pedestals + Test Pulse + HV problems        |    PE+TP+HV |", getchnum([pre, tpre, hvre])
-    print "  Pedestals + Laser + HV problems             |    PE+LA+HV |", getchnum([pre, lre, hvre])
-    print "  Test Pulse  + Laser + HV problems           |    TP+LA+HV |", getchnum([tpre, lre, hvre])
-    print "  Pedestal + Test Pulse + Laser + HV problems | PE+TP+LA+HV |", getchnum([pre, tpre, lre, hvre])
+    print "|  Pedestals + Test Pulse + HV problems        |    PE+TP+HV |", getchnum([pre, tpre, hvre])
+    print "|  Pedestals + Laser + HV problems             |    PE+LA+HV |", getchnum([pre, lre, hvre])
+    print "|  Test Pulse  + Laser + HV problems           |    TP+LA+HV |", getchnum([tpre, lre, hvre])
+    print "|  Pedestal + Test Pulse + Laser + HV problems | PE+TP+LA+HV |", getchnum([pre, tpre, lre, hvre])
 
 
 # plotting
