@@ -89,6 +89,7 @@ class Data(object):
       Set option's value
     """
     self.dbh.execute("insert or replace into options values ('{0}', {1})".format(option, value))
+    self.dbh.commit()
 
   def getOption(self, option):
     """
@@ -277,6 +278,7 @@ class Data(object):
     """
     if self.getOption('isClassified') == 1:
       return
+    self.dbh.commit()
     def testpulse():
       for key in ("G1", "G6", "G12"):
         sql = "insert or ignore into flags select channel_id, '{0}' from data_testpulse where key = '{1}' and value = 0".format('DTP' + key, 'ADC_MEAN_' + key)
@@ -318,19 +320,35 @@ class Data(object):
         self.dbh.execute(sql)
     cur = self.dbh.cursor()
     log.info ("Classify Pedestal HV ON data ...")
-    for c in [ k[0] for k in self.dbh.execute("select channel_id from data_pedestal_hvon")]:
-      for f in self.getPedestalFlags(c):
-        cur.execute("insert or ignore into flags values ({0}, '{1}')".format(int(c), f))
-    log.info ("Finished.")
+    try:
+      for c in [ k[0] for k in self.dbh.execute("select channel_id from data_pedestal_hvon")]:
+        for f in self.getPedestalFlags(c):
+          cur.execute("insert or ignore into flags values ({0}, '{1}')".format(int(c), f))
+      log.info ("Finished.")
+    except:
+      log.info("Skipped.")
+      self.dbh.rollback()
     log.info ("Classify Test Pulse data ...")
-    testpulse()
-    log.info ("Finished.")
+    try:
+      testpulse()
+      log.info ("Finished.")
+    except:
+      log.info("Skipped.")
+      self.dbh.rollback()
     log.info ("Classify Laser data ...")
-    laser()
-    log.info ("Finished.")
+    try:
+      laser()
+      log.info ("Finished.")
+    except:
+      log.info("Skipped.")
+      self.dbh.rollback()
     log.info ("Classify Pedestal HV OFF data ...")
-    ped_hvoff()
-    log.info ("Finished.")
+    try:
+      ped_hvoff()
+      log.info ("Finished.")
+    except:
+      log.info("Skipped.")
+      self.dbh.rollback()
     self.setOption('isClassified', 1)
     self.dbh.commit()
 
