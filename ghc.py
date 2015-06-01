@@ -39,14 +39,14 @@ GHC = Data.Data()
 GHC.readAllChannels("data/EB_all_ch.txt")
 GHC.readAllChannels("data/EE_all_ch.txt")
 
-if args.pon_runs:
+if args.pon_runs is not None:
   GHC.readData(source, runs=args.pon_runs.split(), type="pedestal_hvon")
-if args.poff_runs:
+if args.poff_runs is not None:
   GHC.readData(source, runs=args.poff_runs.split(), type="pedestal_hvoff")
 
-if args.tp_runs:
+if args.tp_runs is not None:
   GHC.readData(source, runs=args.tp_runs.split(), type="testpulse")
-if args.l_runs:
+if args.l_runs is not None:
   GHC.readData(source, runs=args.l_runs.split(), type="laser", lasertable=args.lasertable)
 
 GHC.classifyChannels()
