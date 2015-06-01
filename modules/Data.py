@@ -100,6 +100,14 @@ class Data(object):
     else:
       return r[0]
 
+  def resetFlags(self):
+    """
+      Reset flags in DB
+    """
+    self.dbh.execute("delete from flags")
+    self.setOption('isClassified', 0)
+    self.dbh.commit()
+
   def get1DHistogram(self, **kwargs):
     """
       Return TH1F histogram.
