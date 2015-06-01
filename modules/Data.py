@@ -324,6 +324,7 @@ class Data(object):
       for c in [ k[0] for k in self.dbh.execute("select channel_id from data_pedestal_hvon")]:
         for f in self.getPedestalFlags(c):
           cur.execute("insert or ignore into flags values ({0}, '{1}')".format(int(c), f))
+      self.dbh.commit()
       log.info ("Finished.")
     except:
       log.info("Skipped.")
@@ -331,6 +332,7 @@ class Data(object):
     log.info ("Classify Test Pulse data ...")
     try:
       testpulse()
+      self.dbh.commit()
       log.info ("Finished.")
     except:
       log.info("Skipped.")
@@ -338,6 +340,7 @@ class Data(object):
     log.info ("Classify Laser data ...")
     try:
       laser()
+      self.dbh.commit()
       log.info ("Finished.")
     except:
       log.info("Skipped.")
@@ -345,6 +348,7 @@ class Data(object):
     log.info ("Classify Pedestal HV OFF data ...")
     try:
       ped_hvoff()
+      self.dbh.commit()
       log.info ("Finished.")
     except:
       log.info("Skipped.")
