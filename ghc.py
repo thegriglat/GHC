@@ -52,8 +52,10 @@ if args.l_runs is not None:
 GHC.classifyChannels()
 
 if args.dump != None:
+  os.remove(args.dump)
   GHC.Export(args.dump)
 if args.dumpsql != None:
+  os.remove(args.dumpsql)
   Data.DumpSQL(GHC.dbh, args.dumpsql)
 
 print "="*80
