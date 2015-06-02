@@ -594,8 +594,9 @@ def getChannelInfo(c):
     keys for EE: id, location, SM, Dee, iX, iY, iZ
   """
   def getEBInfo(c):
-    info = {'id' : c, 'location': getSubDetector(c)}
-    info.update({"SM" : getSM(c)})
+    info = {'id' : c}
+    sm = getSM(c)
+    info.update({'location' : getSubDetector(c) + "{0:+03d}".format(sm)})
     info.update({"TT" : getTT(c)})
     info.update({"iEta" : getEtaPhi(c)[0]})
     info.update({"iPhi" : getEtaPhi(c)[1]})
@@ -644,12 +645,12 @@ def getChannelInfo(c):
         break
     sm = (min(psm), max(psm))[idee(c) == 2 or idee(c) == 3]
     sm = sm * iz(c)
-    info = {'id' : c, 'location': getSubDetector(c)}
+    info = {'id' : c}
+    info.update({'location' : getSubDetector(c) + "{0:+03d}".format(sm)})
     info.update({"iX" : getXYZ(c)[0]})
     info.update({"iY" : getXYZ(c)[1]})
     info.update({"iZ" : iz(c)})
     info.update({"Dee": idee(c)})
-    info.update({"SM" : sm})
     return info
   location = getSubDetector(c)
   if location == "EE":
