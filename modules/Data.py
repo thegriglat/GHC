@@ -575,6 +575,11 @@ def saveHistogram(histogram, filename, plottype):
   ROOT.gStyle.Clear()
 
 def getChannelInfo(c):
+  """
+    Return dict with information about location of channels in ECAL
+    keys for EB: id, location, SM, TT, iEta, iPhi
+    keys for EE: id, location, SM, Dee, iX, iY, iZ
+  """
   def getEBInfo(c):
     info = {'id' : c, 'location': getSubDetector(c)}
     info.update({"SM" : getEB(c)})
@@ -664,21 +669,15 @@ def getXtal(channel):
 
 def getEB(channel):
   """
-    Returns EB number for channel
+    Returns SM number for EB channel
   """
   eb = int(str(channel)[-6:-4])
   return (eb, 18 - eb)[eb > 18]
 
-def getSM(channel):
-  """
-    Returns supermodule (SM) number for channel
-  """
-  channel = int(channel) - 1011000000
-  xtal = channel % 10000
-  return (channel - xtal) / 10000
-
 def getEtaPhi(channel):
-  # return (eta, phi)
+  """
+    Return (Eta, Phi) tuple for EB channels
+  """
   ch = int(channel) - 1011000000
   xtal = ch % 10000
   sm = (ch - xtal) / 10000
@@ -688,6 +687,9 @@ def getEtaPhi(channel):
     return (84 - (xtal - 1) / 20 - 85, (xtal - 1) % 20 + (sm - 19) * 20 + 1)
 
 def getXYZ(channel):
+  """
+    Return (x, y , -1|1 ) tuple for EE channels
+  """
   channel = int(channel) - 2010000000
   side = channel / 1000000
   channel = channel - (side * 1000000)
