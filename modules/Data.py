@@ -436,6 +436,19 @@ class Data(object):
       self.dbh.commit()
     ora.close()
 
+  def printProblematicChannels(self):
+    """
+      Print problematic channel's data
+    """
+    print " {0:10s} | {1:40s} | {2:23s}".format("channel", "flags", "info")
+    print "-"*80
+    for c in self.dbh.execute("select distinct channel_id from flags"):
+      c = c[0]
+      flags = [i[0] for i in self.dbh.execute("select flag from flags where channel_id = {0}".format(c))]
+      info = getChannelInfo(c)
+      print " {0:10d} | {1:40s} | {2:23s}".format(c, "+".join(flags), " ".join(["{0}={1}".format(i, info[i])for i in info.keys() if i != "id"]))
+    print "-"*80
+
 def DumpSQL(db, filename):
   """
     Dumps database as sql
@@ -608,7 +621,6 @@ def getChannelInfo(c):
         log.error("Cannot get Dee for channel '{0}'".format(c))
     x = getXYZ(c)[0]
     y = getXYZ(c)[1]
-    print (x,y)
     while x > 50:
       x -= 50
     def is1or9():

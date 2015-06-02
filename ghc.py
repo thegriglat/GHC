@@ -19,6 +19,7 @@ parser.add_argument('-lt', '--lasertable', help="Laser table to use in Oracle DB
 parser.add_argument('-o', '--output', help="Results directory", dest='output')
 parser.add_argument('-d', '--dump', help="Dump internal database in sqlite3 database", dest='dump')
 parser.add_argument('-ds', '--dumpsql', help="Dump internal database in SQL", dest='dumpsql')
+parser.add_argument('-v', '--verbose', help="Be more verbose", action="store_true", default=False, dest='verbose')
 args = parser.parse_args()
 
 if not args.output:
@@ -228,3 +229,5 @@ for d in ("EB", "EE"):
     h = GHC.get2DHistogram(key = "APD_OVER_PN_{0}".format(('MEAN', 'RMS')[rms]), useRMS = rms, type="laser", part = d, name = "APD/PN {0}, ({1})".format(('mean', 'RMS')[rms] , args.lasertable))
     Data.saveHistogram(h, outputdir + "/laser/APDPN_{0}_{1}.2D.png".format(("MEAN", "RMS")[rms], d), d)
 
+if args.verbose:
+  GHC.printProblematicChannels()
