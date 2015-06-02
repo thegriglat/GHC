@@ -68,14 +68,14 @@ print ""
 for d in ["EB", "EE"]:
   print header("PEDESTAL {0} ANALYSIS".format(d))
   print ""
-  act = len ([ c for c in GHC.getActiveChannels(type=['pedestal_hvon', 'pedestal_hvoff']) if  Data.getChannelClass(c) == d])
+  act = len ([ c for c in GHC.getActiveChannels(type=['pedestal_hvon', 'pedestal_hvoff']) if  Data.getSubDetector(c) == d])
   print "| Number of inactive channels : {0}".format((61200,14648)[d == "EE"] - act)
   print "| Number of active channels   : {0}\n".format(act)
   print "| Statistics of channels by problem classes: "
   print "| {classn:43s} | {empty:5s} | {tags:23s}|".format(classn = "Classes of pedestal problematic channels", empty="", tags="Short name")
 
   print "-"*80
-  shorter = lambda x: len([ c for c in GHC.getChannelsByFlag(x) if Data.getChannelClass(c) == d]) 
+  shorter = lambda x: len([ c for c in GHC.getChannelsByFlag(x) if Data.getSubDetector(c) == d]) 
   for k in ["G1", "G6", "G12"]:
     print "| {0:43s} | {1:5d} | {2:23s}|".format("Dead pedestal channels", shorter("DP" + k), "DP" + k)
     print "| {0:43s} | {1:5d} | {2:23s}|".format("Pedestal mean outside [170,230]", shorter("BP" + k), "BP" + k)
@@ -106,14 +106,14 @@ print ""
 for d in ("EB", "EE"):
   print header("TEST PULSE {0} ANALYSIS".format(d))
   print ""
-  act = len ([ c for c in GHC.getActiveChannels(type = 'testpulse') if  Data.getChannelClass(c) == d])
+  act = len ([ c for c in GHC.getActiveChannels(type = 'testpulse') if  Data.getSubDetector(c) == d])
   print "| Number of inactive channels : {0}".format((61200,14648)[d == "EE"] - act)
   print "| Number of active channels   : {0}\n".format(act)
   print "| Statistics of channels by problem classes: "
   print "| {classn:43s} | {empty:5s} | {tags:23s}|".format(classn = "Classes of Test Pulse problematic channels", empty="", tags="Short name")
 
   print "-"*80
-  shorter = lambda x: len([ c for c in GHC.getChannelsByFlag(x) if Data.getChannelClass(c) == d]) 
+  shorter = lambda x: len([ c for c in GHC.getChannelsByFlag(x) if Data.getSubDetector(c) == d]) 
   for k in ("G1", "G6", "G12"):
     print "| {0:43s} | {1:5d} | {2:23s}|".format("Dead TP channels", shorter("DTP" + k), "DTP" + k)
     print "| {0:43s} | {1:5d} | {2:23s}|".format("Low TP amplitude", shorter("STP" + k), "STP" + k)
@@ -140,12 +140,12 @@ for d in ("EB", "EE"):
   print header("LASER {0} ANALYSIS".format(d))
   print ""
 
-  act = len ([ c for c in GHC.getActiveChannels(type = 'laser') if  Data.getChannelClass(c) == d])
+  act = len ([ c for c in GHC.getActiveChannels(type = 'laser') if  Data.getSubDetector(c) == d])
   print "| Number of inactive channels : {0}".format((61200,14648)[d == "EE"] - act)
   print "| Number of active channels   : {0}".format(act)
 
   print " Getting info per error key :"
-  shorter = lambda x: len([ c for c in GHC.getChannelsByFlag(x) if Data.getChannelClass(c) == d]) 
+  shorter = lambda x: len([ c for c in GHC.getChannelsByFlag(x) if Data.getSubDetector(c) == d]) 
   for i in GHC.LASER_FLAGS:
     print "   {0:15s} : {1:5d}".format(i, shorter(i))
 

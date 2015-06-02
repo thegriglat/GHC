@@ -68,7 +68,7 @@ class Data(object):
       line = line.strip()
       ch = int(line)
       cur.execute("insert into all_channels values ({channel}, '{location}', {sm}, {tt}, {xtal})".format(channel = ch, 
-      location = getChannelClass(ch), sm = getSM(ch), tt = getTT(ch), xtal = getXtal(ch)))
+      location = getSubDetector(ch), sm = getSM(ch), tt = getTT(ch), xtal = getXtal(ch)))
       n = n + 1
     self.dbh.commit()
     log.info( "Done. Processed {0} records.".format(n))
@@ -127,7 +127,7 @@ class Data(object):
         name = "Laser {0}".format(("Amplitude " + (" ", "RMS")[kwargs['useRMS']] + "(ADC counts)", key + ' ' + ("ratio", "RMS")[kwargs['useRMS']])[key == "APD/PN"])
     else:
       name = kwargs['name']
-    activech = [ c[0] for c in self.cur.execute("select channel_id from {tab} where key = '{key}'".format(tab = 'data_' + kwargs['type'], key = kwargs['key'])) if getChannelClass(c[0]) == kwargs['part']]
+    activech = [ c[0] for c in self.cur.execute("select channel_id from {tab} where key = '{key}'".format(tab = 'data_' + kwargs['type'], key = kwargs['key'])) if getSubDetector(c[0]) == kwargs['part']]
     if not kwargs.has_key('dimx'):
       if kwargs['type'] == "testpulse":
         if kwargs['part'] == "EB":
@@ -227,7 +227,7 @@ class Data(object):
       sys.exit(0)
     hist.SetMinimum(lim[RMS][gain][0])
     hist.SetMaximum(lim[RMS][gain][1])
-    for c in [ c[0] for c in self.cur.execute("select distinct channel_id from {tab} where key = '{key}'".format(tab = "data_" + kwargs['type'], key = kwargs['key'])) if getChannelClass(c[0]) == kwargs['part']]:
+    for c in [ c[0] for c in self.cur.execute("select distinct channel_id from {tab} where key = '{key}'".format(tab = "data_" + kwargs['type'], key = kwargs['key'])) if getSubDetector(c[0]) == kwargs['part']]:
       try:
         hist.SetBinContent(func(c)[1], func(c)[0], float(self.getChannelData(c, kwargs['key'], kwargs['type'])))
       except:
@@ -575,6 +575,74 @@ def saveHistogram(histogram, filename, plottype):
     return False
   ROOT.gStyle.Clear()
 
+def getChannelInfo(c):
+  def getEBInfo(c):
+    info = {'id' : c, 'location': getSubDetector(c)}
+    info.update({"SM" : getEB(c)})
+    info.update({"TT" : getTT(c)})
+    info.update({"iEta" : getEtaPhi(c)[0]})
+    info.update({"iPhi" : getEtaPhi(c)[1]})
+    return info
+  def getEEInfo(c):
+    def iz(c):
+      return getXYZ(c)[2]
+#      return (-1, 1)[c & 0x4000 > 0]  
+    def idee(c):
+      x = getXYZ(c)[0]
+      y = getXYZ(c)[1]
+      if iz(c) == -1:
+        x = x + 100
+      if x <= 50:
+        return 1
+      elif x > 50 and x <= 100:
+        return 2
+      elif x > 100 and x <= 150:
+        return 4
+      elif x > 150:
+        return 3
+      else:
+        log.error("Cannot get Dee for channel '{0}'".format(c))
+    x = getXYZ(c)[0]
+    y = getXYZ(c)[1]
+    print (x,y)
+    while x > 50:
+      x -= 50
+    def is1or9():
+      return (40 <= x <= 50 and y > 60) or (35 <= x <= 50 and y > 65) or (30 <= x <= 50 and y > 70) or \
+             (25 <= x <= 50 and y > 75) or (20 <= x <= 50 and y > 85)
+    def is2or8():
+      return (not is1or9()) and ((35 <= x <= 50 and y > 50) or (10 <= x <= 50 and y > 55) or (3 <= x <= 50 and y > 60))
+    def is3or7():
+      return (not is1or9() and not is2or8()) and ((5 <= x <= 10 and y > 25) or (5 <= x <= 20 and y > 30) or \
+      (3 <= x <= 30 and y > 35) or (0 <= x <= 35 and y > 40) or (0 <= x <= 10 and y > 55))
+    def is4or6():
+      return (not is1or9() and not is2or8() and not is3or7()) and ((25 <= x <= 35 and y > 5) or (20 <= x <= 35 and y > 8) or \
+      (15 <= x <= 35 and y > 13) or (13 <= x <= 40 and y > 15) or (7 <= x <= 40 and y > 20) or (10 <= x <= 40 and y  > 25) or \
+      (20 <= x <= 45 and y > 30) or (30 <= x <= 45 and y > 35) or (35 <= x <= 45 and y > 40))
+    def is5():
+      return (not is1or9() and not is2or8() and not is3or7() and not is4or6())
+    d = {is1or9 : [1, 9], is2or8 : [2, 8], is3or7: [3, 7], is4or6: [4, 6], is5: [5]}
+    for f in sorted(d.keys()):
+      if f():
+        psm = d[f]
+        break
+    sm = (min(psm), max(psm))[idee(c) == 2 or idee(c) == 3]
+    sm = sm * iz(c)
+    info = {'id' : c, 'location': getSubDetector(c)}
+    info.update({"iX" : getXYZ(c)[0]})
+    info.update({"iY" : getXYZ(c)[1]})
+    info.update({"iZ" : iz(c)})
+    info.update({"Dee": idee(c)})
+    info.update({"SM" : sm})
+    return info
+  location = getSubDetector(c)
+  if location == "EE":
+    return getEEInfo(c)
+  elif location == "EB":
+    return getEBInfo(c)
+  else:
+    log.error("Cannot determine location for channel '{0}'".format(c))
+
 def getTT(channel):
   """
     Returns TT number for channel
@@ -599,7 +667,8 @@ def getEB(channel):
   """
     Returns EB number for channel
   """
-  return int(str(channel)[-6:-4])
+  eb = int(str(channel)[-6:-4])
+  return (eb, 18 - eb)[eb > 18]
 
 def getSM(channel):
   """
@@ -609,7 +678,25 @@ def getSM(channel):
   xtal = channel % 10000
   return (channel - xtal) / 10000
 
-def getChannelClass(channel):
+def getEtaPhi(channel):
+  # return (eta, phi)
+  ch = int(channel) - 1011000000
+  xtal = ch % 10000
+  sm = (ch - xtal) / 10000
+  if sm < 19:
+    return ((xtal - 1) / 20, 19 - (xtal - 1) % 20  + (sm - 1) * 20 + 1)
+  else:
+    return (84 - (xtal - 1) / 20 - 85, (xtal - 1) % 20 + (sm - 19) * 20 + 1)
+
+def getXYZ(channel):
+  channel = int(channel) - 2010000000
+  side = channel / 1000000
+  channel = channel - (side * 1000000)
+  y = channel % 1000
+  x = channel / 1000
+  return (x, y, (1, -1)[side == 0])
+
+def getSubDetector(channel):
   """
     Returns EB|EE detector place of channel
   """
