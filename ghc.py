@@ -154,17 +154,25 @@ for d in ("EB", "EE"):
   tpre = "^[DSL]TP"
   lre = "^[DS]LAMPL|LLERRO"
   hvre = "^BV"
-  getchnum = lambda x: GHC.dbh.execute("select count(distinct channel_id) from flags where channel_id like '{0}' and flag REGEXP {1}".format(
-   ("1%", "2%")[d == "EE"], " and flag REGEXP ".join([ "'{0}'".format(i) for i in x])
-   )).fetchone()[0]
+  def getchnum (x):
+    all = [pre, tpre, lre, hvre]
+    rall = list(set(all) - set(x))
+    if len(rall) == 0:
+      return 0
+    sql = "select count(distinct channel_id) from flags where channel_id like '{loc}' and \
+           channel_id in (select channel_id from flags where (flag REGEXP {match}) and channel_id like '{loc}') and \
+           channel_id not in (select channel_id from flags where (flag not REGEXP {notmatch}) and channel_id like '{loc}')".format(loc = ("1%", "2%")[d == "EE"],
+           match = " or flag REGEXP ".join([ "'{0}'".format(i) for i in x]),
+           notmatch = " and flag not REGEXP ".join([ "'{0}'".format(i) for i in rall]))
+    return GHC.dbh.execute(sql).fetchone()[0]
   print ""
   header("Summary Total Problematic Channels for {0}".format(d))
   print "|  Total problematic channels                  |           * |", tpc
-  print "|  Pedestals problems                          |          PE |", getchnum([pre])
-  print "|  Test Pulse problems                         |          TP |", getchnum([tpre])
-  print "|  Laser problems                              |          LA |", getchnum([lre])
+  print "|  Pedestals problems only                     |          PE |", getchnum([pre])
+  print "|  Test Pulse problems only                    |          TP |", getchnum([tpre])
+  print "|  Laser problems only                         |          LA |", getchnum([lre])
   if d != "EE":
-    print "|  High voltage problems                       |          HV |", getchnum([hvre])
+    print "|  High voltage problems only                  |          HV |", getchnum([hvre])
   print "|  Pedestals + Test Pulse problems             |       PE+TP |", getchnum([pre, tpre])
   print "|  Pedestals + Laser problems                  |       PE+LA |", getchnum([pre, lre])
   if d != "EE":
