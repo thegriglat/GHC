@@ -582,7 +582,7 @@ def getChannelInfo(c):
   """
   def getEBInfo(c):
     info = {'id' : c, 'location': getSubDetector(c)}
-    info.update({"SM" : getEB(c)})
+    info.update({"SM" : getSM(c)})
     info.update({"TT" : getTT(c)})
     info.update({"iEta" : getEtaPhi(c)[0]})
     info.update({"iPhi" : getEtaPhi(c)[1]})
@@ -653,7 +653,7 @@ def getTT(channel):
   """
   channel = str(channel)
   l1 = getXtal(channel)
-  l2 = getEB(channel)
+  l2 = getSM(channel)
   row = (l1 - 1) / 20 + 1
   col = (l1 - 1) % 20 + 1
   TTrow = (row - 1) / 5
@@ -667,7 +667,7 @@ def getXtal(channel):
   """
   return int(str(channel)[-4:])
 
-def getEB(channel):
+def getSM(channel):
   """
     Returns SM number for EB channel
   """
