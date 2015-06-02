@@ -17,6 +17,7 @@ parser.add_argument('-tp',  help="Test Pulse runs", dest='tp_runs')
 parser.add_argument('-l',help="Laser runs", dest='l_runs')
 parser.add_argument('-lt', '--lasertable', help="Laser table to use in Oracle DB", dest='lasertable', default = "MON_LASER_BLUE_DAT")
 parser.add_argument('-o', '--output', help="Results directory", dest='output')
+parser.add_argument('-i', '--import', help="Import DB from sqlite3", dest='importdb')
 parser.add_argument('-d', '--dump', help="Dump internal database in sqlite3 database", dest='dump')
 parser.add_argument('-ds', '--dumpsql', help="Dump internal database in SQL", dest='dumpsql')
 parser.add_argument('-v', '--verbose', help="Be more verbose", action="store_true", default=False, dest='verbose')
@@ -37,18 +38,20 @@ source = args.dbstr
 header = lambda x: "="*((78 - (len(x)/2*2))/2) + " " + x + " " + "="*((78 - len(x))/2)
 
 GHC = Data.Data()
-GHC.readAllChannels("data/EB_all_ch.txt")
-GHC.readAllChannels("data/EE_all_ch.txt")
+if args.importdb == None:
+  GHC.readAllChannels("data/EB_all_ch.txt")
+  GHC.readAllChannels("data/EE_all_ch.txt")
+  if args.pon_runs is not None:
+    GHC.readData(source, runs=args.pon_runs.split(), type="pedestal_hvon")
+  if args.poff_runs is not None:
+    GHC.readData(source, runs=args.poff_runs.split(), type="pedestal_hvoff")
 
-if args.pon_runs is not None:
-  GHC.readData(source, runs=args.pon_runs.split(), type="pedestal_hvon")
-if args.poff_runs is not None:
-  GHC.readData(source, runs=args.poff_runs.split(), type="pedestal_hvoff")
-
-if args.tp_runs is not None:
-  GHC.readData(source, runs=args.tp_runs.split(), type="testpulse")
-if args.l_runs is not None:
-  GHC.readData(source, runs=args.l_runs.split(), type="laser", lasertable=args.lasertable)
+  if args.tp_runs is not None:
+    GHC.readData(source, runs=args.tp_runs.split(), type="testpulse")
+  if args.l_runs is not None:
+    GHC.readData(source, runs=args.l_runs.split(), type="laser", lasertable=args.lasertable)
+else:
+  GHC.Load(args.importdb)
 
 GHC.classifyChannels()
 
@@ -191,8 +194,6 @@ for d in ("EB", "EE"):
 
 
 # plotting
-import sys
-sys.exit(0)
 print header("Preparing plots ...")
 for i in ['pedestals_hvon', 'pedestals_hvoff', 'testpulse', 'laser']:
   if not os.path.exists(outputdir + "/" + i):
