@@ -1,7 +1,7 @@
 create table flags (channel_id INTEGER NOT NULL, flag TEXT NOT NULL, PRIMARY KEY (channel_id, flag))
 create table flags_description (flag TEXT NOT NULL PRIMARY KEY, description TEXT NOT NULL)
 create table runs (run_num INTEGER NOT NULL, run_type TEXT NOT NULL, comment TEXT DEFAULT "")
-create table all_channels (channel_id INTEGER PRIMARY KEY NOT NULL, location TEXT, SM INTEGER, TT INTEGER, XTAL INTEGER)
+create table all_channels (channel_id INTEGER PRIMARY KEY NOT NULL, location TEXT)
 create table data_pedestal_hvon (channel_id INTEGER, key TEXT, value REAL, PRIMARY KEY (channel_id, key))
 create table data_testpulse (channel_id INTEGER, key TEXT, value REAL, PRIMARY KEY (channel_id, key))
 create table data_laser (channel_id INTEGER, key TEXT, value REAL, PRIMARY KEY (channel_id, key))

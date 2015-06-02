@@ -67,8 +67,7 @@ class Data(object):
     for line in fd.readlines():
       line = line.strip()
       ch = int(line)
-      cur.execute("insert into all_channels values ({channel}, '{location}', {sm}, {tt}, {xtal})".format(channel = ch, 
-      location = getSubDetector(ch), sm = getSM(ch), tt = getTT(ch), xtal = getXtal(ch)))
+      cur.execute("insert into all_channels values ({channel}, '{location}')".format(channel = ch, location = getSubDetector(ch))
       n = n + 1
     self.dbh.commit()
     log.info( "Done. Processed {0} records.".format(n))
