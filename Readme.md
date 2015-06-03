@@ -45,6 +45,33 @@ Each script has command line option parser, so -h option will give you some usef
 ### ghc.py ###
 
 This is main script which uses Data module and provide userful output.
+
+<pre>
+usage: ghc.py [-h] [-c DBSTR] [-pon PON_RUNS] [-poff POFF_RUNS] [-tp TP_RUNS]
+              [-l L_RUNS] [-lt TABLE] [-o DIRECTORY] [-i DB] [-d DB] [-ds SQL]
+              [-f FORMAT] [-v]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -c DBSTR, --dbstr DBSTR
+                        Connection string to DB (oracle://user/pass@db)
+  -pon PON_RUNS         Pedestal HV ON runs
+  -poff POFF_RUNS       Pedestal HV OFF runs
+  -tp TP_RUNS           Test Pulse runs
+  -l L_RUNS             Laser runs
+  -lt TABLE, --lasertable TABLE
+                        Laser table to use in Oracle DB
+  -o DIRECTORY, --output DIRECTORY
+                        Results directory
+  -i DB, --import DB    Import DB from sqlite3
+  -d DB, --dump DB      Dump internal database in sqlite3 database
+  -ds SQL, --dumpsql SQL
+                        Dump internal database in SQL
+  -f FORMAT, --format FORMAT
+                        Image format
+  -v, --verbose         Be more verbose
+
+</pre>
  
 The following rules are used for assign some flags to channels:
 
@@ -77,6 +104,6 @@ How to use
 **Example of analyse GHC28**
 
     python ghc.py -h
-    python ghc.py -ds GHC.dump.sql -d GHC.sqlite3 -o results2 -lt MON_LASER_IRED_DAT -c 'oracle://user/pass@db' -poff "238566 238569 238594" -pon "238566 238569 238594" -tp "238577 238574 238581" -l 238724
+    python ghc.py -v -ds GHC.dump.sql -d GHC.sqlite3 -o results -lt MON_LASER_IRED_DAT -c 'oracle://user/pass@db' -poff "238566 238569 238594" -pon "238566 238569 238594" -tp "238577 238574 238581" -l 238724
 
 You should see various output about channels.
