@@ -146,9 +146,9 @@ class Data(object):
     hist.SetXTitle("{0} (ADC counts)".format(("Mean", "RMS")[kwargs['useRMS']]))
     for ch in activech:
       try:
-        hist.Fill(float(self.getChannelData(ch, kwargs['key'], kwargs['type'])))
+        hist.Fill(float(self.getChannelData(ch, key = kwargs['key'], type = kwargs['type'])))
       except Exception as e:
-        log.error( "  Cannot add value from channel {0} and key {1} {2}!: {3}".format(ch, key, ("", "(RMS)")[kwargs['useRMS']], e))
+        log.error( "  Cannot add value from channel {0} and key {1} {2}!: {3}".format(ch, kwargs['key'], ("", "(RMS)")[kwargs['useRMS']], e))
     return hist
 
   def get2DHistogram(self, **kwargs):
@@ -228,19 +228,46 @@ class Data(object):
     hist.SetMaximum(lim[RMS][gain][1])
     for c in [ c[0] for c in self.cur.execute("select distinct channel_id from {tab} where key = '{key}'".format(tab = "data_" + kwargs['type'], key = kwargs['key'])) if getSubDetector(c[0]) == kwargs['part']]:
       try:
-        hist.SetBinContent(func(c)[1], func(c)[0], float(self.getChannelData(c, kwargs['key'], kwargs['type'])))
+        hist.SetBinContent(func(c)[1], func(c)[0], float(self.getChannelData(c, key = kwargs['key'], type = kwargs['type'])))
       except:
         log.error( "Cannot add bin content to histogram for channel", c)
     return hist
 
-  def getChannelData(self, channel, key, type):
+  def getChannelData(self, channel, **kwargs):
     """
-      Returns channel's value for channels, key, type
+      Returns channel's value for channels
+      If additional keys ('key' and 'type') are specified -- return value
+      else return dict with all values for channel
     """
-    try:
-      return  self.cur.execute("select value from {table} where channel_id = {channel} and key = '{key}'".format(table = "data_" + type, channel = channel, key = key)).fetchone()[0]
-    except:
-      return None
+    if kwargs.has_key('key') and kwargs.has_key("type"): 
+      try:
+        return  self.cur.execute("select value from {table} where channel_id = {channel} and key = '{key}'".format(table = "data_" + kwargs['type'], channel = channel, key = kwargs['key'])).fetchone()[0]
+      except:
+        return None
+    # in other cases return dictionary with data
+    if kwargs.has_key("type"):
+      type = [kwargs["type"]]
+    else:
+      type = ["pedestal_hvon", "pedestal_hvoff", "testpulse", "laser"]
+    if kwargs.has_key("key"):
+      key = kwargs["key"]
+    else:
+      key = None
+    result = {}
+    for t in type:
+      if key != None:
+        result.update({key : self.getChannelData(channel, key = key, type = t)})
+      else:
+        keys = [i[0] for i in self.dbh.execute("select distinct key from {0}".format("data_" + t))]
+        for k in keys:
+          if "hvon" in t:
+            kmod = k + "_HVON"
+          elif "hvoff" in t:
+            kmod = k + "_HVOFF"
+          else:
+            kmod = k
+          result.update({kmod : self.getChannelData(channel, key = k, type = t)})
+    return result
 
   def getPedestalFlags(self, channel):
     """
@@ -248,8 +275,8 @@ class Data(object):
     """
     def PedestalComparison(key, deadlimits, badlimits):
       tmpflags = []
-      mean = self.getChannelData(channel, 'PED_MEAN_' + key, 'pedestal_hvon')
-      rms = self.getChannelData(channel, 'PED_RMS_' + key, 'pedestal_hvon')
+      mean = self.getChannelData(channel, key = 'PED_MEAN_' + key, type = 'pedestal_hvon')
+      rms = self.getChannelData(channel, key = 'PED_RMS_' + key, type = 'pedestal_hvon')
       if mean <= deadlimits[0] or rms <= deadlimits[1]:
         tmpflags.append("DP" + key)
       else:
