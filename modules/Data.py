@@ -39,7 +39,11 @@ class Data(object):
       Returns number of inactive channels
     """
     return len(self.getAllChannels()) - len(self.getActiveChannels())
-  
+ 
+  def getProblematicChannels(self):
+    self.classifyChannels()
+    return [c[0] for c in self.dbh.execute("select distinct channel_id from flags")]
+ 
   def getActiveChannels(self, **kwargs):
     """
       Returns list of active channels
@@ -381,6 +385,10 @@ class Data(object):
       self.dbh.rollback()
     self.setOption('isClassified', 1)
     self.dbh.commit()
+
+  def getFlagsByChannel(self, channel):
+    self.classifyChannels()
+    return [c[0] for c in self.dbh.execute("select flag from flags where channel_id = {0}".format(channel))]
 
   def getChannelsByFlag(self, flags, exp = "and"):
     """
