@@ -33,15 +33,15 @@ else:
 if not os.path.exists(outputdir):
   os.mkdir(outputdir)
 
-if not args.dbstr:
-  print "Please specify --dbstr!"
-  sys.exit(0)
-source = args.dbstr
-
 header = lambda x: "="*((78 - (len(x)/2*2))/2) + " " + x + " " + "="*((78 - len(x))/2)
 
 GHC = Data.Data()
 if args.importdb == None:
+  if not args.dbstr:
+    print "Please specify --dbstr!"
+    sys.exit(0)
+  source = args.dbstr
+
   GHC.readAllChannels("data/EB_all_ch.txt")
   GHC.readAllChannels("data/EE_all_ch.txt")
   if args.pon_runs is not None:
