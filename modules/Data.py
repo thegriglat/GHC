@@ -502,20 +502,12 @@ def DumpDB(dbin, dbout):
   dbin.text_factory = sqlite3.OptimizedUnicode
   dbout.text_factory = sqlite3.OptimizedUnicode
   cout = dbout.cursor()
-  for tablerow in dbin.execute('select * from sqlite_master'):
-    tablename = tablerow[2]
-    log.info ("Create table '" + tablename + "'")
-    if "sqlite" in tablerow[1]:
-      continue
-    try:
-      cout.execute(tablerow[4])
-    except Exception as e:
-      log.error("Cannot create table {0} in DB {1}!: {2}".format(tablename, str(dbout), str(e)))
-    log.info ("Exporting data from table '" + tablename + "' ...")
-    for row in dbin.execute('select * from ' + tablename):
-      cout.execute ('insert into ' + tablename + ' values ' + str(row))
-    dbout.commit()
-    log.info (tablename + " : Done.")
+  log.info("Starting dump ...")
+  for sqlline in dbin.iterdump():
+    if sqlline != "COMMIT;": 
+      cout.execute(sqlline)
+  dbout.commit()
+  log.info("Finished.")
 
 def saveHistogram(histogram, filename, plottype):
   """
