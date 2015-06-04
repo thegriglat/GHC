@@ -10,11 +10,11 @@ import log
 import Data
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-c', '--dbstr', help="Connection string to DB (oracle://user/pass@db)", dest='dbstr')
-parser.add_argument('-pon', help="Pedestal HV ON  runs", dest='pon_runs')
-parser.add_argument('-poff',help="Pedestal HV OFF runs", dest='poff_runs')
-parser.add_argument('-tp',  help="Test Pulse runs", dest='tp_runs')
-parser.add_argument('-l',help="Laser runs", dest='l_runs')
+parser.add_argument('-c', '--dbstr', help="Connection string to DB (oracle://user/pass@db). Don't use this if you want to read files.", dest='dbstr', default = "files")
+parser.add_argument('-pon', help="Pedestal HV ON  runs numbers or list of files", dest='pon_runs')
+parser.add_argument('-poff',help="Pedestal HV OFF runs numbers or list of files", dest='poff_runs')
+parser.add_argument('-tp',  help="Test Pulse runs numbers or list of files", dest='tp_runs')
+parser.add_argument('-l',help="Laser runs or list of files", dest='l_runs')
 parser.add_argument('-lt', '--lasertable', help="Laser table to use in Oracle DB", dest='lasertable', default = "MON_LASER_BLUE_DAT", metavar = "TABLE")
 parser.add_argument('-o', '--output', help="Results directory", dest='output', metavar = "DIRECTORY")
 parser.add_argument('-i', '--import', help="Import DB from sqlite3", dest='importdb', metavar = "DB")
@@ -37,9 +37,8 @@ header = lambda x: "="*((78 - (len(x)/2*2))/2) + " " + x + " " + "="*((78 - len(
 
 GHC = Data.Data()
 if args.importdb == None:
-  if not args.dbstr:
-    print "Please specify --dbstr!"
-    sys.exit(0)
+  if args.dbstr == "files":
+    log.info ("!!! The data will be readed from files !!!")
   source = args.dbstr
 
   GHC.readAllChannels("data/EB_all_ch.txt")

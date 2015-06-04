@@ -54,11 +54,12 @@ usage: ghc.py [-h] [-c DBSTR] [-pon PON_RUNS] [-poff POFF_RUNS] [-tp TP_RUNS]
 optional arguments:
   -h, --help            show this help message and exit
   -c DBSTR, --dbstr DBSTR
-                        Connection string to DB (oracle://user/pass@db)
-  -pon PON_RUNS         Pedestal HV ON runs
-  -poff POFF_RUNS       Pedestal HV OFF runs
-  -tp TP_RUNS           Test Pulse runs
-  -l L_RUNS             Laser runs
+                        Connection string to DB (oracle://user/pass@db). Don't
+                        use this if you want to read files.
+  -pon PON_RUNS         Pedestal HV ON runs numbers or list of files
+  -poff POFF_RUNS       Pedestal HV OFF runs numbers or list of files
+  -tp TP_RUNS           Test Pulse runs numbers or list of files
+  -l L_RUNS             Laser runs or list of files
   -lt TABLE, --lasertable TABLE
                         Laser table to use in Oracle DB
   -o DIRECTORY, --output DIRECTORY
@@ -70,29 +71,9 @@ optional arguments:
   -f FORMAT, --format FORMAT
                         Image format
   -v, --verbose         Be more verbose
-
 </pre>
  
 The following rules are used for assign some flags to channels:
-
-<pre>
-  Channel is assigned by the following rules: 
-
-  mean < dead_limit_mean OR rms <= dead_limit_rms                     ~> DP**
-  mean > dead_limit_mean and bad_limit_rms_1 <= rms < bad_limit_rms_2 ~> LR**
-  mean > dead_limit_mean and rms > bad_limit_rms_2                    ~> VLR**
-  mean > dead_limit_mean ad 170 <= mean <= 230                        ~> BP**
-
-  limits = {
-    "G1"  : (
-      [ dead_limit_mean, dead_limit_rms  ],
-      [ bad_limit_rms_1, bad_limit_rms_2 ]
-    ) ,
-    "G6"  : ...,
-    "G12" : ...
-  }
-</pre>
-
 
 How to use
 ==========

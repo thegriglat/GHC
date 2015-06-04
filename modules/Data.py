@@ -432,6 +432,9 @@ class Data(object):
       log.error("readData function should be called with 'runs' parameter")
     if not kwargs.has_key("type"):
       log.error("readData function should be called with 'type' parameter")
+    if "oracle" not in source:
+      self.readDataFromFile(source, kwargs)
+      return
     if kwargs.has_key('lasertable'):
       log.info("Table {0} will be user as source for Laser data".format(kwargs['lasertable']))
     table = "data_" + kwargs['type']
@@ -470,6 +473,33 @@ class Data(object):
             cur.execute("update {table} set value = {data} where channel_id = {channel} and key = '{key}' ".format(table = table, channel = int(row[0]), data = row[k + 1], key = fields[k]))
       self.dbh.commit()
     ora.close()
+
+  def readDataFromFile(self, source, kwargs):
+    """
+      Read data from file called 'source'
+    """
+    type = kwargs['type']
+    files = kwargs['runs']
+    if "pedestal" in type:
+      fields = ['PED_MEAN_G1', 'PED_RMS_G1', 'PED_MEAN_G6', 'PED_RMS_G6', 'PED_MEAN_G12', 'PED_RMS_G12']
+    elif "testpulse" in type:
+      fields = ['ADC_MEAN_G1', 'ADC_MEAN_G6', 'ADC_MEAN_G12', 'ADC_RMS_G1', 'ADC_RMS_G6', 'ADC_RMS_G12']
+    elif "laser" in type:
+      fields = ['APD_MEAN', 'APD_RMS', 'APD_OVER_PN_MEAN', 'APD_OVER_PN_RMS']
+    else:
+      log.error("Unsuported type of data: {0}".format(type))
+    table = "data_" + type
+    for f in files:
+      log.info("Reading file '{0}'".format(f))
+      fh = open(f, 'r')
+      cur = self.dbh.cursor()
+      for line in fh.readlines():
+        line = line.strip().split()
+        channel = line[1]
+        for k in xrange(len(fields)):
+          cur.execute("insert or replace into {table} values ({channel}, '{key}', {value})".format(table = table, channel = channel, key = fields[k], value = line[k + 2]))
+      fh.close()
+    self.dbh.commit()
 
   def printProblematicChannels(self):
     """
