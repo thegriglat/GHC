@@ -71,6 +71,7 @@ optional arguments:
   -f FORMAT, --format FORMAT
                         Image format
   -v, --verbose         Be more verbose
+  -np, --no-plots       Don't make plots
 </pre>
  
 The following rules are used for assign some flags to channels:

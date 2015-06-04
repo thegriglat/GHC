@@ -22,6 +22,7 @@ parser.add_argument('-d', '--dump', help="Dump internal database in sqlite3 data
 parser.add_argument('-ds', '--dumpsql', help="Dump internal database in SQL", dest='dumpsql', metavar = "SQL")
 parser.add_argument('-f', '--format', help="Image format", dest='imgformat', default = "png", metavar = "FORMAT")
 parser.add_argument('-v', '--verbose', help="Be more verbose", action="store_true", default=False, dest='verbose')
+parser.add_argument('-np', '--no-plots', help="Don't make plots", action="store_true", default=False, dest='noplots')
 args = parser.parse_args()
 
 format = args.imgformat
@@ -195,6 +196,11 @@ for d in ("EB", "EE"):
     print "|  Pedestal + Test Pulse + Laser + HV problems | PE+TP+LA+HV |", getchnum([pre, tpre, lre, hvre])
 
 
+if args.verbose:
+  GHC.printProblematicChannels()
+
+if args.noplots:
+  sys.exit(0)
 # plotting
 print header("Preparing plots ...")
 for i in ['pedestals_hvon', 'pedestals_hvoff', 'testpulse', 'laser']:
@@ -232,5 +238,4 @@ for d in ("EB", "EE"):
     h = GHC.get2DHistogram(key = "APD_OVER_PN_{0}".format(('MEAN', 'RMS')[rms]), useRMS = rms, type="laser", part = d, name = "APD/PN {0}, ({1})".format(('mean', 'RMS')[rms] , args.lasertable))
     Data.saveHistogram(h, outputdir + "/laser/APDPN_{0}_{1}.2D.{2}".format(("MEAN", "RMS")[rms], d, format), d)
 
-if args.verbose:
-  GHC.printProblematicChannels()
+
