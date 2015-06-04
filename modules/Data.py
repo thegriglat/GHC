@@ -342,11 +342,11 @@ class Data(object):
              dl1.channel_id = dl2.channel_id and \
              dl1.channel_id = ac.channel_id \
              where \
-             dl1.key = 'APD_MEAN' and dl2.key = 'APD_RMS' and dl1.value > 0 and dl2.value / dl1.value > \
+             dl1.key = 'APD_MEAN' and dl2.key = 'APD_RMS' and dl1.value > {0} * 0.1 and dl2.value / dl1.value > \
              case ac.location \
-              when 'EB' then 0.2  \
-              when 'EE' then 0.05 \
-             end"
+              when 'EB' then 0.1  \
+              when 'EE' then 0.1 \
+             end".format(avg)
         self.dbh.execute(sql)
     cur = self.dbh.cursor()
     log.info ("Classify Pedestal HV ON data ...")
