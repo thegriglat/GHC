@@ -104,6 +104,6 @@ How to use
 **Example of analyse GHC28**
 
     python ghc.py -h
-    python ghc.py -v -ds GHC.dump.sql -d GHC.sqlite3 -o results -lt MON_LASER_IRED_DAT -c 'oracle://user/pass@db' -poff "238566 238569 238594" -pon "238566 238569 238594" -tp "238577 238574 238581" -l 238724
+    python ghc.py -v -ds GHC.dump.sql -d GHC.sqlite3 -o results -lt MON_LASER_IRED_DAT -c 'oracle://user/pass@db' -poff "238609 238610 238600" -pon "238566 238569 238594" -tp "238577 238574 238581" -l 238724
 
 You should see various output about channels.
