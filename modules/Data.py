@@ -320,14 +320,20 @@ class Data(object):
           sql = "insert or ignore into flags select channel_id, '{0}' from data_testpulse where key = '{1}' and value > 1.5 * {2} and channel_id like '{3}%'".format('LTP' + key, 'ADC_MEAN_' + key, avg, l)
           self.dbh.execute(sql)
     def ped_hvoff():
-      # pedestal HV OFF channels problems
+      # pedestal HV OFF channels problems only for EB
+      cur = self.dbh.cursor()
+      pre = "^[BD]P|^V?LR"
       for key in ["G1", "G6", "G12"]:
-        sql = "insert or ignore into flags select data_pedestal_hvon.channel_id, '{0}' from data_pedestal_hvon, data_pedestal_hvoff \
+        sql = "select data_pedestal_hvon.channel_id from data_pedestal_hvon, data_pedestal_hvoff \
                where data_pedestal_hvon.channel_id = data_pedestal_hvoff.channel_id and \
                data_pedestal_hvon.key = data_pedestal_hvoff.key and \
                abs(data_pedestal_hvon.value - data_pedestal_hvoff.value) < 0.2 \
-               and data_pedestal_hvon.key = '{1}'".format('BV' + key, 'PED_RMS_' + key)
-        self.dbh.execute(sql)
+               and data_pedestal_hvon.key = '{0}' and data_pedestal_hvon.channel_id like '1%'".format('PED_RMS_' + key)
+        badchannels = map(lambda x: x[0], cur.execute(sql).fetchall())
+        for c in badchannels:
+          isgood = cur.execute("select count(channel_id) from flags where channel_id = {0} and flag REGEX '{1}'".format(c, pre)).fetchone()[0] == 0
+          if isgood:
+            cur.execute("insert or ignore into flags ({0}, '{1}')".format(c, 'BV' + k))
     def laser():
       sql = "insert or ignore into flags select channel_id, 'DLAMPL' from data_laser where key = 'APD_MEAN' and value <= 0"
       self.dbh.execute(sql)
