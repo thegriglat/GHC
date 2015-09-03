@@ -328,6 +328,7 @@ class Data(object):
                on data_pedestal_hvon.channel_id = data_pedestal_hvoff.channel_id where \
                data_pedestal_hvon.key = data_pedestal_hvoff.key and \
                abs(data_pedestal_hvon.value - data_pedestal_hvoff.value) < 0.2 \
+               and data_pedestal_hvon.value > 0 and data_pedestal_hvoff.value > 0 \
                and data_pedestal_hvon.key = '{0}' and data_pedestal_hvon.channel_id like '1%'".format('PED_RMS_' + key)
         badchannels = map(lambda x: x[0], cur.execute(sql))
 #        print "HV badchannels = ", len(badchannels), badchannels[:10]
