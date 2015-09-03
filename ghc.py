@@ -171,6 +171,9 @@ for d in ("EB", "EE"):
            channel_id in (select channel_id from flags where (flag not REGEXP {notmatch}) and channel_id like '{loc}')".format(loc = ("1%", "2%")[d == "EE"],
            match = " or flag REGEXP ".join([ "'{0}'".format(i) for i in x]),
            notmatch = " and flag not REGEXP ".join([ "'{0}'".format(i) for i in rall]))
+    # at least philosophy
+    sql = "select count(distinct channel_id) from flags where channel_id like '{loc}' and  (flag REGEXP {match})".format(loc = ("1%", "2%")[d == "EE"],
+           match = " or flag REGEXP ".join([ "'{0}'".format(i) for i in x]))
     return GHC.dbh.execute(sql).fetchone()[0]
   print ""
   header("Summary Total Problematic Channels for {0}".format(d))
