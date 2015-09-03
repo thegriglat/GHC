@@ -323,7 +323,7 @@ class Data(object):
       # pedestal HV OFF channels problems only for EB
       cur = self.dbh.cursor()
       pre = "^[BD]P|^V?LR"
-      for key in ["G1", "G6", "G12"]:
+      for key in ["G6", "G12"]:
         sql = "select data_pedestal_hvoff.channel_id from data_pedestal_hvon inner join data_pedestal_hvoff \
                on data_pedestal_hvon.channel_id = data_pedestal_hvoff.channel_id where \
                data_pedestal_hvon.key = data_pedestal_hvoff.key and \
