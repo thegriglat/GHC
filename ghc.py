@@ -196,9 +196,9 @@ print "="*80
 print ""
 # errors description
 print """
-  DLAMPL: APD_MEAN <= 0
-  SLAMPL: MEAN > 0 and MEAN < AVG * 0.1 # AVG per subdetector
-  LLERRO: MEAN > AVG * 0.1 and RMS / MEAN > 0.1
+  DLAMPL: MEAN <= 0
+  SLAMPL: MEAN > 0 and MEAN < AVG * 0.1         # AVG per subdetector
+  LLERRO: MEAN > AVG * 0.1 and RMS / MEAN > 0.1 # AVG per subdetector
 """
 
 for d in ("EB", "EE"):
