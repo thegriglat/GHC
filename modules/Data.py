@@ -342,7 +342,7 @@ class Data(object):
       sql = "insert or ignore into flags select channel_id, 'DLAMPL' from data_laser where key = 'APD_MEAN' and value <= 0"
       self.dbh.execute(sql)
       for l in (1, 2):
-        avg = self.dbh.execute("select avg(value) from data_laser where key = 'APD_MEAN' and channel_id like '{0}%'".format(l)).fetchone()[0] 
+        avg = self.dbh.execute("select avg(value) from data_laser where key = 'APD_MEAN' and value > 0 and channel_id like '{0}%'".format(l)).fetchone()[0] 
         sql = "insert or ignore into flags select channel_id, 'SLAMPL' from data_laser where key = 'APD_MEAN' and value < {0} * 0.1 and value > 0 and channel_id like '{1}%'".format(avg, l)
         self.dbh.execute(sql)
         sql = "insert or ignore into flags select dl1.channel_id, 'LLERRO' from data_laser as dl1 \
