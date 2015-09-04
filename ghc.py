@@ -70,10 +70,9 @@ if args.dumpsql != None:
 print "="*80
 print header("PEDESTAL ANALYSIS")
 print "="*80
-print ""
 # description of error types
 print """
-Errors description for EB
+Description of errors for EB
   Dead pedestal  (DP)  :
     Gain 1 : MEAN <= 1 or RMS <= 0.2
     Gain 6 : MEAN <= 1 or RMS <= 0.4
@@ -89,7 +88,7 @@ Errors description for EB
     Gain 6 : (not (MEAN <= 1 or RMS <= 0.4)) and (RMS > 4 and MEAN > 1)
     Gain 12: (not (MEAN <= 1 or RMS <= 0.5)) and (RMS > 6 and MEAN > 1)
 
-Errors description for EE
+Description of errors for EE
   Dead pedestal  (DP)  :
     Gain 1 : MEAN <= 1 or RMS <= 0.2
     Gain 6 : MEAN <= 1 or RMS <= 0.4
@@ -106,7 +105,7 @@ Errors description for EE
     Gain 12: (not (MEAN <= 1 or RMS <= 0.5)) and (RMS > 7 and MEAN > 1)
 
 
-HV OFF checks:
+Description of HV OFF errors:
   Bad Voltage for G12 (BV):
     abs(MEAN(HVON) - MEAN(HVOFF)) < 0.2 and 170 <= MEAN (HVON) <= 230
 
@@ -148,7 +147,6 @@ for d in ["EB", "EE"]:
 print "="*80
 print header("TEST PULSE ANALYSIS")
 print "="*80
-print ""
 # errors description
 print """
 Dead TestPulse          (DTP):
@@ -189,11 +187,10 @@ for d in ("EB", "EE"):
       print "   {0:8s} : {1:5d}".format(i + k, num)
   print " Total problematic test pulse channels:", tpc
 
-
+print ""
 print "="*80 
 print header("LASER ANALYSIS")
 print "="*80
-print ""
 # errors description
 print """
   DLAMPL: MEAN <= 0
