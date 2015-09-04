@@ -176,13 +176,13 @@ for d in ("EB", "EE"):
            match = " or flag REGEXP ".join([ "'{0}'".format(i) for i in x]))
     return GHC.dbh.execute(sql).fetchone()[0]
   print ""
-  header("Summary Total Problematic Channels for {0}".format(d))
+  header("Summary Total Problematic Channels for {0} (\"AT LEAST\" meaning)".format(d))
   print "|  Total problematic channels                  |           * |", GHC.dbh.execute("select count(distinct channel_id) from flags where channel_id like '{loc}'".format(loc = ('2%','1%')[d == "EB"])).fetchone()[0]
-  print "|  Pedestals problems only                     |          PE |", getchnum([pre])
-  print "|  Test Pulse problems only                    |          TP |", getchnum([tpre])
-  print "|  Laser problems only                         |          LA |", getchnum([lre])
+  print "|  Pedestals problems                     |          PE |", getchnum([pre])
+  print "|  Test Pulse problems                    |          TP |", getchnum([tpre])
+  print "|  Laser problems                        |          LA |", getchnum([lre])
   if d != "EE":
-    print "|  High voltage problems only                  |          HV |", getchnum([hvre])
+    print "|  High voltage problems                  |          HV |", getchnum([hvre])
   print "|  Pedestals + Test Pulse problems             |       PE+TP |", getchnum([pre, tpre])
   print "|  Pedestals + Laser problems                  |       PE+LA |", getchnum([pre, lre])
   if d != "EE":
