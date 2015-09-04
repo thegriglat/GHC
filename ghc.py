@@ -71,6 +71,46 @@ print "="*80
 print header("PEDESTAL ANALYSIS")
 print "="*80
 print ""
+# description of error types
+print """
+Errors description for EB
+  Dead pedestal  (DP)  :
+    Gain 1 : MEAN <= 1 or RMS <= 0.2
+    Gain 6 : MEAN <= 1 or RMS <= 0.4
+    Gain 12: MEAN <= 1 or RMS <= 0.5
+  Bad pedestal   (BP)  :
+    abs(MEAN - 200) >= 30 and MEAN > 1
+  Large RMS      (LR)  :
+    Gain 1 : (not (MEAN <= 1 or RMS <= 0.2)) and (RMS >= 1.1 and RMS < 3 and MEAN > 1)
+    Gain 6 : (not (MEAN <= 1 or RMS <= 0.4)) and (RMS >= 1.3 and RMS < 4 and MEAN > 1)
+    Gain 12: (not (MEAN <= 1 or RMS <= 0.5)) and (RMS >= 2.1 and RMS < 6 and MEAN > 1)
+  Very Large RMS (VLR) :
+    Gain 1 : (not (MEAN <= 1 or RMS <= 0.2)) and (RMS > 3 and MEAN > 1)
+    Gain 6 : (not (MEAN <= 1 or RMS <= 0.4)) and (RMS > 4 and MEAN > 1)
+    Gain 12: (not (MEAN <= 1 or RMS <= 0.5)) and (RMS > 6 and MEAN > 1)
+
+Errors description for EE
+  Dead pedestal  (DP)  :
+    Gain 1 : MEAN <= 1 or RMS <= 0.2
+    Gain 6 : MEAN <= 1 or RMS <= 0.4
+    Gain 12: MEAN <= 1 or RMS <= 0.5
+  Bad pedestal   (BP)  :
+    abs(MEAN - 200) >= 30 and MEAN > 1
+  Large RMS      (LR)  :
+    Gain 1 : (not (MEAN <= 1 or RMS <= 0.2)) and (RMS >= 1.5 and RMS < 4 and MEAN > 1)
+    Gain 6 : (not (MEAN <= 1 or RMS <= 0.4)) and (RMS >= 2.0 and RMS < 5 and MEAN > 1)
+    Gain 12: (not (MEAN <= 1 or RMS <= 0.5)) and (RMS >= 3.2 and RMS < 7 and MEAN > 1)
+  Very Large RMS (VLR) :
+    Gain 1 : (not (MEAN <= 1 or RMS <= 0.2)) and (RMS > 4 and MEAN > 1)
+    Gain 6 : (not (MEAN <= 1 or RMS <= 0.4)) and (RMS > 5 and MEAN > 1)
+    Gain 12: (not (MEAN <= 1 or RMS <= 0.5)) and (RMS > 7 and MEAN > 1)
+
+
+HV OFF checks:
+  Bad Voltage for G12 (BV):
+    abs(MEAN(HVON) - MEAN(HVOFF)) < 0.2 and 170 <= MEAN (HVON) <= 230
+
+"""
 
 for d in ["EB", "EE"]:
   print header("PEDESTAL {0} ANALYSIS".format(d))
@@ -109,6 +149,18 @@ print "="*80
 print header("TEST PULSE ANALYSIS")
 print "="*80
 print ""
+# errors description
+print """
+Dead TestPulse          (DTP):
+  MEAN = 0
+
+Low TestPulse amplitude (STP):
+  AVG = average mean for each subdetector (EB, EE)
+  MEAN > 0 and MEAN < 0.5 * AVG
+
+Large TP amplitude      (LTP):
+  MEAN > 1.5 * AVG
+"""
 
 for d in ("EB", "EE"):
   print header("TEST PULSE {0} ANALYSIS".format(d))
@@ -142,6 +194,12 @@ print "="*80
 print header("LASER ANALYSIS")
 print "="*80
 print ""
+# errors description
+print """
+  DLAMPL: APD_MEAN <= 0
+  SLAMPL: MEAN > 0 and MEAN < AVG * 0.1 # AVG per subdetector
+  LLERRO: MEAN > AVG * 0.1 and RMS / MEAN > 0.1
+"""
 
 for d in ("EB", "EE"):
   print header("LASER {0} ANALYSIS".format(d))
