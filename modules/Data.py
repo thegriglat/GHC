@@ -44,6 +44,23 @@ class Data(object):
     self.classifyChannels()
     return [c[0] for c in self.dbh.execute("select distinct channel_id from flags")]
  
+  def numOfActiveChannels(self, det, **kwargs):
+    """
+      Returns number of active channels
+    """ 
+    types = ['pedestal_hvon', 'pedestal_hvoff', 'testpulse', 'laser']
+    sql = "where channel_id like '{0}%'".format((1, 2)[det == 'EE'])
+    if kwargs.has_key('type'):
+      if kwargs['type'].__class__ != list:
+        types = [kwargs['type']]
+      else:
+        types = kwargs['type']
+    if len(types) >= 2:
+      return min([self.numOfActiveChannels(det, type = x) for x in types])
+    else:
+      return min ([x[0] for x in self.dbh.execute("select count(channel_id) from {0} {1} group by key;".format('data_' + types[0], sql))])
+    return [c[0] for c in self.dbh.execute(sql)]
+    
   def getActiveChannels(self, **kwargs):
     """
       Returns list of active channels
@@ -281,6 +298,8 @@ class Data(object):
       tmpflags = []
       mean = self.getChannelData(channel, key = 'PED_MEAN_' + key, type = 'pedestal_hvon')
       rms = self.getChannelData(channel, key = 'PED_RMS_' + key, type = 'pedestal_hvon')
+      if mean is None or rms is None:
+        return []
       if mean <= deadlimits[0] or rms <= deadlimits[1]:
         tmpflags.append("DP" + key)
       else:
@@ -361,7 +380,7 @@ class Data(object):
     cur = self.dbh.cursor()
     log.info ("Classify Pedestal HV ON data ...")
     try:
-      for c in [ k[0] for k in self.dbh.execute("select channel_id from data_pedestal_hvon")]:
+      for c in [ k[0] for k in self.dbh.execute("select distinct channel_id from data_pedestal_hvon")]:
         for f in self.getPedestalFlags(c):
           cur.execute("insert or ignore into flags values ({0}, '{1}')".format(int(c), f))
       self.dbh.commit()
@@ -393,6 +412,16 @@ class Data(object):
     except:
       log.info("Skipped.")
       self.dbh.rollback()
+    # missed channels
+    log.info("Try to find missed channels ...")
+    # pedestal hv on/off and testpulse
+    for t in ['pedestal_hvon', 'pedestal_hvoff', 'testpulse']:
+      prefix = ("PED", "ADC")[t == testpulse]
+      for i in ["G1", "G6", "G12"]:
+        for j in ["G1", 'G6', "G12"]:
+          if i == j:
+            continue
+          self.dbh.execute("insert or ignore into missed_channels select channel_id from data_{3} where channel_id not in (select channel_id from data_{3} where key = '{2}_MEAN_{1}') and key = '{2}_MEAN_{0}'".format(i, j, prefix, t))
     self.setOption('isClassified', 1)
     self.dbh.commit()
 
@@ -454,33 +483,33 @@ class Data(object):
     log.info("OK")
     log.info("Exporting data from Oracle to inner DB ...")
 
-    for run in kwargs['runs']:
-      log.info("Process run " + str(run) + " ...")
+    for gain_run in kwargs['runs']:
+      if not 'laser' in table:
+        gain = gain_run.split(':')[0]
+        run = gain_run.split(':')[1]
+        log.info("Process run {0} ({1}) ...".format(run, gain))
+      else:
+        run = gain_run
+        gain = ""
+        log.info("Process run {0} ...".format(run))
       if "pedestal" in table:
-        sql = "select LOGIC_ID, PED_MEAN_G1, PED_RMS_G1, PED_MEAN_G6, PED_RMS_G6, PED_MEAN_G12, PED_RMS_G12 \
-          from MON_PEDESTALS_DAT where IOV_ID=(select IOV_ID from MON_RUN_IOV where RUN_IOV_ID=(select IOV_ID from RUN_IOV where RUN_NUM={0}))".format(run)
-        fields = ['PED_MEAN_G1', 'PED_RMS_G1', 'PED_MEAN_G6', 'PED_RMS_G6', 'PED_MEAN_G12', 'PED_RMS_G12']
+        sql = "select LOGIC_ID, PED_MEAN_{1}, PED_RMS_{1} \
+          from MON_PEDESTALS_DAT where IOV_ID=(select IOV_ID from MON_RUN_IOV where RUN_IOV_ID=(select IOV_ID from RUN_IOV where RUN_NUM={0}))".format(run, gain)
+        fields = map(lambda x: x + gain, ['PED_MEAN_', 'PED_RMS_'])
       elif "testpulse" in table:
-        sql = "select LOGIC_ID, ADC_MEAN_G1, ADC_RMS_G1, ADC_MEAN_G6, ADC_RMS_G6, ADC_MEAN_G12, ADC_RMS_G12 \
-          from MON_TEST_PULSE_DAT where IOV_ID=(select IOV_ID from MON_RUN_IOV where RUN_IOV_ID=(select IOV_ID from RUN_IOV where RUN_NUM={0}))".format(run)
-        fields = ['ADC_MEAN_G1', 'ADC_RMS_G1', 'ADC_MEAN_G6', 'ADC_RMS_G6', 'ADC_MEAN_G12', 'ADC_RMS_G12']
+        sql = "select LOGIC_ID, ADC_MEAN_{1}, ADC_RMS_{1} \
+          from MON_TEST_PULSE_DAT where IOV_ID=(select IOV_ID from MON_RUN_IOV where RUN_IOV_ID=(select IOV_ID from RUN_IOV where RUN_NUM={0}))".format(run, gain)
+        fields = map(lambda x: x + gain, ['ADC_MEAN_', 'ADC_RMS_'])
       elif "laser" in table:
         sql = "select LOGIC_ID, APD_MEAN, APD_RMS, APD_OVER_PN_MEAN, APD_OVER_PN_RMS \
           from {0} where IOV_ID=(select IOV_ID from MON_RUN_IOV where RUN_IOV_ID=(select IOV_ID from RUN_IOV where RUN_NUM={1}))".format(kwargs['lasertable'], run)
         fields = ['APD_MEAN', 'APD_RMS', 'APD_OVER_PN_MEAN', 'APD_OVER_PN_RMS']
       cur = self.dbh.cursor()
       result = ora.cursor().execute(sql)
-      cur.execute("insert into runs values ({0}, '{1}', \"\")".format(int(run), kwargs['type']))
+      cur.execute("insert into runs values ({0}, '{1}', '{2}')".format(int(run), kwargs['type'], gain))
       for row in result:
         for k in xrange(len(fields)):
-          # we will insert only matter data
-          # merging ...
-          c =  cur.execute("select value from {table} where channel_id = {channel} and key = '{key}'".format(table = table, key = fields[k], channel = int(row[0]))).fetchall()
-          if len(c) == 0:
-            cur.execute("insert into {table} values ({channel}, '{key}', {data}) ".format(table = table, channel = int(row[0]), data = row[k + 1], key = fields[k]))
-          elif c[0][0] == -1 and row [k + 1] != -1:
-            log.debug ("Replace {key} values for channel {channel}: {old} -> {new}".format(key = fields[k], channel = row[0], old = c[0][0], new = row[k + 1]))
-            cur.execute("update {table} set value = {data} where channel_id = {channel} and key = '{key}' ".format(table = table, channel = int(row[0]), data = row[k + 1], key = fields[k]))
+          cur.execute("insert or fail into {table} values ({channel}, '{key}', {data}) ".format(table = table, channel = int(row[0]), data = row[k + 1], key = fields[k]))
       self.dbh.commit()
     ora.close()
 

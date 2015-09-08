@@ -114,7 +114,7 @@ Description of HV OFF errors:
 for d in ["EB", "EE"]:
   print header("PEDESTAL {0} ANALYSIS".format(d))
   print ""
-  act = len ([ c for c in GHC.getActiveChannels(type=['pedestal_hvon', 'pedestal_hvoff']) if  Data.getSubDetector(c) == d])
+  act = GHC.numOfActiveChannels(d, type=['pedestal_hvon', 'pedestal_hvoff'])
   print "| Number of missed channels   : {0}".format((61200,14648)[d == "EE"] - act)
   print "| Number of active channels   : {0}\n".format(act)
   print "| Statistics of channels by problem classes: "
@@ -163,7 +163,8 @@ Large TP amplitude      (LTP):
 for d in ("EB", "EE"):
   print header("TEST PULSE {0} ANALYSIS".format(d))
   print ""
-  act = len ([ c for c in GHC.getActiveChannels(type = 'testpulse') if  Data.getSubDetector(c) == d])
+
+  act = GHC.numOfActiveChannels(d, type='testpulse')
   print "| Number of missed channels   : {0}".format((61200,14648)[d == "EE"] - act)
   print "| Number of active channels   : {0}\n".format(act)
   print "| Statistics of channels by problem classes: "
@@ -202,7 +203,7 @@ for d in ("EB", "EE"):
   print header("LASER {0} ANALYSIS".format(d))
   print ""
 
-  act = len ([ c for c in GHC.getActiveChannels(type = 'laser') if  Data.getSubDetector(c) == d])
+  act = GHC.numOfActiveChannels(d, type='laser')
   print "| Number of missed channels   : {0}".format((61200,14648)[d == "EE"] - act)
   print "| Number of active channels   : {0}".format(act)
 
@@ -222,12 +223,12 @@ for d in ("EB", "EE"):
     if len(rall) == 0:
       return 0
     # at least philosophy
-    sql = "select count(distinct channel_id) from flags where channel_id like '{loc}' and channel_id in {exsql}".format(loc = ("1%", "2%")[d == "EE"],
+    sql = "select count(distinct channel_id) from flags where channel_id like '{loc}' and channel_id in {exsql} and channel_id not in (select channel_id from missed_channels)".format(loc = ("1%", "2%")[d == "EE"],
            exsql = " and channel_id in ".join(["(select channel_id from flags where flag REGEXP '{0}')".format(i) for i in x]))
     return GHC.dbh.execute(sql).fetchone()[0]
   print ""
   print header("Summary Total Problematic Channels for {0} (\"AT LEAST\" meaning)".format(d))
-  print "|  Total problematic channels                  |           * |", GHC.dbh.execute("select count(distinct channel_id) from flags where channel_id like '{loc}'".format(loc = ('2%','1%')[d == "EB"])).fetchone()[0]
+  print "|  Total problematic channels                  |           * |", GHC.dbh.execute("select count(distinct channel_id) from flags where channel_id like '{loc}' and channel_id not in (select channel_id from missed_channels)".format(loc = ('2%','1%')[d == "EB"])).fetchone()[0]
   print "|  Pedestals problems                          |          PE |", getchnum([pre])
   print "|  Test Pulse problems                         |          TP |", getchnum([tpre])
   print "|  Laser problems                              |          LA |", getchnum([lre])
