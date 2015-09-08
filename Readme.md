@@ -84,8 +84,9 @@ How to use
     source setup.sh
 
 **Example of analyse GHC28**
-
+    
+    source setup.sh
     python ghc.py -h
-    python ghc.py -v -ds GHC.dump.sql -d GHC.sqlite3 -o results -lt MON_LASER_IRED_DAT -c 'oracle://user/pass@db' -poff "238609 238610 238600" -pon "238566 238569 238594" -tp "238577 238574 238581" -l 238724
+    python ghc.py -d ghc.sqlite3 -f png -o results -c 'oracle://cms_ecal_r/***@cms_orcon_adg' -pon "G1:255263 G6:255266 G12:255264" -poff "G1:255275 G6:255272 G12:255274" -tp "G1:255267 G6:255199 G12:255270" -l 254905 -lt MON_LASER_IRED_DAT |& tee ghc.log
 
 You should see various output about channels.
