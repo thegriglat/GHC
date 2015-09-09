@@ -367,7 +367,7 @@ class Data(object):
         sql = "insert or ignore into flags select dl1.channel_id, 'LLERRO' from data_laser as dl1 \
                                           inner join data_laser as dl2 \
              on \
-             dl1.channel_id = dl2.channel_id and \
+             dl1.channel_id = dl2.channel_id \
              where \
              dl1.key = 'APD_MEAN' and dl2.key = 'APD_RMS' and dl1.value > {0} * 0.1 and dl2.value / dl1.value > 0.2".format(avg)
         self.dbh.execute(sql)
