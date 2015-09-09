@@ -369,7 +369,7 @@ class Data(object):
              on \
              dl1.channel_id = dl2.channel_id and \
              where \
-             dl1.key = 'APD_MEAN' and dl2.key = 'APD_RMS' and dl1.value > {0} * 0.1 and dl2.value / dl1.value > 0.1".format(avg)
+             dl1.key = 'APD_MEAN' and dl2.key = 'APD_RMS' and dl1.value > {0} * 0.1 and dl2.value / dl1.value > 0.2".format(avg)
         self.dbh.execute(sql)
     cur = self.dbh.cursor()
     log.info ("Classify Pedestal HV ON data ...")
