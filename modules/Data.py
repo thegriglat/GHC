@@ -366,16 +366,10 @@ class Data(object):
         self.dbh.execute(sql)
         sql = "insert or ignore into flags select dl1.channel_id, 'LLERRO' from data_laser as dl1 \
                                           inner join data_laser as dl2 \
-                                        inner join all_channels as ac \
              on \
              dl1.channel_id = dl2.channel_id and \
-             dl1.channel_id = ac.channel_id \
              where \
-             dl1.key = 'APD_MEAN' and dl2.key = 'APD_RMS' and dl1.value > {0} * 0.1 and dl2.value / dl1.value > \
-             case ac.location \
-              when 'EB' then 0.1  \
-              when 'EE' then 0.1 \
-             end".format(avg)
+             dl1.key = 'APD_MEAN' and dl2.key = 'APD_RMS' and dl1.value > {0} * 0.1 and dl2.value / dl1.value > 0.1".format(avg)
         self.dbh.execute(sql)
     cur = self.dbh.cursor()
     log.info ("Classify Pedestal HV ON data ...")
