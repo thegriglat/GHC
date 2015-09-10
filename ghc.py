@@ -307,5 +307,5 @@ if not args.noplots:
       h = GHC.get2DHistogram(key = "APD_OVER_PN_{0}".format(('MEAN', 'RMS')[rms]), useRMS = rms, type="laser", part = d, name = "APD/PN {0}, ({1})".format(('mean', 'RMS')[rms] , args.lasertable))
       Data.saveHistogram(h, outputdir + "/laser/APDPN_{0}_{1}.2D.{2}".format(("MEAN", "RMS")[rms], d, format), d)
   
-endts = datetime.datetime.now(
+endts = datetime.datetime.now()
 print "\np. Elapsed time:", str(endts - startts)
