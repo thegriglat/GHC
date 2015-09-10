@@ -351,11 +351,9 @@ class Data(object):
                and data_pedestal_hvon.value > 0 and data_pedestal_hvoff.value > 0 \
                and data_pedestal_hvon.key = '{0}' and data_pedestal_hvon.channel_id like '1%'".format('PED_RMS_' + key)
         badchannels = map(lambda x: x[0], cur.execute(sql))
-#        print "HV badchannels = ", len(badchannels), badchannels[:10]
         for c in badchannels:
           isgood = (cur.execute("select count(channel_id) from flags where channel_id = {0} and flag REGEXP '{1}'".format(c, pre)).fetchone()[0] == 0)
           if isgood:
-#            print "insert into flags values ({0}, '{1}')".format(c, 'BV' + key)
             cur.execute("insert or ignore into flags values ({0}, '{1}')".format(c, 'BV' + key))
     def laser():
       sql = "insert or ignore into flags select channel_id, 'DLAMPL' from data_laser where key = 'APD_MEAN' and value <= 0"
@@ -673,7 +671,7 @@ def saveHistogram(histogram, filename, plottype):
     c.SaveAs(filename)
     return True
   except:
-    print "Cannot save '{0}'into {1}".format(repr(histogram),filename)
+    log.error("Cannot save '{0}'into {1}".format(repr(histogram),filename))
     return False
   ROOT.gStyle.Clear()
 
