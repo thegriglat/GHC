@@ -371,6 +371,7 @@ class Data(object):
         self.dbh.execute(sql)
     cur = self.dbh.cursor()
     log.info ("Classify Pedestal HV ON data ...")
+    isClassified = True
     try:
       for c in [ k[0] for k in self.dbh.execute("select distinct channel_id from data_pedestal_hvon")]:
         for f in self.getPedestalFlags(c):
@@ -380,6 +381,7 @@ class Data(object):
     except:
       log.info("Skipped.")
       self.dbh.rollback()
+      isClassified = False
     log.info ("Classify Test Pulse data ...")
     try:
       testpulse()
@@ -388,6 +390,7 @@ class Data(object):
     except:
       log.info("Skipped.")
       self.dbh.rollback()
+      isClassified = False
     log.info ("Classify Laser data ...")
     try:
       laser()
@@ -396,6 +399,7 @@ class Data(object):
     except:
       log.info("Skipped.")
       self.dbh.rollback()
+      isClassified = False
     log.info ("Classify Pedestal HV OFF data ...")
     try:
       ped_hvoff()
@@ -404,16 +408,26 @@ class Data(object):
     except:
       log.info("Skipped.")
       self.dbh.rollback()
+      isClassified = False
     # missed channels
     log.info("Try to find missed channels ...")
     # pedestal hv on/off and testpulse
-    for t in ['pedestal_hvon', 'pedestal_hvoff', 'testpulse']:
-      prefix = ("PED", "ADC")[t == testpulse]
-      for i in ["G1", "G6", "G12"]:
-        for j in ["G1", 'G6', "G12"]:
-          if i == j:
-            continue
-          self.dbh.execute("insert or ignore into missed_channels select channel_id from data_{3} where channel_id not in (select channel_id from data_{3} where key = '{2}_MEAN_{1}') and key = '{2}_MEAN_{0}'".format(i, j, prefix, t))
+    try:
+      for t in ['pedestal_hvon', 'testpulse']:
+        prefix = ("PED", "ADC")[t == testpulse]
+        for i in ["G1", "G6", "G12"]:
+          for j in ["G1", 'G6', "G12"]:
+            if i == j:
+              continue
+            self.dbh.execute("insert or ignore into missed_channels select channel_id from data_{3} where channel_id not in (select channel_id from data_{3} where key = '{2}_MEAN_{1}') and key = '{2}_MEAN_{0}'".format(i, j, prefix, t))
+      self.dbh.commit()
+      log.info("Finished")
+    except:
+      log.info("Skipped.")
+      self.dbh.rollback()
+      isClassified = False
+    if not isClassified:
+      log.info("NOT ALL SELECTION CRITERIA ARE USED FOR DATA CLASSIFICATION")
     self.setOption('isClassified', 1)
     self.dbh.commit()
 
