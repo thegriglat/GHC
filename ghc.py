@@ -112,6 +112,8 @@ Description of HV OFF errors:
 """
 
 for d in ["EB", "EE"]:
+  if args.pon_runs is None:
+    continue
   print header("PEDESTAL {0} ANALYSIS".format(d), 2)
   print ""
   act = GHC.numOfActiveChannels(d, type=['pedestal_hvon', 'pedestal_hvoff'])
@@ -162,6 +164,8 @@ Large TP amplitude      (LTP):
 """
 
 for d in ("EB", "EE"):
+  if args.tp_runs is None:
+    continue
   print header("TEST PULSE {0} ANALYSIS".format(d), 2)
   print ""
 
@@ -203,6 +207,8 @@ print """
 """
 
 for d in ("EB", "EE"):
+  if args.l_runs is None:
+    continue
   print ""
   print header("LASER {0} ANALYSIS".format(d), 2)
   print ""
