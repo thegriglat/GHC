@@ -195,7 +195,6 @@ for d in ("EB", "EE"):
       tpc += num
       print "| {0:8s} | {1:5d} |".format(i + k, num)
   print ""
-  print "  Total problematic test pulse channels:", tpc, "\n"
 
 print ""
 print header("LASER ANALYSIS")
