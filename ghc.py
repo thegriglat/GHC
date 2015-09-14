@@ -118,10 +118,10 @@ for d in ["EB", "EE"]:
     continue
   print header("PEDESTAL {0} ANALYSIS".format(d), 2)
   print ""
-  act = GHC.numOfActiveChannels(d, type=['pedestal_hvon', 'pedestal_hvoff'])
-  print " Number of missed channels   : {0}".format((61200,14648)[d == "EE"] - act)
-  print " Number of active channels   : {0}\n".format(act)
-  print "Statistics of channels by problem classes"
+  for g in ("G1", "G6", "G12"):
+    act = GHC.dbh.execute("select count(channel_id) from data_pedestal_hvon where key = 'PED_MEAN_{0}' and channel_id like '{1}%'".format(g, (1, 2)[d == "EE"])).fetchone()[0]
+    print " Number of missing channels {1:3s}  : {0}".format((61200,14648)[d == "EE"] - act, g)
+    print " Number of active  channels {1:3s}  : {0}\n".format(act, g)
   print ""
   print "|_. {classn:41s} |_. {empty:3s} |_. {tags:21s} |".format(classn = "Classes of pedestal problematic channels", empty="", tags="Short name")
 
@@ -170,11 +170,10 @@ for d in ("EB", "EE"):
     continue
   print header("TEST PULSE {0} ANALYSIS".format(d), 2)
   print ""
-
-  act = GHC.numOfActiveChannels(d, type='testpulse')
-  print " Number of missed channels   : {0}".format((61200,14648)[d == "EE"] - act)
-  print " Number of active channels   : {0}\n".format(act)
-#  print "p. Statistics of channels by problem classes: "
+  for g in ("G1", "G6", "G12"):
+    act = GHC.dbh.execute("select count(channel_id) from data_testpulse where key = 'ADC_MEAN_{0}' and channel_id like '{1}%'".format(g, (1, 2)[d == "EE"])).fetchone()[0]
+    print " Number of missing channels {1:3s}  : {0}".format((61200,14648)[d == "EE"] - act, g)
+    print " Number of active  channels {1:3s}  : {0}\n".format(act, g)
   print ""
   print "|_. {classn:41s} |_. {empty:3s} |_. {tags:21s} |".format(classn = "Classes of Test Pulse problematic channels", empty="", tags="Short name")
 
@@ -214,9 +213,9 @@ for d in ("EB", "EE"):
   print header("LASER {0} ANALYSIS".format(d), 2)
   print ""
 
-  act = GHC.numOfActiveChannels(d, type='laser')
-  print " Number of missed channels   : {0}".format((61200,14648)[d == "EE"] - act)
-  print " Number of active channels   : {0}".format(act)
+  act = GHC.dbh.execute("select count (distinct channel_id) from data_laser where channel_id like '{0}%'".format((1, 2)[d == "EE"])).fetchone()[0]
+  print " Number of missing channels   : {0}".format((61200,14648)[d == "EE"] - act)
+  print " Number of active  channels   : {0}".format(act)
 
   print "\nh3. Statistic by FLAG :\n"
   print "|_. Flag |_. Number of channels |"
